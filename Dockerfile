@@ -7,7 +7,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/bin/gardener-metrics-exporter cmd/main.go
 
 #############      gardener-metrics-exporter     #############
-FROM alpine:3.7
+FROM alpine:3.7 AS metrics-exporter
 
 RUN apk add --update bash curl
 
