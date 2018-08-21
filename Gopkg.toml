@@ -1,0 +1,35 @@
+[prune]
+  go-tests = true
+  unused-packages = true
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "1.0.6"
+
+[[constraint]]
+  name = "github.com/gardener/gardener"
+  version = "0.8.0"
+
+[[override]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/client-go"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/code-generator"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/kube-openapi"
+  revision = "d8ea2fe547a448256204cfc68dfee7b26c720acb" # "kubernetes-1.11"
