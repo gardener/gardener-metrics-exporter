@@ -1,0 +1,45 @@
+{{if not .Values.kubeconfig }}
+---
+apiVersion: {{ include "rbacversion" . }}
+kind: ClusterRole
+metadata:
+  name: garden.sapcloud.io:metrics-exporter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - garden.sapcloud.io
+  resources:
+  - shoots
+  verbs:
+  - get
+  - watch
+  - list
+---
+kind: ClusterRoleBinding
+apiVersion: {{ include "rbacversion" . }}
+metadata:
+  name: garden.sapcloud.io:metrics-exporter
+subjects:
+- kind: ServiceAccount
+  name: gardener-metrics-exporter
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: garden.sapcloud.io:metrics-exporter
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}

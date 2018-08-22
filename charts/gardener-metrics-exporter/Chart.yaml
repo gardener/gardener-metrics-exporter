@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for the gardener-metrics-exporter
+name: gardener-metrics-exporter
+version: 0.1.0

@@ -1,0 +1,61 @@
+---
+apiVersion: {{ include "deploymentversion" . }}
+kind: Deployment
+metadata:
+  name: gardener-metrics-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gardener
+      role: metrics-exporter
+      chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      release: "{{ .Release.Name }}"
+      heritage: "{{ .Release.Service }}"
+  template:
+    metadata:
+      labels:
+        app: gardener
+        role: metrics-exporter
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      {{- if not .Values.kubeconfig }}
+      serviceAccountName: gardener-metrics-exporter
+      {{- end }}
+      containers:
+      - name: gardener-metrics-exporter
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - /gardener-metrics-exporter
+        {{- if .Values.kubeconfig }}
+        - --kubeconfig=/etc/config/kubeconfig
+        {{- end }}
+        - --bind-address={{ .Values.server.bindAddress }}
+        - --port={{ .Values.server.port }}
+        {{- if .Values.kubeconfig }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        {{- end }}
+        ports:
+        - name: port
+          containerPort: {{ .Values.server.port }}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      {{- if .Values.kubeconfig }}
+      volumes:
+      - name: config
+        secret:
+          secretName: gardener-metrics-exporter-config
+      {{- end }}
