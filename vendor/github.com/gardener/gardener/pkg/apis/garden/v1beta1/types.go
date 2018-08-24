@@ -15,6 +15,8 @@
 package v1beta1
 
 import (
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -870,6 +872,9 @@ type ClusterAutoscaler struct {
 // NginxIngress describes configuration values for the nginx-ingress addon.
 type NginxIngress struct {
 	Addon `json:",inline"`
+	// LoadBalancerSourceRanges is list of whitelist IP sources for NginxIngress
+	// +optional
+	LoadBalancerSourceRanges []string `json:"loadBalancerSourceRanges,omitempty"`
 }
 
 // Monocular describes configuration values for the monocular addon.
@@ -881,14 +886,16 @@ type Monocular struct {
 type KubeLego struct {
 	Addon `json:",inline"`
 	// Mail is the email address to register at Let's Encrypt.
-	Mail string `json:"email"`
+	// +optional
+	Mail string `json:"email,omitempty"`
 }
 
 // Kube2IAM describes configuration values for the kube2iam addon.
 type Kube2IAM struct {
 	Addon `json:",inline"`
 	// Roles is list of AWS IAM roles which should be created by the Gardener.
-	Roles []Kube2IAMRole `json:"roles"`
+	// +optional
+	Roles []Kube2IAMRole `json:"roles,omitempty"`
 }
 
 // Kube2IAMRole allows passing AWS IAM policies which will result in IAM roles.
@@ -1000,6 +1007,10 @@ type KubeAPIServerConfig struct {
 	// OIDCConfig contains configuration settings for the OIDC provider.
 	// +optional
 	OIDCConfig *OIDCConfig `json:"oidcConfig,omitempty"`
+	// AdmissionPlugins contains the list of user-defined admission plugins (additional to those managed by Gardener), and, if desired, the corresponding
+	// configuration.
+	// +optional
+	AdmissionPlugins []AdmissionPlugin `json:"admissionPlugins,omitempty"`
 }
 
 // OIDCConfig contains configuration settings for the OIDC provider.
@@ -1034,6 +1045,20 @@ type OIDCConfig struct {
 	// If provided, all usernames will be prefixed with this value. If not provided, username claims other than 'email' are prefixed by the issuer URL to avoid clashes. To skip any prefixing, provide the value '-'.
 	// +optional
 	UsernamePrefix *string `json:"usernamePrefix,omitempty"`
+}
+
+// AdmissionPlugin contains information about a specific admission plugin and its corresponding configuration.
+type AdmissionPlugin struct {
+	// Name is the name of the plugin.
+	Name string `json:"name"`
+	// Config is the configuration of the plugin.
+	// NOTE: After a discussion with @mvladev we decided to not use the runtime.RawExtension type for the configuration
+	// for now as there seems to be a bug with the OpenAPI generation which would make kubectl not correctly validate
+	// the objects (see also https://github.com/kubernetes-sigs/cluster-api/issues/137). We keep it as string for now
+	// and will later migrate the Go type to runtime.RawExtension once the issues have been resolved.
+	// SEE ALSO: https://github.com/gardener/gardener/pull/322
+	// +optional
+	Config *string `json:"config,omitempty"`
 }
 
 // KubeControllerManagerConfig contains configuration settings for the kube-controller-manager.
@@ -1089,9 +1114,11 @@ const (
 	// DefaultServiceNetworkCIDR is a constant for the default service network CIDR of a Shoot cluster.
 	DefaultServiceNetworkCIDR = CIDR("100.64.0.0/13")
 	// DefaultETCDBackupSchedule is a constant for the default schedule to take backups of a Shoot cluster (5 minutes).
-	DefaultETCDBackupSchedule = "*/5 * * * *"
+	DefaultETCDBackupSchedule = "0 */24 * * *"
 	// DefaultETCDBackupMaximum is a constant for the default number of etcd backups to keep for a Shoot cluster.
 	DefaultETCDBackupMaximum = 7
+	// MinimumETCDFullBackupTimeInterval is the time interval between consecutive full backups.
+	MinimumETCDFullBackupTimeInterval = 24 * time.Hour
 )
 
 ////////////////////////
@@ -1117,9 +1144,9 @@ type LastOperation struct {
 	LastUpdateTime metav1.Time `json:"lastUpdateTime"`
 	// The progress in percentage (0-100) of the last operation.
 	Progress int `json:"progress"`
-	// Status of the last operation, one of Processing, Succeeded, Error, Failed.
+	// Status of the last operation, one of Aborted, Processing, Succeeded, Error, Failed.
 	State ShootLastOperationState `json:"state"`
-	// Type of the last operation, one of Create, Reconcile, Update, Delete.
+	// Type of the last operation, one of Create, Reconcile, Delete.
 	Type ShootLastOperationType `json:"type"`
 }
 
@@ -1149,6 +1176,8 @@ const (
 	ShootLastOperationStateFailed ShootLastOperationState = "Failed"
 	// ShootLastOperationStatePending indicates that an operation cannot be done now, but will be tried in future.
 	ShootLastOperationStatePending ShootLastOperationState = "Pending"
+	// ShootLastOperationStateAborted indicates that an operation has been aborted.
+	ShootLastOperationStateAborted ShootLastOperationState = "Aborted"
 )
 
 // LastError indicates the last occurred error for an operation on a Shoot cluster.
