@@ -28,7 +28,6 @@ Build the metrics-exporter locally and run it by passing a kubeconfig. Such an e
 
 Let's build the app locally.
 ```sh
-cd "$GOPATH/src/github.com/gardener/gardener-metrics-exporter"
 go build -o gardener-metrics-exporter cmd/main.go
 ```
 

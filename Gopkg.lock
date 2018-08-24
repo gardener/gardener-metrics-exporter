@@ -310,7 +310,7 @@
     "http2/hpack",
     "idna"
   ]
-  revision = "922f4815f713f213882e8ef45e0d315b164d705c"
+  revision = "faa378e6dbaed88bd8100f8bcf09939375c6e8fa"
 
 [[projects]]
   branch = "master"
@@ -319,7 +319,7 @@
     "unix",
     "windows"
   ]
-  revision = "4ea2f632f6e912459fe60b26b1749377f0d889d5"
+  revision = "11551d06cbcc94edc80a0facaccbda56473c19c1"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -595,6 +595,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "11bf32fc10e0259297e04c7c25e4ade74bcd1a5164de8e5cf244bdaf8e27e7d2"
+  inputs-digest = "5b9035d550ad039407027abb8da686e5eb8073658ef3874b2251f1dfcf462b21"
   solver-name = "gps-cdcl"
   solver-version = 1
