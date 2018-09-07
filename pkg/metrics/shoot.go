@@ -52,7 +52,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	}
 
 	for _, shoot := range shoots {
-		// Some Shoot sanity check.
+		// Some Shoot sanity checks.
 		if shoot == nil || shoot.Spec.Cloud.Seed == nil {
 			continue
 		}
@@ -64,8 +64,9 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 
 		var (
-			isSeed bool
-			mailTo string
+			isSeed  bool
+			mailTo  string
+			purpose string
 
 			iaas = string(cloudProvider)
 			seed = *(shoot.Spec.Cloud.Seed)
@@ -75,6 +76,9 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		// Get the operator/owner of the Shoot, if it's annotated.
 		if shootOperatorMail, ok := shoot.Annotations[common.GardenOperatedBy]; ok {
 			mailTo = shootOperatorMail
+		}
+		if shootPurpose, ok := shoot.Annotations[common.GardenPurpose]; ok {
+			purpose = shootPurpose
 		}
 
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
@@ -121,7 +125,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 			// Export a metric for each condition of the Shoot.
 			for _, condition := range shoot.Status.Conditions {
-				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, shoot.Namespace, string(condition.Type), lastOperation, mailTo)
+				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, shoot.Namespace, string(condition.Type), lastOperation, purpose, mailTo)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue

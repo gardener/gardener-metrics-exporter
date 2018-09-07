@@ -28,7 +28,7 @@ const (
 
 	// Shoot metric (available also for Shoots which act as Seed)
 	metricGardenShootInfo           = "garden_shoot_info"
-	metricGardenShootCondition      = "garden_shoot_conditions"
+	metricGardenShootCondition      = "garden_shoot_condition"
 	metricGardenShootOperationState = "garden_shoot_operation_states"
 	metricGardenShootNodeMaxTotal   = "garden_shoot_node_max_total"
 	metricGardenShootNodeMinTotal   = "garden_shoot_node_min_total"
@@ -44,7 +44,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenShootInfo:           prometheus.NewDesc(metricGardenShootInfo, "Information to a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
 		metricGardenShootOperationState: prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation", "mail_to"}, nil),
-		metricGardenShootCondition:      prometheus.NewDesc(metricGardenShootCondition, "Condition state of Shoot.", []string{"name", "project", "condition", "operation", "mail_to"}, nil),
+		metricGardenShootCondition:      prometheus.NewDesc(metricGardenShootCondition, "Condition state of Shoot.", []string{"name", "project", "condition", "operation", "purpose", "mail_to"}, nil),
 
 		metricGardenShootNodeMaxTotal: prometheus.NewDesc(metricGardenShootNodeMaxTotal, "Max node count of a Shoot.", []string{"name", "project"}, nil),
 		metricGardenShootNodeMinTotal: prometheus.NewDesc(metricGardenShootNodeMinTotal, "Min node count of a Shoot.", []string{"name", "project"}, nil),
