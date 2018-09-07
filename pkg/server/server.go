@@ -18,22 +18,41 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
-// Serve start the webserver and return a <context.cancelFunc> to gracefully shutdown the server.
-func Serve(bindAddress string, port int, logger *logrus.Logger) context.CancelFunc {
+// Serve start the webserver and configure gracefull shut downs.
+func Serve(bindAddress string, port int, logger *logrus.Logger, closeCh chan os.Signal, stopCh chan struct{}) {
 	http.Handle("/metrics", promhttp.Handler())
 	server := http.Server{
 		Addr: fmt.Sprintf("%s:%d", bindAddress, port),
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	go func() {
+		<-closeCh
+		logger.Info("Received interupt signal. Shutting down webserver...")
 
-	go server.ListenAndServe()
-	logger.Infof("webserver is running on port %d", port)
-	server.Shutdown(ctx)
-	return cancel
+		// New requests should not keep alive connections anymore.
+		server.SetKeepAlivesEnabled(false)
+		server.RegisterOnShutdown(func() {
+			logger.Info("Webserver shut down.")
+			close(stopCh)
+		})
+
+		// Shutdown webserver.
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			logger.Errorf("Could not gracefully stop the webserver. %s", err.Error())
+		}
+	}()
+
+	logger.Infof("Starting webserver on port %d...", port)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logger.Errorf("Server starting error. %s", err.Error())
+	}
+	close(closeCh)
 }

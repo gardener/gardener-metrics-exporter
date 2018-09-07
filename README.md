@@ -1,6 +1,8 @@
 # Gardener Metrics Exporter
 The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) exporter for [Gardener](https://github.com/gardener/gardener) service-level related metrics.
 
+**This application requires Go 1.9 or later.**
+
 ## Metrics
 |Metic|Description|Scope|Type|
 |-----|-----------|-----|----|

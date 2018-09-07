@@ -86,16 +86,15 @@ func NewStartGardenMetricsExporter(logger *logrus.Logger, closeCh chan os.Signal
 }
 
 func run(o *options, closeCh chan os.Signal) error {
-	webserverShutdown := server.Serve(o.bindAddress, o.port, log)
-
-	// Create informer factories to create informers
 	stopCh := make(chan struct{})
+
+	// Create informer factories to create informers.
 	gardemInformerFactory, kubeInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
 	if err != nil {
 		return err
 	}
 
-	// Create informers
+	// Create informers.
 	var (
 		shootInformer       = gardemInformerFactory.Garden().V1beta1().Shoots().Informer()
 		namespaceInformer   = kubeInformerFactory.Core().V1().Namespaces().Informer()
@@ -115,10 +114,11 @@ func run(o *options, closeCh chan os.Signal) error {
 	// Start the metrics collector
 	metrics.SetupMetricsCollector(gardemInformerFactory.Garden().V1beta1().Shoots(), kubeInformerFactory.Core().V1().Namespaces(), kubeInformerFactory.Rbac().V1().RoleBindings(), log)
 
-	<-closeCh
-	log.Info("Received interupt signal. Shut down app.")
-	webserverShutdown()
-	close(stopCh)
+	// Start the webserver.
+	go server.Serve(o.bindAddress, o.port, log, closeCh, stopCh)
+
+	<-stopCh
+	log.Info("App shut down.")
 	return nil
 }
 
