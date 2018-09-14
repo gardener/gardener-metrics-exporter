@@ -26,11 +26,12 @@ const (
 	metricGardenUsersSum    = "garden_users_total"
 
 	// Shoot metric (available also for Shoots which act as Seed)
-	metricGardenShootInfo           = "garden_shoot_info"
-	metricGardenShootCondition      = "garden_shoot_condition"
-	metricGardenShootOperationState = "garden_shoot_operation_states"
-	metricGardenShootNodeMaxTotal   = "garden_shoot_node_max_total"
-	metricGardenShootNodeMinTotal   = "garden_shoot_node_min_total"
+	metricGardenShootInfo             = "garden_shoot_info"
+	metricGardenShootCondition        = "garden_shoot_condition"
+	metricGardenShootOperationState   = "garden_shoot_operation_states"
+	metricGardenShootNodeMaxTotal     = "garden_shoot_node_max_total"
+	metricGardenShootNodeMinTotal     = "garden_shoot_node_min_total"
+	metricGardenShootResponseDuration = "garden_shoot_response_duration_milliseconds"
 
 	// Aggregated Shoot metrics (exclude Shoots which act as Seed)
 	metricGardenOperationsTotal = "garden_shoot_operations_total"
@@ -41,9 +42,10 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 		metricGardenProjectsSum: prometheus.NewDesc(metricGardenProjectsSum, "Count of projects.", nil, nil),
 		metricGardenUsersSum:    prometheus.NewDesc(metricGardenUsersSum, "Count of users.", nil, nil),
 
-		metricGardenShootInfo:           prometheus.NewDesc(metricGardenShootInfo, "Information to a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
-		metricGardenShootOperationState: prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation", "mail_to"}, nil),
-		metricGardenShootCondition:      prometheus.NewDesc(metricGardenShootCondition, "Condition state of Shoot.", []string{"name", "project", "condition", "operation", "purpose", "mail_to"}, nil),
+		metricGardenShootInfo:             prometheus.NewDesc(metricGardenShootInfo, "Information to a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
+		metricGardenShootOperationState:   prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation"}, nil),
+		metricGardenShootCondition:        prometheus.NewDesc(metricGardenShootCondition, "Condition state of Shoot.", []string{"name", "project", "condition", "operation", "purpose", "is_seed"}, nil),
+		metricGardenShootResponseDuration: prometheus.NewDesc(metricGardenShootResponseDuration, "Response time of the Shoot API server. Not provided when not reachable.", []string{"name", "project"}, nil),
 
 		metricGardenShootNodeMaxTotal: prometheus.NewDesc(metricGardenShootNodeMaxTotal, "Max node count of a Shoot.", []string{"name", "project"}, nil),
 		metricGardenShootNodeMinTotal: prometheus.NewDesc(metricGardenShootNodeMinTotal, "Min node count of a Shoot.", []string{"name", "project"}, nil),

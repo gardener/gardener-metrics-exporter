@@ -16,6 +16,8 @@ package metrics
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
@@ -28,12 +30,22 @@ import (
 )
 
 var (
+	shootHealthProbeResponseTimeRegExp *regexp.Regexp
+
 	shootOperations = [3]string{
 		string(gardenv1beta1.ShootLastOperationTypeCreate),
 		string(gardenv1beta1.ShootLastOperationTypeReconcile),
 		string(gardenv1beta1.ShootLastOperationTypeDelete),
 	}
 )
+
+func init() {
+	exp := regexp.MustCompile("^.*\\[response_time:(.*)ms\\]$")
+	if exp == nil {
+		panic("Could not compile regular expression.")
+	}
+	shootHealthProbeResponseTimeRegExp = exp
+}
 
 // collectShootMetrics collect Shoot metrics, which contain information to Shoot itself, their state and usage.
 func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric) {
@@ -62,7 +74,6 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 		var (
 			isSeed  bool
-			mailTo  string
 			purpose string
 
 			iaas = string(cloudProvider)
@@ -70,10 +81,6 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		)
 		isSeed = usedAsSeed(shoot)
 
-		// Get the operator/owner of the Shoot, if it's annotated.
-		if shootOperatorMail, ok := shoot.Annotations[common.GardenOperatedBy]; ok {
-			mailTo = shootOperatorMail
-		}
 		if shootPurpose, ok := shoot.Annotations[common.GardenPurpose]; ok {
 			purpose = shootPurpose
 		}
@@ -112,7 +119,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						operationState = 5
 					}
 				}
-				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootOperationState], prometheus.GaugeValue, operationState, shoot.Name, shoot.Namespace, operation, mailTo)
+				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootOperationState], prometheus.GaugeValue, operationState, shoot.Name, shoot.Namespace, operation)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
@@ -122,12 +129,19 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 			// Export a metric for each condition of the Shoot.
 			for _, condition := range shoot.Status.Conditions {
-				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, shoot.Namespace, string(condition.Type), lastOperation, purpose, mailTo)
+				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, shoot.Namespace, string(condition.Type), lastOperation, purpose, strconv.FormatBool(isSeed))
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
 				}
 				ch <- metric
+
+				// Handle the ShootAPIServerAvailable condition special. This condition can transport a measured
+				// response time of a request to the API Server. This information will be extracted if available
+				// and exposed in a seperate metric.
+				if condition.Type == gardenv1beta1.ShootAPIServerAvailable {
+					c.exposeAPIServerResponseTime(condition, shoot, ch)
+				}
 			}
 
 			// Collect the current count of ongoing operations.
@@ -186,4 +200,24 @@ func (c gardenMetricsCollector) exposeShootOperations(shootOperations map[string
 		}
 		ch <- metric
 	}
+}
+
+func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1beta1.Condition, shoot *gardenv1beta1.Shoot, ch chan<- prometheus.Metric) {
+	match := shootHealthProbeResponseTimeRegExp.FindAllStringSubmatch(condition.Message, -1)
+	if len(match) != 1 || len(match[0]) != 2 {
+		return
+	}
+	responseTime := match[0][1]
+	if responseTime == "unknown" {
+		return
+	}
+	responseTimeConv, err := strconv.ParseFloat(responseTime, 64)
+	if err != nil {
+		return
+	}
+	metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootResponseDuration], prometheus.GaugeValue, responseTimeConv, shoot.Name, shoot.Namespace)
+	if err != nil {
+		return
+	}
+	ch <- metric
 }
