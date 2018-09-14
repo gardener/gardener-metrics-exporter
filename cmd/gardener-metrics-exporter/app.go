@@ -15,18 +15,20 @@ package app
 
 import (
 	"errors"
+	"io/ioutil"
 	"net"
 	"os"
 	"time"
 
 	"github.com/gardener/gardener-metrics-exporter/pkg/metrics"
 	"github.com/gardener/gardener-metrics-exporter/pkg/server"
-	gardenclientset "github.com/gardener/gardener/pkg/client/garden/clientset/versioned"
+	clientset "github.com/gardener/gardener/pkg/client/garden/clientset/versioned"
 	gardeninformers "github.com/gardener/gardener/pkg/client/garden/informers/externalversions"
-	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	kubeinformers "k8s.io/client-go/informers"
+	kubernetes "k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -122,30 +124,53 @@ func run(o *options, closeCh chan os.Signal) error {
 	return nil
 }
 
+func newConfigFromBytes(kubeconfig string) (*restclient.Config, error) {
+	kubecf, err := ioutil.ReadFile(kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+	configObj, err := clientcmd.Load(kubecf)
+	if err != nil {
+		return nil, err
+	}
+	if configObj == nil {
+		return nil, err
+	}
+	clientConfig := clientcmd.NewDefaultClientConfig(*configObj, &clientcmd.ConfigOverrides{})
+	client, err := clientConfig.ClientConfig()
+	if err != nil {
+		return nil, err
+	}
+	if client == nil {
+		return nil, errors.New("ClientConfig is nil")
+	}
+	return client, nil
+}
+
 func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardeninformers.SharedInformerFactory, kubeinformers.SharedInformerFactory, error) {
-	k8sGardenClient, err := kubernetes.NewClientFromFile(kubeconfigPath)
+	restConfig, err := newConfigFromBytes(kubeconfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	gardenerClient := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
-		&clientcmd.ConfigOverrides{},
-	)
-
-	gardenerClientConfig, err := gardenerClient.ClientConfig()
+	if restConfig == nil {
+		return nil, nil, err
+	}
+	k8sClient, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
 		return nil, nil, err
 	}
-	// Create a GardenV1beta1Client and the respective API group scheme for the Garden API group.
-	gardenClientset, err := gardenclientset.NewForConfig(gardenerClientConfig)
+	if k8sClient == nil {
+		return nil, nil, errors.New("k8sClient is nil")
+	}
+	gardenClient, err := clientset.NewForConfig(restConfig)
 	if err != nil {
 		return nil, nil, err
 	}
-	k8sGardenClient.SetGardenClientset(gardenClientset)
-
-	gardenInformerFactory := gardeninformers.NewSharedInformerFactory(k8sGardenClient.GardenClientset(), 0)
-	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(k8sGardenClient.Clientset(), 30*time.Second)
+	if gardenClient == nil {
+		return nil, nil, errors.New("gardenClient is nil")
+	}
+	gardenInformerFactory := gardeninformers.NewSharedInformerFactory(gardenClient, 0)
+	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(k8sClient, 30*time.Second)
 
 	return gardenInformerFactory, kubeInformerFactory, nil
 }

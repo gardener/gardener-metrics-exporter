@@ -65,6 +65,7 @@ type Client interface {
 	UpdateNamespace(*corev1.Namespace) (*corev1.Namespace, error)
 	GetNamespace(string) (*corev1.Namespace, error)
 	ListNamespaces(metav1.ListOptions) (*corev1.NamespaceList, error)
+	PatchNamespace(name string, body []byte) (*corev1.Namespace, error)
 	DeleteNamespace(string) error
 
 	// Secrets
@@ -93,6 +94,7 @@ type Client interface {
 	DeleteDeployment(string, string) error
 
 	// StatefulSets
+	ListStatefulSets(string, metav1.ListOptions) ([]*mapping.StatefulSet, error)
 	DeleteStatefulSet(string, string) error
 
 	// Jobs
