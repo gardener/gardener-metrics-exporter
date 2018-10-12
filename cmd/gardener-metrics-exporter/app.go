@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	kubeinformers "k8s.io/client-go/informers"
 	kubernetes "k8s.io/client-go/kubernetes"
-	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -124,12 +124,21 @@ func run(o *options, closeCh chan os.Signal) error {
 	return nil
 }
 
-func newConfigFromBytes(kubeconfig string) (*restclient.Config, error) {
-	kubecf, err := ioutil.ReadFile(kubeconfig)
+// newClientConfig returns rest config to create a k8s clients. In case that
+// kubeconfigPath is empty it tries to create in cluster configuration.
+func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
+	// In cluster configuration
+	if kubeconfigPath == "" {
+		log.Info("Use in cluster configuration. This might not work.")
+		return rest.InClusterConfig()
+	}
+
+	// Kubeconfig based configuration
+	kubeconfig, err := ioutil.ReadFile(kubeconfigPath)
 	if err != nil {
 		return nil, err
 	}
-	configObj, err := clientcmd.Load(kubecf)
+	configObj, err := clientcmd.Load(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +157,7 @@ func newConfigFromBytes(kubeconfig string) (*restclient.Config, error) {
 }
 
 func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardeninformers.SharedInformerFactory, kubeinformers.SharedInformerFactory, error) {
-	restConfig, err := newConfigFromBytes(kubeconfigPath)
+	restConfig, err := newClientConfig(kubeconfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
