@@ -16,6 +16,9 @@ The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) export
 |garden_users_total|Count of users|Users|Gauge|
 |garden_scrape_failure_total|Total count of scraping failures, grouped by kind/group of metric(s)|App|Counter|
 
+## Grafana Dashboards
+Some [Grafana](https://grafana.com/) dashboards are included in the `dashboards/` folder. Simply import them and make sure you have your prometheus data source set to `cluster-prometheus`.
+
 ## Usage
 First, clone the repo into your `$GOPATH`.
 ```sh
