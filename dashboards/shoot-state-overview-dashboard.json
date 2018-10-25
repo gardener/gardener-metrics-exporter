@@ -1128,7 +1128,7 @@
       ],
       "targets": [
         {
-          "expr": "sum(garden_shoot_conditions) by (name, project, condition) + ignoring(iaas, region, seed, version, condition, operation, mail_to) group_left sum(garden_shoot_info{iaas=~\"$iaas\"}) by (name, project, condition) == 0",
+          "expr": "sum(garden_shoot_condition) by (name, project, condition) + ignoring(iaas, region, seed, version, condition, operation, mail_to) group_left sum(garden_shoot_info{iaas=~\"$iaas\"}) by (name, project, condition) == 0",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
