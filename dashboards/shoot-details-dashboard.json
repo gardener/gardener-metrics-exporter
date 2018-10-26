@@ -612,14 +612,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "garden_shoot_conditions{condition=\"SystemComponentsHealthy\",project=\"$project\", name=\"$shoot\"}",
+          "expr": "garden_shoot_condition{condition=\"SystemComponentsHealthy\",project=\"$project\", name=\"$shoot\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{condition}}",
           "refId": "A"
         },
         {
-          "expr": "garden_shoot_conditions{condition=\"EveryNodeReady\",project=\"$project\", name=\"$shoot\"}",
+          "expr": "garden_shoot_condition{condition=\"EveryNodeReady\",project=\"$project\", name=\"$shoot\"}",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 2,
@@ -627,7 +627,7 @@
           "refId": "B"
         },
         {
-          "expr": "garden_shoot_conditions{condition=\"ControlPlaneHealthy\",project=\"$project\", name=\"$shoot\"}",
+          "expr": "garden_shoot_condition{condition=\"ControlPlaneHealthy\",project=\"$project\", name=\"$shoot\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
