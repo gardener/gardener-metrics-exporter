@@ -99,22 +99,22 @@ func run(o *options, closeCh chan os.Signal) error {
 	// Create informers.
 	var (
 		shootInformer       = gardemInformerFactory.Garden().V1beta1().Shoots().Informer()
-		namespaceInformer   = kubeInformerFactory.Core().V1().Namespaces().Informer()
+		projectInformer     = gardemInformerFactory.Garden().V1beta1().Projects().Informer()
 		rolebindingInformer = kubeInformerFactory.Rbac().V1().RoleBindings().Informer()
 	)
 
 	// Start the factories and wait until the creates informes has synce
 	gardemInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(make(<-chan struct{}), shootInformer.HasSynced) {
+	if !cache.WaitForCacheSync(make(<-chan struct{}), shootInformer.HasSynced, projectInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
 	kubeInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(make(<-chan struct{}), namespaceInformer.HasSynced, rolebindingInformer.HasSynced) {
+	if !cache.WaitForCacheSync(make(<-chan struct{}), rolebindingInformer.HasSynced) {
 		return errors.New("Timed out waiting for Kube caches to sync")
 	}
 	// Start the metrics collector
-	metrics.SetupMetricsCollector(gardemInformerFactory.Garden().V1beta1().Shoots(), kubeInformerFactory.Core().V1().Namespaces(), kubeInformerFactory.Rbac().V1().RoleBindings(), log)
+	metrics.SetupMetricsCollector(gardemInformerFactory.Garden().V1beta1().Shoots(), gardemInformerFactory.Garden().V1beta1().Projects(), kubeInformerFactory.Rbac().V1().RoleBindings(), log)
 
 	// Start the webserver.
 	go server.Serve(o.bindAddress, o.port, log, closeCh, stopCh)

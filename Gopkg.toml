@@ -4,7 +4,7 @@
 
 [[constraint]]
   name = "github.com/gardener/gardener"
-  version = "^0.10.1"
+  version = "0.12.4"
 
 [[constraint]]
   name = "github.com/spf13/cobra"
@@ -24,6 +24,14 @@
 
 [[override]]
   name = "k8s.io/client-go"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.11.0"
+
+[[override]]
+  name = "k8s.io/kube-aggregator"
   version = "kubernetes-1.11.0"
 
 [[override]]

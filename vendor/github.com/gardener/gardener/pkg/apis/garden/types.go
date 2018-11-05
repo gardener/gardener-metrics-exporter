@@ -17,7 +17,10 @@ package garden
 import (
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/intstr"
+
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -69,6 +72,9 @@ type CloudProfileSpec struct {
 	// OpenStack is the profile specification for the OpenStack cloud.
 	// +optional
 	OpenStack *OpenStackProfile
+	// Alicloud is the profile specification for the Alibaba cloud.
+	// +optional
+	Alicloud *AlicloudProfile
 	// Local is the profile specification for the Local provider.
 	// +optional
 	Local *LocalProfile
@@ -252,6 +258,48 @@ type OpenStackMachineImage struct {
 	Image string
 }
 
+// AlicloudProfile defines constraints and definitions in Alibaba Cloud environment.
+type AlicloudProfile struct {
+	// Constraints is an object containing constraints for certain values in the Shoot specification.
+	Constraints AlicloudConstraints
+}
+
+// AlicloudConstraints is an object containing constraints for certain values in the Shoot specification
+type AlicloudConstraints struct {
+	// DNSProviders contains constraints regarding allowed values of the 'dns.provider' block in the Shoot specification.
+	DNSProviders []DNSProviderConstraint
+	// Kubernetes contains constraints regarding allowed values of the 'kubernetes' block in the Shoot specification.
+	Kubernetes KubernetesConstraints
+	// MachineImages contains constraints regarding allowed values for machine images in the Shoot specification.
+	MachineImages []AlicloudMachineImage
+	// MachineTypes contains constraints regarding allowed values for machine types in the 'workers' block in the Shoot specification.
+	MachineTypes []AlicloudMachineType
+	// VolumeTypes contains constraints regarding allowed values for volume types in the 'workers' block in the Shoot specification.
+	VolumeTypes []AlicloudVolumeType
+	// Zones contains constraints regarding allowed values for 'zones' block in the Shoot specification.
+	Zones []Zone
+}
+
+// AlicloudMachineImage defines the machine image for Alicloud.
+type AlicloudMachineImage struct {
+	// Name is the name of the image.
+	Name MachineImageName
+	// ID is the ID of the image.
+	ID string
+}
+
+// AlicloudMachineType defines certain machine types and zone constraints.
+type AlicloudMachineType struct {
+	MachineType
+	Zones []string
+}
+
+// AlicloudVolumeType defines certain volume types and zone constraints.
+type AlicloudVolumeType struct {
+	VolumeType
+	Zones []string
+}
+
 // LocalProfile defines constraints and definitions for the local development.
 type LocalProfile struct {
 	// Constraints is an object containing constraints for certain values in the Shoot specification.
@@ -329,6 +377,63 @@ const (
 )
 
 ////////////////////////////////////////////////////
+//                    PROJECTS                    //
+////////////////////////////////////////////////////
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// Project holds certain properties about a Gardener project.
+type Project struct {
+	metav1.TypeMeta
+	// Standard object metadata.
+	// +optional
+	metav1.ObjectMeta
+	// Spec defines the project properties.
+	// +optional
+	Spec ProjectSpec
+	// Most recently observed status of the Project.
+	// +optional
+	Status ProjectStatus
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ProjectList is a collection of Projects.
+type ProjectList struct {
+	metav1.TypeMeta
+	// Standard list object metadata.
+	// +optional
+	metav1.ListMeta
+	// Items is the list of Projects.
+	Items []Project
+}
+
+// ProjectSpec is the specification of a Project.
+type ProjectSpec struct {
+	// Description is a human-readable description of what the project is used for.
+	// +optional
+	Description *string
+	// Owner is a subject representing a user name, an email address, or any other identifier of a user owning
+	// the project.
+	Owner rbacv1.Subject
+	// Purpose is a human-readable explanation of the project's purpose.
+	// +optional
+	Purpose *string
+	// Namespace is the name of the namespace that has been created for the Project object.
+	// +optional
+	Namespace *string
+}
+
+// ProjectStatus holds the most recently observed status of the project.
+type ProjectStatus struct {
+	// Conditions represents the latest available observations of a Projects's current state.
+	// +optional
+	Conditions []Condition
+}
+
+////////////////////////////////////////////////////
 //                      SEEDS                     //
 ////////////////////////////////////////////////////
 
@@ -374,7 +479,7 @@ type SeedSpec struct {
 	SecretRef corev1.SecretReference
 	// Networks defines the pod, service and worker network of the Seed cluster.
 	Networks SeedNetworks
-	// Visible labels the Seed cluster as selectable for the seedfinder admisson controller.
+	// Visible labels the Seed cluster as selectable for the seedfinder admission controller.
 	// +optional
 	Visible *bool
 	// Protected prevent that the Seed Cluster can be used for regular Shoot cluster control planes.
@@ -548,6 +653,9 @@ type ShootSpec struct {
 	Cloud Cloud
 	// DNS contains information about the DNS settings of the Shoot.
 	DNS DNS
+	// Hibernation contains information whether the Shoot is suspended or not.
+	// +optional
+	Hibernation *Hibernation
 	// Kubernetes contains the version and configuration settings of the control plane components.
 	Kubernetes Kubernetes
 	// Maintenance contains information about the time window for maintenance operations and which
@@ -616,6 +724,9 @@ type Cloud struct {
 	// OpenStack contains the Shoot specification for the OpenStack cloud.
 	// +optional
 	OpenStack *OpenStackCloud
+	// Alicloud contains the Shoot specification for the Alibaba cloud.
+	// +optional
+	Alicloud *Alicloud
 	// Local contains the Shoot specification for the Local local provider.
 	// +optional
 	Local *Local
@@ -675,6 +786,49 @@ type AWSVPC struct {
 
 // AWSWorker is the definition of a worker group.
 type AWSWorker struct {
+	Worker
+	// VolumeType is the type of the root volumes.
+	VolumeType string
+	// VolumeSize is the size of the root volume.
+	VolumeSize string
+}
+
+// Alicloud contains the Shoot specification for Alibaba cloud
+type Alicloud struct {
+	// MachineImage holds information about the machine image to use for all workers.
+	// It will default to the first image stated in the referenced CloudProfile if no
+	// value has been provided.
+	// +optional
+	MachineImage *AlicloudMachineImage
+	// Networks holds information about the Kubernetes and infrastructure networks.
+	Networks AlicloudNetworks
+	// Workers is a list of worker groups.
+	Workers []AlicloudWorker
+	// Zones is a list of availability zones to deploy the Shoot cluster to, currently, only one is supported.
+	Zones []string
+}
+
+// AlicloudVPC contains either an id (of an existing VPC) or the CIDR (for a VPC to be created).
+type AlicloudVPC struct {
+	// ID is the Alicloud VPC id of an existing VPC.
+	// +optional
+	ID *string
+	// CIDR is a CIDR range for a new VPC.
+	// +optional
+	CIDR *CIDR
+}
+
+// AlicloudNetworks holds information about the Kubernetes and infrastructure networks.
+type AlicloudNetworks struct {
+	K8SNetworks
+	// VPC indicates whether to use an existing VPC or create a new one.
+	VPC AlicloudVPC
+	// Workers is a CIDR of a worker subnet (private) to create (used for the VMs).
+	Workers []CIDR
+}
+
+// AlicloudWorker is the definition of a worker group.
+type AlicloudWorker struct {
 	Worker
 	// VolumeType is the type of the root volumes.
 	VolumeType string
@@ -837,6 +991,10 @@ type Worker struct {
 	AutoScalerMin int
 	// AutoScalerMin is the maximum number of VMs to create.
 	AutoScalerMax int
+	// MaxSurge is maximum number of VMs that are created during an update.
+	MaxSurge intstr.IntOrString
+	//MaxUnavailable is the maximum number of VMs that can be unavailable during an update.
+	MaxUnavailable intstr.IntOrString
 }
 
 // Addons is a collection of configuration for specific addons which are managed by the Gardener.
@@ -981,12 +1139,20 @@ const (
 	CloudProviderGCP CloudProvider = "gcp"
 	// CloudProviderOpenStack is a constant for the OpenStack cloud provider.
 	CloudProviderOpenStack CloudProvider = "openstack"
+	// CloudProviderAlicloud is a constant for the Alibaba cloud provider.
+	CloudProviderAlicloud CloudProvider = "alicloud"
 	// CloudProviderLocal is a constant for the local development provider.
 	CloudProviderLocal CloudProvider = "local"
 )
 
 // CIDR is a string alias.
 type CIDR string
+
+// Hibernation contains information whether the Shoot is suspended or not.
+type Hibernation struct {
+	// Enabled is true if Shoot is hibernated, false otherwise.
+	Enabled bool
+}
 
 // Kubernetes contains the version and configuration variables for the Shoot control plane.
 type Kubernetes struct {
@@ -996,6 +1162,9 @@ type Kubernetes struct {
 	// KubeAPIServer contains configuration settings for the kube-apiserver.
 	// +optional
 	KubeAPIServer *KubeAPIServerConfig
+	// CloudControllerManager contains configuration settings for the cloud-controller-manager.
+	// +optional
+	CloudControllerManager *CloudControllerManagerConfig
 	// KubeControllerManager contains configuration settings for the kube-controller-manager.
 	// +optional
 	KubeControllerManager *KubeControllerManagerConfig
@@ -1080,6 +1249,11 @@ type AdmissionPlugin struct {
 	// SEE ALSO: https://github.com/gardener/gardener/pull/322
 	// +optional
 	Config *string
+}
+
+// CloudControllerManagerConfig contains configuration settings for the cloud-controller-manager.
+type CloudControllerManagerConfig struct {
+	KubernetesConfig
 }
 
 // KubeControllerManagerConfig contains configuration settings for the kube-controller-manager.
@@ -1274,14 +1448,39 @@ type Condition struct {
 type ConditionType string
 
 const (
+	// ProjectNamespaceEmpty is a constant for a condition type indicating the Project namespace has no Shoots or
+	// BackupInfrastructures.
+	ProjectNamespaceEmpty ConditionType = "NamespaceEmpty"
+	// ProjectShootsWithErrors is a constant for a condition type indicating that Shoots within the project have
+	// errors.
+	ProjectShootsWithErrors ConditionType = "ShootsWithErrors"
+	// ProjectNamespaceReady is a constant for a condition type indicating the Project namespace has been created.
+	ProjectNamespaceReady ConditionType = "NamespaceReady"
+	// ProjectNamespaceCreationFailed is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceCreationFailed string = "NamespaceCreationFailed"
+	// ProjectNamespaceReconciled is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceReconciled string = "NamespaceReconciled"
+	// ProjectNamespaceReconcileFailed is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceReconcileFailed string = "NamespaceReconcileFailed"
+	// ProjectNamespaceDeletionAllowed is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceDeletionAllowed string = "NamespaceDeletionAllowed"
+	// ProjectNamespaceDeletionProcessing is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceDeletionProcessing string = "NamespaceDeletionProcessing"
+	// ProjectNamespaceDeletionImpossible is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceDeletionImpossible string = "NamespaceDeletionImpossible"
+	// ProjectNamespaceDeletionFailed is a constant for a reason for the status of condition type ProjectNamespaceReady.
+	ProjectNamespaceDeletionFailed string = "NamespaceDeletionFailed"
+
 	// SeedAvailable is a constant for a condition type indicating the Seed cluster availability.
 	SeedAvailable ConditionType = "Available"
+
 	// ShootControlPlaneHealthy is a constant for a condition type indicating the control plane health.
 	ShootControlPlaneHealthy ConditionType = "ControlPlaneHealthy"
 	// ShootEveryNodeReady is a constant for a condition type indicating the node health.
 	ShootEveryNodeReady ConditionType = "EveryNodeReady"
 	// ShootSystemComponentsHealthy is a constant for a condition type indicating the system components health.
 	ShootSystemComponentsHealthy ConditionType = "SystemComponentsHealthy"
+
 	// ConditionCheckError is a constant for indicating that a condition could not be checked.
 	ConditionCheckError = "ConditionCheckError"
 )

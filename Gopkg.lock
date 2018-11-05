@@ -51,17 +51,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dbb3d1675f5beeb37de6e9b95cc460158ff212902a916e67688b01e0660f41bd"
+  digest = "1:ecdc8e0fe3bc7d549af1c9c36acf3820523b707d6c071b6d0c3860882c6f7b42"
   name = "github.com/docker/spdystream"
   packages = [
     ".",
     "spdy",
   ]
   pruneopts = "UT"
-  revision = "bc6354cbbc295e925e4c611ffe90c1f287ee54db"
+  revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
-  digest = "1:4fef4648d21bdf830419093d8c7d5f94dbb757389c9fc94c4d918a18ebe4d1e9"
+  digest = "1:29d51fe6b97e1486177e3c0db77b3ac8ae1d496c7183f8a45d9ce21e0876dd13"
   name = "github.com/gardener/gardener"
   packages = [
     "pkg/apis/garden",
@@ -78,10 +78,8 @@
     "pkg/client/garden/listers/garden/v1beta1",
     "pkg/client/kubernetes",
     "pkg/client/kubernetes/base",
-    "pkg/client/kubernetes/mapping",
     "pkg/client/kubernetes/v110",
     "pkg/client/kubernetes/v111",
-    "pkg/client/kubernetes/v18",
     "pkg/client/kubernetes/v19",
     "pkg/client/machine/clientset/versioned",
     "pkg/client/machine/clientset/versioned/scheme",
@@ -90,10 +88,11 @@
     "pkg/operation/common",
     "pkg/operation/shoot",
     "pkg/utils",
+    "pkg/utils/kubernetes",
   ]
   pruneopts = "UT"
-  revision = "1cb5039eba1a639fe75bcb7a81a9b6b9ef0ad0d7"
-  version = "0.10.2"
+  revision = "aaebba18f50283931f1ee4dc9f6dd248870f8858"
+  version = "0.12.4"
 
 [[projects]]
   digest = "1:bd65fcfb06ff244d794c4652514b9d722b4c440dd0896b7da00990ee43f4fd2c"
@@ -149,6 +148,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
+
+[[projects]]
+  branch = "master"
+  digest = "1:3fb07f8e222402962fa190eb060608b34eddfb64562a18e2167df2de0ece85d8"
+  name = "github.com/golang/groupcache"
+  packages = ["lru"]
+  pruneopts = "UT"
+  revision = "c65c006176ff7ff98bb916961c7abbc6b0afc0aa"
 
 [[projects]]
   digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
@@ -210,6 +217,21 @@
   ]
   pruneopts = "UT"
   revision = "9cad4c3443a7200dd6400aef47183728de563a38"
+
+[[projects]]
+  digest = "1:0ade334594e69404d80d9d323445d2297ff8161637f9b2d347cc6973d2d6f05b"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8a6fb523712970c966eefc6b39ed2c5e74880354"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:46fb6a9f1b9667f32ac93e08b1da118b2c666991424ea12e848b05d4fe5155ef"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3d5d8f294aa03d8e98859feac328afbdf1ae0703"
 
 [[projects]]
   digest = "1:8ec8d88c248041a6df5f6574b87bc00e7e0b493881dad2e7ef47b11dc69093b5"
@@ -303,15 +325,16 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:d14a5f4bfecf017cb780bdde1b6483e5deb87e12c332544d2c430eda58734bcb"
+  digest = "1:26663fafdea73a38075b07e8e9d82fc0056379d2be8bb4e13899e8fda7c7dd23"
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
+    "prometheus/internal",
     "prometheus/promhttp",
   ]
   pruneopts = "UT"
-  revision = "c5b7fccd204277076155f10851dad72b76a49317"
-  version = "v0.8.0"
+  revision = "abad2d1bd44235a26707c172eab6bca5bf2dbad3"
+  version = "v0.9.1"
 
 [[projects]]
   branch = "master"
@@ -323,7 +346,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:63b68062b8968092eb86bedc4e68894bd096ea6b24920faca8b9dcf451f54bb5"
+  digest = "1:db712fde5d12d6cdbdf14b777f0c230f4ff5ab0be8e35b239fc319953ed577a4"
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
@@ -331,7 +354,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "c7de2306084e37d54b8be01f3541a8464345e9a5"
+  revision = "7e9e6cabbd393fc208072eedef99188d0ce788b6"
 
 [[projects]]
   branch = "master"
@@ -347,12 +370,12 @@
   revision = "185b4288413d2a0dd0806f78c90dde719829e5ae"
 
 [[projects]]
-  digest = "1:3f53e9e4dfbb664cd62940c9c4b65a2171c66acd0b7621a1a6b8e78513525a52"
+  digest = "1:69b1cc331fca23d702bd72f860c6a647afd0aa9fcbc1d0659b1365e26546dd70"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ad15b42461921f1fb3529b058c6786c6a45d5162"
-  version = "v1.1.1"
+  revision = "bcd833dfe83d3cebad139e4a29ed79cb2318bf95"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
@@ -372,7 +395,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:69b3fcb7a41b18436a85471cbdcfc70ad10ba3206f8c87563e1c773610e1bcad"
+  digest = "1:15e78183e2b04229a20cf384c2d911812970727ba34800fbe18cd35005a529fa"
   name = "golang.org/x/crypto"
   packages = [
     "pbkdf2",
@@ -380,11 +403,11 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "7c1a557ab941a71c619514f229f0b27ccb0c27cf"
+  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
 
 [[projects]]
   branch = "master"
-  digest = "1:b41f13f4d5dbbd63abe9bf646575e4f83d2637ca243b97ea79b7807242518e8c"
+  digest = "1:92e752ba5facbe27563e7fdbac87ac83c85af77228dffd792e237c086b56a00e"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -394,18 +417,18 @@
     "idna",
   ]
   pruneopts = "UT"
-  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
+  revision = "c10e9556a7bc0e7c942242b606f0acf024ad5d6a"
 
 [[projects]]
   branch = "master"
-  digest = "1:f5aa274a0377f85735edc7fedfb0811d3cbc20af91633797cb359e29c3272271"
+  digest = "1:417d27a82efb8473554234a282be33d23b0d6adc121e636b55950f913ac071d6"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "fa43e7bc11baaae89f3f902b2b4d832b68234844"
+  revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -493,7 +516,21 @@
   version = "kubernetes-1.11.0"
 
 [[projects]]
-  digest = "1:f173e240f300515f03b84f4334f7f29fd701ef9bce637a019e49ddcee47bf5cc"
+  digest = "1:145647b653ff6a6882bbc2c4701ebcbce7be643007231d545560e4ce612ad5cb"
+  name = "k8s.io/apiextensions-apiserver"
+  packages = [
+    "pkg/apis/apiextensions",
+    "pkg/apis/apiextensions/v1beta1",
+    "pkg/client/clientset/clientset",
+    "pkg/client/clientset/clientset/scheme",
+    "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
+  ]
+  pruneopts = "UT"
+  revision = "3de98c57bc05a81cf463e0ad7a0af4cec8a5b510"
+  version = "kubernetes-1.11.0"
+
+[[projects]]
+  digest = "1:fa4ee0d16c1003b4e9d2d06367cce3c40cde23adcbe17e4d3a80634a91aa60bf"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -527,16 +564,19 @@
     "pkg/util/httpstream/spdy",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/mergepatch",
     "pkg/util/net",
     "pkg/util/rand",
     "pkg/util/runtime",
     "pkg/util/sets",
+    "pkg/util/strategicpatch",
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
+    "third_party/forked/golang/json",
     "third_party/forked/golang/netutil",
     "third_party/forked/golang/reflect",
   ]
@@ -545,7 +585,7 @@
   version = "kubernetes-1.11.0"
 
 [[projects]]
-  digest = "1:3121ab9d29b61fb429cccc05c75f0e08fe38729eeb76f6fc95d8d99d6db0f4ed"
+  digest = "1:7ef289a45de1c0d38eed81873434fe0fb895e540c8e396e0a54412efa0da27b2"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -659,9 +699,11 @@
     "tools/clientcmd/api",
     "tools/clientcmd/api/latest",
     "tools/clientcmd/api/v1",
+    "tools/leaderelection/resourcelock",
     "tools/metrics",
     "tools/pager",
     "tools/portforward",
+    "tools/record",
     "tools/reference",
     "transport",
     "transport/spdy",
@@ -693,6 +735,29 @@
   pruneopts = "UT"
   revision = "2e55dbe1fdb5fdb96b75ff144a339489417b146b"
   version = "v2.11.0"
+
+[[projects]]
+  digest = "1:68d86e025796a22588cb4760daf993cfcc8702f777a0a91afd64d7466b0c64ea"
+  name = "k8s.io/kube-aggregator"
+  packages = [
+    "pkg/apis/apiregistration",
+    "pkg/apis/apiregistration/v1",
+    "pkg/apis/apiregistration/v1beta1",
+    "pkg/client/clientset_generated/clientset",
+    "pkg/client/clientset_generated/clientset/scheme",
+    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1",
+    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1",
+  ]
+  pruneopts = "UT"
+  revision = "bd6e1ad75c9758cad2069bb2f65880cf805ad8e9"
+  version = "kubernetes-1.11.0"
+
+[[projects]]
+  digest = "1:a2c842a1e0aed96fd732b535514556323a6f5edfded3b63e5e0ab1bce188aa54"
+  name = "k8s.io/kube-openapi"
+  packages = ["pkg/util/proto"]
+  pruneopts = "UT"
+  revision = "d8ea2fe547a448256204cfc68dfee7b26c720acb"
 
 [solve-meta]
   analyzer-name = "dep"

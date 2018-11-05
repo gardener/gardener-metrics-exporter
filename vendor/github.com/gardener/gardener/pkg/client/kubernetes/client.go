@@ -21,12 +21,10 @@ import (
 	"github.com/gardener/gardener/pkg/client/kubernetes/base"
 	"github.com/gardener/gardener/pkg/client/kubernetes/v110"
 	"github.com/gardener/gardener/pkg/client/kubernetes/v111"
-	"github.com/gardener/gardener/pkg/client/kubernetes/v18"
 	"github.com/gardener/gardener/pkg/client/kubernetes/v19"
 	"github.com/gardener/gardener/pkg/logger"
 	"github.com/gardener/gardener/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -43,7 +41,7 @@ func NewClientFromFile(kubeconfigPath string) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newClientSet(config, clientConfig)
+	return newKubernetesClient(config)
 }
 
 // NewClientFromBytes creates a new Client struct for a given kubeconfig byte slice.
@@ -57,7 +55,7 @@ func NewClientFromBytes(kubeconfig []byte) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newClientSet(config, clientConfig)
+	return newKubernetesClient(config)
 }
 
 // NewClientFromSecret creates a new Client struct for a given kubeconfig stored as a
@@ -81,29 +79,17 @@ func NewClientFromSecretObject(secret *corev1.Secret) (Client, error) {
 	return nil, errors.New("The secret does not contain a field with name 'kubeconfig'")
 }
 
-func newClientSet(config *rest.Config, clientConfig clientcmd.ClientConfig) (Client, error) {
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-	return newKubernetesClient(config, clientset, clientConfig)
-}
-
-// newKubernetesClient takes a REST config, a Kubernetes Clientset and returns a <Client>
+// newKubernetesClient takes a REST config and returns a <Client>
 // struct which implements convenience methods for creating, listing, updating or deleting resources.
-func newKubernetesClient(config *rest.Config, clientset *kubernetes.Clientset, clientConfig clientcmd.ClientConfig) (Client, error) {
+func newKubernetesClient(config *rest.Config) (Client, error) {
 	var k8sClient Client
 
-	baseClient, err := kubernetesbase.New(config, clientset, clientConfig)
+	baseClient, err := kubernetesbase.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
 	gitVersion := baseClient.Version()
 
-	k8s18, err := utils.CompareVersions(gitVersion, "~", "1.8")
-	if err != nil {
-		return nil, err
-	}
 	k8s19, err := utils.CompareVersions(gitVersion, "~", "1.9")
 	if err != nil {
 		return nil, err
@@ -118,26 +104,12 @@ func newKubernetesClient(config *rest.Config, clientset *kubernetes.Clientset, c
 	}
 
 	switch {
-	case k8s18:
-		k8sClient, err = kubernetesv18.New(config, clientset, clientConfig)
-		if err != nil {
-			return nil, err
-		}
 	case k8s19:
-		k8sClient, err = kubernetesv19.New(config, clientset, clientConfig)
-		if err != nil {
-			return nil, err
-		}
+		k8sClient = kubernetesv19.NewFrom(baseClient)
 	case k8s110:
-		k8sClient, err = kubernetesv110.New(config, clientset, clientConfig)
-		if err != nil {
-			return nil, err
-		}
+		k8sClient = kubernetesv110.NewFromBase(baseClient)
 	case k8s111:
-		k8sClient, err = kubernetesv111.New(config, clientset, clientConfig)
-		if err != nil {
-			return nil, err
-		}
+		k8sClient = kubernetesv111.NewFromBase(baseClient)
 	default:
 		return nil, fmt.Errorf("Kubernetes cluster has version %s which is not supported", gitVersion)
 	}

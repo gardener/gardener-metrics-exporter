@@ -80,11 +80,15 @@ func New(k8sGardenClient kubernetes.Client, k8sGardenInformers gardeninformers.I
 	shootObj.KubernetesMajorMinorVersion = fmt.Sprintf("%d.%d", v.Major(), v.Minor())
 
 	// Check whether the Shoot should be hibernated
-	workers := shootObj.GetWorkers()
-	for _, worker := range workers {
-		if worker.AutoScalerMax != 0 {
-			shootObj.Hibernated = false
-			break
+	if shoot.Spec.Hibernation != nil {
+		shootObj.Hibernated = shoot.Spec.Hibernation.Enabled
+	} else {
+		workers := shootObj.GetWorkers()
+		for _, worker := range workers {
+			if worker.AutoScalerMax != 0 {
+				shootObj.Hibernated = false
+				break
+			}
 		}
 	}
 
@@ -230,11 +234,6 @@ func (s *Shoot) GetMachineImageName() gardenv1beta1.MachineImageName {
 // ClusterAutoscalerEnabled returns true if the cluster-autoscaler addon is enabled in the Shoot manifest.
 func (s *Shoot) ClusterAutoscalerEnabled() bool {
 	return s.Info.Spec.Addons != nil && s.Info.Spec.Addons.ClusterAutoscaler != nil && s.Info.Spec.Addons.ClusterAutoscaler.Enabled
-}
-
-// HeapsterEnabled returns true if the heapster addon is enabled in the Shoot manifest.
-func (s *Shoot) HeapsterEnabled() bool {
-	return s.Info.Spec.Addons != nil && s.Info.Spec.Addons.Heapster != nil && s.Info.Spec.Addons.Heapster.Enabled
 }
 
 // Kube2IAMEnabled returns true if the kube2iam addon is enabled in the Shoot manifest.

@@ -18,7 +18,6 @@ import (
 	gardeninformers "github.com/gardener/gardener/pkg/client/garden/informers/externalversions/garden/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	kubeinformers "k8s.io/client-go/informers/core/v1"
 	rbacinformers "k8s.io/client-go/informers/rbac/v1"
 )
 
@@ -55,7 +54,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 type gardenMetricsCollector struct {
 	shootInformer       gardeninformers.ShootInformer
-	namespaceInformer   kubeinformers.NamespaceInformer
+	projectInformer     gardeninformers.ProjectInformer
 	rolebindingInformer rbacinformers.RoleBindingInformer
 	descs               map[string]*prometheus.Desc
 	logger              *logrus.Logger
@@ -76,10 +75,10 @@ func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardeninformers.ShootInformer, namespaceInformer kubeinformers.NamespaceInformer, rolebindingInformer rbacinformers.RoleBindingInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardeninformers.ShootInformer, projectInformer gardeninformers.ProjectInformer, rolebindingInformer rbacinformers.RoleBindingInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
 		shootInformer:       shootInformer,
-		namespaceInformer:   namespaceInformer,
+		projectInformer:     projectInformer,
 		rolebindingInformer: rolebindingInformer,
 		descs:               getGardenMetricsDefinitions(),
 		logger:              logger,

@@ -135,6 +135,9 @@ const (
 	// EnableHPANodeCount is the number of nodes in shoot cluster after which HPA is deployed to autoscale kube-apiserver.
 	EnableHPANodeCount = 5
 
+	// CloudControllerManagerDeploymentName is the name of the cloud-controller-manager deployment.
+	CloudControllerManagerDeploymentName = "cloud-controller-manager"
+
 	// KubeControllerManagerDeploymentName is the name of the kube-controller-manager deployment.
 	KubeControllerManagerDeploymentName = "kube-controller-manager"
 
@@ -144,9 +147,34 @@ const (
 	// KubeAddonManagerDeploymentName is the name of the kube-addon-manager deployment.
 	KubeAddonManagerDeploymentName = "kube-addon-manager"
 
+	// ProjectPrefix is the prefix of namespaces representing projects.
+	ProjectPrefix = "garden-"
+
 	// ProjectName is they key of a label on namespaces whose value holds the project name. Usually, the label is set
 	// by the Gardener Dashboard.
 	ProjectName = "project.garden.sapcloud.io/name"
+
+	// ProjectNamespace is they key of a label on projects whose value holds the namespace name. Usually, the label is set
+	// by the Gardener Dashboard.
+	ProjectNamespace = "project.garden.sapcloud.io/namespace"
+
+	// ProjectOwner is they key of a label on namespaces whose value holds the project owner. Usually, the label is set
+	// by the Gardener Dashboard.
+	ProjectOwner = "project.garden.sapcloud.io/owner"
+
+	// ProjectDescription is they key of a label on namespaces whose value holds the project description. Usually, the label is set
+	// by the Gardener Dashboard.
+	ProjectDescription = "project.garden.sapcloud.io/description"
+
+	// ProjectPurpose is they key of a label on namespaces whose value holds the project purpose. Usually, the label is set
+	// by the Gardener Dashboard.
+	ProjectPurpose = "project.garden.sapcloud.io/purpose"
+
+	// ProjectMemberRoleBinding is the name of the role binding in a project that defines which users are members of the project.
+	ProjectMemberRoleBinding = "garden-project-members"
+
+	// ProjectMemberClusterRole is the name of the cluster role defining the permissions for project members.
+	ProjectMemberClusterRole = "garden.sapcloud.io:system:project-member"
 
 	// PrometheusDeploymentName is the name of the Prometheus deployment.
 	PrometheusDeploymentName = "prometheus"
@@ -197,8 +225,15 @@ const (
 	// Shoot Care controller and can be used to easily identify Shoot clusters with issues.
 	ShootUnhealthy = "shoot.garden.sapcloud.io/unhealthy"
 
-	// ShootOperation is a constant for an annotation on a Shoot in a failed state indicating that the operation should be retried.
+	// ShootOperation is a constant for an annotation on a Shoot in a failed state indicating that an operation shall be performed.
 	ShootOperation = "shoot.garden.sapcloud.io/operation"
+
+	// ShootOperationMaintain is a constant for an annotation on a Shoot indicating that the Shoot maintenance shall be executed as soon as
+	// possible.
+	ShootOperationMaintain = "maintain"
+
+	// ShootOperationRetry is a constant for an annotation on a Shoot indicating that a failed Shoot reconciliation shall be retried.
+	ShootOperationRetry = "retry"
 
 	// ShootSyncPeriod is a constant for an annotation on a Shoot which may be used to overwrite the global Shoot controller sync period.
 	// The value must be a duration. It can also be used to disable the reconciliation at all by setting it to 0m. Disabling the reconciliation

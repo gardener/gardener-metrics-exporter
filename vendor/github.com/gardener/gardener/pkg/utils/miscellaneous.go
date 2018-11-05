@@ -16,9 +16,7 @@ package utils
 
 import (
 	"net"
-	"reflect"
 	"regexp"
-	"runtime"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,18 +24,6 @@ import (
 )
 
 const maintenanceTimeLayout = "150405-0700"
-
-// FuncName takes a function <f> as input and returns its name as a string. If the function is a method
-// of a struct, the struct will be also prefixed, e.g. 'Botanist.CreateNamespace'.
-func FuncName(f interface{}) string {
-	funcName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
-	re := regexp.MustCompile(`^.*\.(\(.*)\-.*$`)
-	match := re.FindStringSubmatch(funcName)
-	if len(match) > 1 {
-		return match[1]
-	}
-	return funcName
-}
 
 // ValueExists returns true or false, depending on whether the given string <value>
 // is part of the given []string list <list>.
@@ -78,6 +64,31 @@ func MergeMaps(a, b map[string]interface{}) map[string]interface{} {
 	}
 
 	return values
+}
+
+// MergeStringMaps merges the content of the newMaps with the oldMap. If a key already exists then
+// it gets overwritten by the last value with the same key.
+func MergeStringMaps(oldMap map[string]string, newMaps ...map[string]string) map[string]string {
+	var out map[string]string
+
+	if oldMap != nil {
+		out = make(map[string]string)
+	}
+	for k, v := range oldMap {
+		out[k] = v
+	}
+
+	for _, newMap := range newMaps {
+		if newMap != nil && out == nil {
+			out = make(map[string]string)
+		}
+
+		for k, v := range newMap {
+			out[k] = v
+		}
+	}
+
+	return out
 }
 
 // TimeElapsed takes a <timestamp> and a <duration> checks whether the elapsed time until now is less than the <duration>.
