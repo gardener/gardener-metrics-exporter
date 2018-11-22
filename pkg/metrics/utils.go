@@ -15,6 +15,8 @@
 package metrics
 
 import (
+	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
+	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/prometheus/client_golang/prometheus"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -36,4 +38,15 @@ func mapConditionStatus(status corev1.ConditionStatus) float64 {
 	default:
 		return -1
 	}
+}
+
+func usedAsSeed(shoot *gardenv1beta1.Shoot) bool {
+	if shoot.Namespace != common.GardenNamespace {
+		return false
+	}
+	_, ok := shoot.Annotations[common.ShootUseAsSeed]
+	if !ok {
+		return false
+	}
+	return true
 }

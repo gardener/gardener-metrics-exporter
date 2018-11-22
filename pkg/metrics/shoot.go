@@ -18,16 +18,13 @@ import (
 	"fmt"
 	"strings"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-
-	"github.com/prometheus/client_golang/prometheus"
-
-	operationshoot "github.com/gardener/gardener/pkg/operation/shoot"
-
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	"github.com/gardener/gardener/pkg/apis/garden/v1beta1/helper"
 	"github.com/gardener/gardener/pkg/operation/common"
+	operationshoot "github.com/gardener/gardener/pkg/operation/shoot"
+	"github.com/prometheus/client_golang/prometheus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 var (
@@ -71,7 +68,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			iaas = string(cloudProvider)
 			seed = *(shoot.Spec.Cloud.Seed)
 		)
-		isSeed, _, _ = helper.IsUsedAsSeed(shoot)
+		isSeed = usedAsSeed(shoot)
 
 		// Get the operator/owner of the Shoot, if it's annotated.
 		if shootOperatorMail, ok := shoot.Annotations[common.GardenOperatedBy]; ok {

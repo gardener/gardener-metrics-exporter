@@ -15,28 +15,13 @@
 package metrics
 
 import (
-	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 )
-
-var (
-	projectNamespaceSelector labels.Selector
-)
-
-func init() {
-	// Define a selector to find namespaces, which are labeled as Garden projects.
-	req, err := labels.NewRequirement(common.GardenRole, selection.Equals, []string{common.GardenRoleProject})
-	if err != nil {
-		panic("Could not construct a requirement to select Garden users.")
-	}
-	projectNamespaceSelector = labels.NewSelector().Add(*req)
-}
 
 // collectProjectCountMetrics collects the number of projects within a Garden cluster.
 func (c gardenMetricsCollector) collectProjectCountMetrics(ch chan<- prometheus.Metric) {
-	projects, err := c.namespaceInformer.Lister().List(projectNamespaceSelector)
+	projects, err := c.projectInformer.Lister().List(labels.Everything())
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
 		return
