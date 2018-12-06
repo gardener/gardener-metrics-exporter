@@ -4,7 +4,7 @@
 
 [[constraint]]
   name = "github.com/gardener/gardener"
-  version = "0.12.4"
+  version = "0.14.0"
 
 [[constraint]]
   name = "github.com/spf13/cobra"
@@ -12,28 +12,28 @@
 
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.12.1"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.12.1"
 
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.12.1"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.12.1"
 
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.12.1"
 
 [[override]]
   name = "k8s.io/kube-aggregator"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.12.1"
 
 [[override]]
   name = "k8s.io/kube-openapi"
-  revision = "d8ea2fe547a448256204cfc68dfee7b26c720acb" # "kubernetes-1.11"
+  revision = "9dfdf9be683f61f82cda12362c44c784e0778b56" # kubernetes-1.12.1

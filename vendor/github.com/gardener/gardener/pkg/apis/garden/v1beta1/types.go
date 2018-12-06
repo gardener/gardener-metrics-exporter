@@ -15,15 +15,15 @@
 package v1beta1
 
 import (
+	"encoding/json"
 	"time"
-
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 ////////////////////////////////////////////////////
@@ -218,6 +218,9 @@ type OpenStackProfile struct {
 	// Kubernetes 1.10.1+. See https://github.com/kubernetes/kubernetes/pull/61890 for details.
 	// +optional
 	DHCPDomain *string `json:"dhcpDomain,omitempty"`
+	// RequestTimeout specifies the HTTP timeout against the OpenStack API.
+	// +optional
+	RequestTimeout *string `json:"requestTimeout,omitempty"`
 }
 
 // OpenStackConstraints is an object containing constraints for certain values in the Shoot specification.
@@ -328,6 +331,9 @@ type KubernetesConstraints struct {
 type MachineType struct {
 	// Name is the name of the machine type.
 	Name string `json:"name"`
+	// Usable defines if the machine type can be used for shoot clusters.
+	// +optional
+	Usable *bool `json:"usable,omitempty"`
 	// CPU is the number of CPUs for this machine type.
 	CPU resource.Quantity `json:"cpu"`
 	// GPU is the number of GPUs for this machine type.
@@ -349,6 +355,9 @@ type OpenStackMachineType struct {
 type VolumeType struct {
 	// Name is the name of the volume type.
 	Name string `json:"name"`
+	// Usable defines if the volume type can be used for shoot clusters.
+	// +optional
+	Usable *bool `json:"usable,omitempty"`
 	// Class is the class of the volume type.
 	Class string `json:"class"`
 }
@@ -405,15 +414,24 @@ type ProjectList struct {
 
 // ProjectSpec is the specification of a Project.
 type ProjectSpec struct {
+	// CreatedBy is a subject representing a user name, an email address, or any other identifier of a user
+	// who created the project.
+	// +optional
+	CreatedBy *rbacv1.Subject `json:"createdBy,omitempty"`
 	// Description is a human-readable description of what the project is used for.
 	// +optional
 	Description *string `json:"description,omitempty"`
 	// Owner is a subject representing a user name, an email address, or any other identifier of a user owning
 	// the project.
-	Owner rbacv1.Subject `json:"owner"`
+	// +optional
+	Owner *rbacv1.Subject `json:"owner,omitempty"`
 	// Purpose is a human-readable explanation of the project's purpose.
 	// +optional
 	Purpose *string `json:"purpose,omitempty"`
+	// Members is a list of subjects representing a user name, an email address, or any other identifier of a user
+	// that should be part of this project.
+	// +optional
+	Members []rbacv1.Subject `json:"members,omitempty"`
 	// Namespace is the name of the namespace that has been created for the Project object.
 	// A nil value means that Gardener will determine the name of the namespace.
 	// +optional
@@ -422,10 +440,26 @@ type ProjectSpec struct {
 
 // ProjectStatus holds the most recently observed status of the project.
 type ProjectStatus struct {
-	// Conditions represents the latest available observations of a Projects's current state.
+	// ObservedGeneration is the most recent generation observed for this project.
 	// +optional
-	Conditions []Condition `json:"conditions,omitempty"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// Phase is the current phase of the project.
+	Phase ProjectPhase `json:"phase,omitempty"`
 }
+
+// ProjectPhase is a label for the condition of a project at the current time.
+type ProjectPhase string
+
+const (
+	// ProjectPending indicates that the project reconciliation is pending.
+	ProjectPending ProjectPhase = "Pending"
+	// ProjectReady indicates that the project reconciliation was successful.
+	ProjectReady ProjectPhase = "Ready"
+	// ProjectFailed indicates that the project reconciliation failed.
+	ProjectFailed ProjectPhase = "Failed"
+	// ProjectTerminating indicates that the project is in termination process.
+	ProjectTerminating ProjectPhase = "Terminating"
+)
 
 ////////////////////////////////////////////////////
 //                      SEEDS                     //
@@ -990,25 +1024,31 @@ var (
 
 // Addons is a collection of configuration for specific addons which are managed by the Gardener.
 type Addons struct {
-	// ClusterAutoscaler holds configuration settings for the cluster autoscaler addon.
-	// +optional
-	ClusterAutoscaler *ClusterAutoscaler `json:"cluster-autoscaler,omitempty"`
-	// Heapster holds configuration settings for the heapster addon.
-	// +optional
-	Heapster *Heapster `json:"heapster,omitempty"`
-	// Kube2IAM holds configuration settings for the kube2iam addon (only AWS).
-	// +optional
-	Kube2IAM *Kube2IAM `json:"kube2iam,omitempty"`
-	// KubeLego holds configuration settings for the kube-lego addon.
-	// +optional
-	KubeLego *KubeLego `json:"kube-lego,omitempty"`
 	// KubernetesDashboard holds configuration settings for the kubernetes dashboard addon.
 	// +optional
 	KubernetesDashboard *KubernetesDashboard `json:"kubernetes-dashboard,omitempty"`
 	// NginxIngress holds configuration settings for the nginx-ingress addon.
 	// +optional
 	NginxIngress *NginxIngress `json:"nginx-ingress,omitempty"`
+
+	// ClusterAutoscaler holds configuration settings for the cluster autoscaler addon.
+	// DEPRECATED: This field will be removed in a future version.
+	// +optional
+	ClusterAutoscaler *ClusterAutoscaler `json:"cluster-autoscaler,omitempty"`
+	// Heapster holds configuration settings for the heapster addon.
+	// DEPRECATED: This field will be removed in a future version.
+	// +optional
+	Heapster *Heapster `json:"heapster,omitempty"`
+	// Kube2IAM holds configuration settings for the kube2iam addon (only AWS).
+	// DEPRECATED: This field will be removed in a future version.
+	// +optional
+	Kube2IAM *Kube2IAM `json:"kube2iam,omitempty"`
+	// KubeLego holds configuration settings for the kube-lego addon.
+	// DEPRECATED: This field will be removed in a future version.
+	// +optional
+	KubeLego *KubeLego `json:"kube-lego,omitempty"`
 	// Monocular holds configuration settings for the monocular addon.
+	// DEPRECATED: This field will be removed in a future version.
 	// +optional
 	Monocular *Monocular `json:"monocular,omitempty"`
 }
@@ -1114,8 +1154,10 @@ const (
 	DNSAWSRoute53 DNSProvider = "aws-route53"
 	// DNSGoogleCloudDNS is a constant for the 'google-clouddns' DNS provider.
 	DNSGoogleCloudDNS DNSProvider = "google-clouddns"
-	//DNSOpenstackDesignate is a constance for the designate DNS provider
+	// DNSOpenstackDesignate is a constant for the designate DNS provider
 	DNSOpenstackDesignate DNSProvider = "openstack-designate"
+	// DNSAlicloud is a constant for Alicloud DNS provider
+	DNSAlicloud DNSProvider = "alicloud-dns"
 )
 
 // CloudProvider is a string alias.
@@ -1143,6 +1185,21 @@ type CIDR string
 type Hibernation struct {
 	// Enabled is true if Shoot is hibernated, false otherwise.
 	Enabled bool `json:"enabled"`
+	// Schedules determine the hibernation schedules.
+	// +optional
+	Schedules []HibernationSchedule `json:"schedules,omitempty"`
+}
+
+// HibernationSchedule determines the hibernation schedule of a Shoot.
+// A Shoot will be regularly hibernated at each start time and will be woken up at each end time.
+// Start or End can be omitted, though at least one of each has to be specified.
+type HibernationSchedule struct {
+	// Start is a Cron spec at which time a Shoot will be hibernated.
+	// +optional
+	Start *string `json:"start,omitempty"`
+	// End is a Cron spec at which time a Shoot will be woken up.
+	// +optional
+	End *string `json:"end,omitempty"`
 }
 
 // Kubernetes contains the version and configuration variables for the Shoot control plane.
@@ -1192,6 +1249,24 @@ type KubeAPIServerConfig struct {
 	// configuration.
 	// +optional
 	AdmissionPlugins []AdmissionPlugin `json:"admissionPlugins,omitempty"`
+	// AuditConfig contains configuration settings for the audit of the kube-apiserver.
+	// +optional
+	AuditConfig *AuditConfig `json:"auditConfig,omitempty"`
+}
+
+// AuditConfig contains settings for audit of the api server
+type AuditConfig struct {
+	// AuditPolicy contains configuration settings for audit policy of the kube-apiserver.
+	// +optional
+	AuditPolicy *AuditPolicy `json:"auditPolicy,omitempty"`
+}
+
+// AuditPolicy contains audit policy for kube-apiserver
+type AuditPolicy struct {
+	// ConfigMapRef is a reference to a ConfigMap object in the same namespace,
+	// which contains the audit policy for the kube-apiserver.
+	// +optional
+	ConfigMapRef *corev1.LocalObjectReference `json:"configMapRef,omitempty"`
 }
 
 // OIDCConfig contains configuration settings for the OIDC provider.
@@ -1250,7 +1325,89 @@ type CloudControllerManagerConfig struct {
 // KubeControllerManagerConfig contains configuration settings for the kube-controller-manager.
 type KubeControllerManagerConfig struct {
 	KubernetesConfig `json:",inline"`
+	// HorizontalPodAutoscalerConfig contains horizontal pod autoscaler configuration settings for the kube-controller-manager.
+	// +optional
+	HorizontalPodAutoscalerConfig *HorizontalPodAutoscalerConfig `json:"horizontalPodAutoscaler,omitempty"`
 }
+
+// GardenerDuration is a workaround for missing OpenAPI functions on metav1.Duration struct.
+type GardenerDuration struct {
+	time.Duration `protobuf:"varint,1,opt,name=duration,casttype=time.Duration"`
+}
+
+// OpenAPISchemaType is used by the kube-openapi generator when constructing
+// the OpenAPI spec of this type.
+//
+// See: https://github.com/kubernetes/kube-openapi/tree/master/pkg/generators
+func (GardenerDuration) OpenAPISchemaType() []string { return []string{"string"} }
+
+// OpenAPISchemaFormat is used by the kube-openapi generator when constructing
+// the OpenAPI spec of this type.
+func (GardenerDuration) OpenAPISchemaFormat() string { return "date-time" }
+
+// UnmarshalJSON implements the json.Unmarshaller interface.
+func (d *GardenerDuration) UnmarshalJSON(b []byte) error {
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+
+	pd, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	d.Duration = pd
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (d *GardenerDuration) MarshalJSON() ([]byte, error) {
+	return json.Marshal(d.Duration.String())
+}
+
+// HorizontalPodAutoscalerConfig contains horizontal pod autoscaler configuration settings for the kube-controller-manager.
+// Note: Descriptions were taken from the Kubernetes documentation.
+type HorizontalPodAutoscalerConfig struct {
+	// The period since last downscale, before another downscale can be performed in horizontal pod autoscaler.
+	// +optional
+	DownscaleDelay *GardenerDuration `json:"downscaleDelay,omitempty"`
+	// The period for syncing the number of pods in horizontal pod autoscaler.
+	// +optional
+	SyncPeriod *GardenerDuration `json:"syncPeriod,omitempty"`
+	// The minimum change (from 1.0) in the desired-to-actual metrics ratio for the horizontal pod autoscaler to consider scaling.
+	// +optional
+	Tolerance *float64 `json:"tolerance,omitempty"`
+	// The period since last upscale, before another upscale can be performed in horizontal pod autoscaler.
+	// +optional
+	UpscaleDelay *GardenerDuration `json:"upscaleDelay,omitempty"`
+	// The configurable window at which the controller will choose the highest recommendation for autoscaling.
+	// +optional
+	DownscaleStabilization *GardenerDuration `json:"downscaleStabilization,omitempty"`
+	// The configurable period at which the horizontal pod autoscaler considers a Pod “not yet ready” given that it’s unready and it has  transitioned to unready during that time.
+	// +optional
+	InitialReadinessDelay *GardenerDuration `json:"initialReadinessDelay,omitempty"`
+	// The period after which a ready pod transition is considered to be the first.
+	// +optional
+	CPUInitializationPeriod *GardenerDuration `json:"cpuInitializationPeriod,omitempty"`
+}
+
+const (
+	// DefaultHPADownscaleDelay is a constant for the default HPA downscale delay for a Shoot cluster.
+	DefaultHPADownscaleDelay = 15 * time.Minute
+	// DefaultHPASyncPeriod is a constant for the default HPA sync period for a Shoot cluster.
+	DefaultHPASyncPeriod = 30 * time.Second
+	// DefaultHPATolerance is a constant for the default HPA tolerance for a Shoot cluster.
+	DefaultHPATolerance = 0.1
+	// DefaultHPAUpscaleDelay is for the default HPA upscale delay for a Shoot cluster.
+	DefaultHPAUpscaleDelay = 1 * time.Minute
+	// DefaultDownscaleStabilization is the default HPA downscale stabilization window for a Shoot cluster
+	DefaultDownscaleStabilization = 5 * time.Minute
+	// DefaultInitialReadinessDelay is for the default HPA  ReadinessDelay value in the Shoot cluster
+	DefaultInitialReadinessDelay = 30 * time.Second
+	// DefaultCPUInitializationPeriod is the for the default value of the CPUInitializationPeriod in the Shoot cluster
+	DefaultCPUInitializationPeriod = 5 * time.Minute
+)
 
 // KubeSchedulerConfig contains configuration settings for the kube-scheduler.
 type KubeSchedulerConfig struct {
@@ -1402,10 +1559,20 @@ const (
 	EventDeleted = "Deleted"
 	// EventDeleteError indicates that the a Delete operation failed.
 	EventDeleteError = "DeleteError"
+
 	// ShootEventMaintenanceDone indicates that a maintenance operation has been performed.
 	ShootEventMaintenanceDone = "MaintenanceDone"
 	// ShootEventMaintenanceError indicates that a maintenance operation has failed.
 	ShootEventMaintenanceError = "MaintenanceError"
+
+	// ProjectEventNamespaceReconcileFailed indicates that the namespace reconciliation has failed.
+	ProjectEventNamespaceReconcileFailed = "NamespaceReconcileFailed"
+	// ProjectEventNamespaceReconcileSuccessful indicates that the namespace reconciliation has succeeded.
+	ProjectEventNamespaceReconcileSuccessful = "NamespaceReconcileSuccessful"
+	// ProjectEventNamespaceDeletionFailed indicates that the namespace deletion failed.
+	ProjectEventNamespaceDeletionFailed = "NamespaceDeletionFailed"
+	// ProjectEventNamespaceMarkedForDeletion indicates that the namespace has been successfully marked for deletion.
+	ProjectEventNamespaceMarkedForDeletion = "NamespaceMarkedForDeletion"
 )
 
 const (
@@ -1421,14 +1588,31 @@ const (
 	DefaultDomain = "cluster.local"
 )
 
+// ConditionStatus is the status of a condition.
+type ConditionStatus string
+
+// These are valid condition statuses. "ConditionTrue" means a resource is in the condition.
+// "ConditionFalse" means a resource is not in the condition. "ConditionUnknown" means kubernetes
+// can't decide if a resource is in the condition or not. "ConditionProgressing" means the condition was
+// seen true, failed but stayed within a predefined failure threshold. In the future, we could add other
+// intermediate conditions, e.g. ConditionDegraded.
+const (
+	ConditionTrue        ConditionStatus = "True"
+	ConditionFalse       ConditionStatus = "False"
+	ConditionUnknown     ConditionStatus = "Unknown"
+	ConditionProgressing ConditionStatus = "Progressing"
+)
+
 // Condition holds the information about the state of a resource.
 type Condition struct {
 	// Type of the Shoot condition.
 	Type ConditionType `json:"type"`
 	// Status of the condition, one of True, False, Unknown.
-	Status corev1.ConditionStatus `json:"status"`
+	Status ConditionStatus `json:"status"`
 	// Last time the condition transitioned from one status to another.
 	LastTransitionTime metav1.Time `json:"lastTransitionTime"`
+	// Last time the condition was updated.
+	LastUpdateTime metav1.Time `json:"lastUpdateTime"`
 	// The reason for the condition's last transition.
 	Reason string `json:"reason"`
 	// A human readable message indicating details about the transition.
@@ -1439,29 +1623,6 @@ type Condition struct {
 type ConditionType string
 
 const (
-	// ProjectNamespaceEmpty is a constant for a condition type indicating the Project namespace has no Shoots or
-	// BackupInfrastructures.
-	ProjectNamespaceEmpty ConditionType = "NamespaceEmpty"
-	// ProjectShootsWithErrors is a constant for a condition type indicating that Shoots within the project have
-	// errors.
-	ProjectShootsWithErrors ConditionType = "ShootsWithErrors"
-	// ProjectNamespaceReady is a constant for a condition type indicating the Project namespace has been created.
-	ProjectNamespaceReady ConditionType = "NamespaceReady"
-	// ProjectNamespaceCreationFailed is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceCreationFailed string = "NamespaceCreationFailed"
-	// ProjectNamespaceReconciled is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceReconciled string = "NamespaceReconciled"
-	// ProjectNamespaceReconcileFailed is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceReconcileFailed string = "NamespaceReconcileFailed"
-	// ProjectNamespaceDeletionAllowed is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceDeletionAllowed string = "NamespaceDeletionAllowed"
-	// ProjectNamespaceDeletionProcessing is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceDeletionProcessing string = "NamespaceDeletionProcessing"
-	// ProjectNamespaceDeletionImpossible is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceDeletionImpossible string = "NamespaceDeletionImpossible"
-	// ProjectNamespaceDeletionFailed is a constant for a reason for the status of condition type ProjectNamespaceReady.
-	ProjectNamespaceDeletionFailed string = "NamespaceDeletionFailed"
-
 	// SeedAvailable is a constant for a condition type indicating the Seed cluster availability.
 	SeedAvailable ConditionType = "Available"
 
@@ -1471,6 +1632,10 @@ const (
 	ShootEveryNodeReady ConditionType = "EveryNodeReady"
 	// ShootSystemComponentsHealthy is a constant for a condition type indicating the system components health.
 	ShootSystemComponentsHealthy ConditionType = "SystemComponentsHealthy"
+	// ShootAlertsInactive is a constant for a condition type indicating the Shoot cluster alert states.
+	ShootAlertsInactive ConditionType = "AlertsInactive"
+	// ShootAPIServerAvailable is a constant for a condition type indicating that the Shoot clusters API server is available.
+	ShootAPIServerAvailable ConditionType = "APIServerAvailable"
 
 	// ConditionCheckError is a constant for indicating that a condition could not be checked.
 	ConditionCheckError = "ConditionCheckError"

@@ -18,7 +18,6 @@ import (
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/prometheus/client_golang/prometheus"
-	corev1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -29,12 +28,14 @@ var (
 	}, []string{"kind"})
 )
 
-func mapConditionStatus(status corev1.ConditionStatus) float64 {
+func mapConditionStatus(status gardenv1beta1.ConditionStatus) float64 {
 	switch status {
-	case corev1.ConditionTrue:
+	case gardenv1beta1.ConditionTrue:
 		return 1
-	case corev1.ConditionFalse:
+	case gardenv1beta1.ConditionFalse:
 		return 0
+	case gardenv1beta1.ConditionProgressing:
+		return 2
 	default:
 		return -1
 	}

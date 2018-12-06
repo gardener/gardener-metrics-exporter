@@ -131,14 +131,15 @@ func SetDefaults_Shoot(obj *Shoot) {
 	}
 
 	if obj.Spec.Maintenance == nil {
-		begin, end := utils.ComputeRandomTimeWindow()
+		mt := utils.RandomMaintenanceTimeWindow()
+
 		obj.Spec.Maintenance = &Maintenance{
 			AutoUpdate: &MaintenanceAutoUpdate{
 				KubernetesVersion: trueVar,
 			},
 			TimeWindow: &MaintenanceTimeWindow{
-				Begin: begin,
-				End:   end,
+				Begin: mt.Begin().Formatted(),
+				End:   mt.End().Formatted(),
 			},
 		}
 	} else {
@@ -149,10 +150,11 @@ func SetDefaults_Shoot(obj *Shoot) {
 		}
 
 		if obj.Spec.Maintenance.TimeWindow == nil {
-			begin, end := utils.ComputeRandomTimeWindow()
+			mt := utils.RandomMaintenanceTimeWindow()
+
 			obj.Spec.Maintenance.TimeWindow = &MaintenanceTimeWindow{
-				Begin: begin,
-				End:   end,
+				Begin: mt.Begin().Formatted(),
+				End:   mt.End().Formatted(),
 			}
 		}
 	}
@@ -177,7 +179,7 @@ func SetDefaults_Seed(obj *Seed) {
 
 // SetDefaults_Project sets default values for Project objects.
 func SetDefaults_Project(obj *Project) {
-	if len(obj.Spec.Owner.APIGroup) == 0 {
+	if obj.Spec.Owner != nil && len(obj.Spec.Owner.APIGroup) == 0 {
 		switch obj.Spec.Owner.Kind {
 		case rbacv1.ServiceAccountKind:
 			obj.Spec.Owner.APIGroup = ""
@@ -208,5 +210,21 @@ func SetDefaults_SecretBinding(obj *SecretBinding) {
 		if len(quota.Namespace) == 0 {
 			obj.Quotas[i].Namespace = obj.Namespace
 		}
+	}
+}
+
+// SetDefaults_MachineType sets default values for MachineType objects.
+func SetDefaults_MachineType(obj *MachineType) {
+	trueVar := true
+	if obj.Usable == nil {
+		obj.Usable = &trueVar
+	}
+}
+
+// SetDefaults_VolumeType sets default values for VolumeType objects.
+func SetDefaults_VolumeType(obj *VolumeType) {
+	trueVar := true
+	if obj.Usable == nil {
+		obj.Usable = &trueVar
 	}
 }

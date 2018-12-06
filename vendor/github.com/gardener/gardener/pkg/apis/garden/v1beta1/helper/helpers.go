@@ -20,15 +20,18 @@ import (
 	"sort"
 	"strings"
 
+	"strconv"
+
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/gardener/gardener/pkg/utils"
-	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"strconv"
 )
+
+// Now determines the current metav1.Time.
+var Now = metav1.Now
 
 // DetermineCloudProviderInProfile takes a CloudProfile specification and returns the cloud provider this profile is used for.
 // If it is not able to determine it, an error will be returned.
@@ -67,6 +70,69 @@ func DetermineCloudProviderInProfile(spec gardenv1beta1.CloudProfileSpec) (garde
 		return "", errors.New("cloud profile must only contain exactly one field of alicloud/aws/azure/gcp/openstack/local")
 	}
 	return cloud, nil
+}
+
+// GetShootCloudProvider retrieves the cloud provider used for the given Shoot.
+func GetShootCloudProvider(shoot *gardenv1beta1.Shoot) (gardenv1beta1.CloudProvider, error) {
+	return DetermineCloudProviderInShoot(shoot.Spec.Cloud)
+}
+
+// IsShootHibernated checks if the given shoot is hibernated.
+func IsShootHibernated(shoot *gardenv1beta1.Shoot) bool {
+	return shoot.Spec.Hibernation != nil && shoot.Spec.Hibernation.Enabled
+}
+
+// ShootWantsClusterAutoscaler checks if the given Shoot needs a cluster autoscaler.
+// This is determined by checking whether one of the Shoot workers has a different
+// AutoScalerMax than AutoScalerMin.
+func ShootWantsClusterAutoscaler(shoot *gardenv1beta1.Shoot) (bool, error) {
+	cloudProvider, err := GetShootCloudProvider(shoot)
+	if err != nil {
+		return false, err
+	}
+
+	workers := GetShootCloudProviderWorkers(cloudProvider, shoot)
+	for _, worker := range workers {
+		if worker.AutoScalerMax > worker.AutoScalerMin {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// GetShootCloudProviderWorkers retrieves the cloud-specific workers of the given Shoot.
+func GetShootCloudProviderWorkers(cloudProvider gardenv1beta1.CloudProvider, shoot *gardenv1beta1.Shoot) []gardenv1beta1.Worker {
+	var (
+		cloud   = shoot.Spec.Cloud
+		workers []gardenv1beta1.Worker
+	)
+
+	switch cloudProvider {
+	case gardenv1beta1.CloudProviderAWS:
+		for _, worker := range cloud.AWS.Workers {
+			workers = append(workers, worker.Worker)
+		}
+	case gardenv1beta1.CloudProviderAzure:
+		for _, worker := range cloud.Azure.Workers {
+			workers = append(workers, worker.Worker)
+		}
+	case gardenv1beta1.CloudProviderGCP:
+		for _, worker := range cloud.GCP.Workers {
+			workers = append(workers, worker.Worker)
+		}
+	case gardenv1beta1.CloudProviderOpenStack:
+		for _, worker := range cloud.OpenStack.Workers {
+			workers = append(workers, worker.Worker)
+		}
+	case gardenv1beta1.CloudProviderLocal:
+		workers = append(workers, gardenv1beta1.Worker{
+			Name:          "local",
+			AutoScalerMax: 1,
+			AutoScalerMin: 1,
+		})
+	}
+
+	return workers
 }
 
 // DetermineCloudProviderInShoot takes a Shoot cloud object and returns the cloud provider this profile is used for.
@@ -118,32 +184,36 @@ func InitCondition(conditionType gardenv1beta1.ConditionType, reason, message st
 	}
 	return &gardenv1beta1.Condition{
 		Type:               conditionType,
-		Status:             corev1.ConditionUnknown,
+		Status:             gardenv1beta1.ConditionUnknown,
 		Reason:             reason,
 		Message:            message,
-		LastTransitionTime: metav1.Now(),
+		LastTransitionTime: Now(),
 	}
 }
 
-// ModifyCondition updates the properties of one specific condition.
-func ModifyCondition(condition *gardenv1beta1.Condition, status corev1.ConditionStatus, reason, message string) *gardenv1beta1.Condition {
-	var update = false
-	if status != (*condition).Status {
-		update = true
-		(*condition).Status = status
+// UpdatedCondition updates the properties of one specific condition.
+func UpdatedCondition(condition *gardenv1beta1.Condition, status gardenv1beta1.ConditionStatus, reason, message string) *gardenv1beta1.Condition {
+	newCondition := &gardenv1beta1.Condition{
+		Type:               condition.Type,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		LastTransitionTime: condition.LastTransitionTime,
+		LastUpdateTime:     Now(),
 	}
-	if reason != (*condition).Reason {
-		update = true
-		(*condition).Reason = reason
+
+	if condition.Status != status {
+		newCondition.LastTransitionTime = Now()
 	}
-	if message != (*condition).Message {
-		update = true
-		(*condition).Message = message
-	}
-	if update {
-		(*condition).LastTransitionTime = metav1.Now()
-	}
-	return condition
+	return newCondition
+}
+
+func UpdatedConditionUnknownError(condition *gardenv1beta1.Condition, err error) *gardenv1beta1.Condition {
+	return UpdatedConditionUnknownErrorMessage(condition, err.Error())
+}
+
+func UpdatedConditionUnknownErrorMessage(condition *gardenv1beta1.Condition, message string) *gardenv1beta1.Condition {
+	return UpdatedCondition(condition, gardenv1beta1.ConditionUnknown, gardenv1beta1.ConditionCheckError, message)
 }
 
 // NewConditions initializes the provided conditions based on an existing list. If a condition type does not exist
