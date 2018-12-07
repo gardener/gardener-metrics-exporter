@@ -6,14 +6,6 @@ metadata:
   name: garden.sapcloud.io:metrics-exporter
 rules:
 - apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - get
-  - watch
-  - list
-- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - rolebindings
@@ -25,6 +17,7 @@ rules:
   - garden.sapcloud.io
   resources:
   - shoots
+  - projects
   verbs:
   - get
   - watch
