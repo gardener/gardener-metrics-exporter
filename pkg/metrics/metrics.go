@@ -28,7 +28,8 @@ const (
 	metricGardenUsersSum       = "garden_users_total"
 
 	// Seed metric
-	metricGardenSeedInfo = "garden_seed_info"
+	metricGardenSeedInfo      = "garden_seed_info"
+	metricGardenSeedCondition = "garden_seed_condition"
 
 	// Shoot metric (available also for Shoots which act as Seed)
 	metricGardenShootInfo              = "garden_shoot_info"
@@ -47,6 +48,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 	return map[string]*prometheus.Desc{
 		metricGardenProjectsSum:    prometheus.NewDesc(metricGardenProjectsSum, "Count of projects.", nil, nil),
 		metricGardenSeedsSum:       prometheus.NewDesc(metricGardenSeedsSum, "Count of seeds.", nil, nil),
+		metricGardenSeedCondition:  prometheus.NewDesc(metricGardenSeedCondition, "Condition state of Seed.", []string{"name", "condition"}, nil),
 		metricGardenProjectsStatus: prometheus.NewDesc(metricGardenProjectsStatus, "Status of projects.", []string{"name", "cluster", "phase"}, nil),
 		metricGardenUsersSum:       prometheus.NewDesc(metricGardenUsersSum, "Count of users.", nil, nil),
 
