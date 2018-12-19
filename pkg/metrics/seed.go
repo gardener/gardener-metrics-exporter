@@ -15,7 +15,6 @@
 package metrics
 
 import (
-	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 	"strconv"
@@ -26,21 +25,13 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 
 	seeds, err := c.seedInformer.Lister().List(labels.Everything())
 	if err != nil {
-		fmt.Printf("seed informer failure")
+		ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
 		return
 	}
-	metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedsSum], prometheus.GaugeValue, float64(len(seeds)))
-	if err != nil {
-		ScrapeFailures.With(prometheus.Labels{"kind": "seeds-count"}).Inc()
-		return
-	}
-	ch <- metric
 
 	for _, seed := range seeds {
 
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedInfo], prometheus.GaugeValue, 0,
-			seed.ObjectMeta.Name, seed.ObjectMeta.Namespace, seed.Spec.Cloud.Profile, seed.Spec.Cloud.Region,
-			strconv.FormatBool(*seed.Spec.Visible), strconv.FormatBool(*seed.Spec.Protected))
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedInfo], prometheus.GaugeValue, 0, seed.ObjectMeta.Name, seed.ObjectMeta.Namespace, seed.Spec.Cloud.Profile, seed.Spec.Cloud.Region, strconv.FormatBool(*seed.Spec.Visible), strconv.FormatBool(*seed.Spec.Protected))
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue

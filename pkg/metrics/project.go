@@ -25,6 +25,11 @@ func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metri
 
 	var status float64 = 0
 	projects, err := c.projectInformer.Lister().List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
+		return
+	}
+
 	for _, project := range projects {
 		switch project.Status.Phase {
 		case v1beta1.ProjectPending:
@@ -36,28 +41,11 @@ func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metri
 		case v1beta1.ProjectTerminating:
 			status = 2
 		}
-		metric, err := prometheus.NewConstMetric(
-			c.descs[metricGardenProjectsStatus],
-			prometheus.GaugeValue,
-			status,
-			project.ObjectMeta.Name,
-			project.ObjectMeta.ClusterName,
-			string(project.Status.Phase))
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenProjectsStatus], prometheus.GaugeValue, status, project.ObjectMeta.Name, project.ObjectMeta.ClusterName, string(project.Status.Phase))
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "projects-status"}).Inc()
 			return
 		}
 		ch <- metric
 	}
-	if err != nil {
-		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
-		return
-	}
-
-	metric, err := prometheus.NewConstMetric(c.descs[metricGardenProjectsSum], prometheus.GaugeValue, float64(len(projects)))
-	if err != nil {
-		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
-		return
-	}
-	ch <- metric
 }

@@ -127,7 +127,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 					continue
 				}
 				ch <- metric
-				metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootOperationProgress], prometheus.GaugeValue, operationProgress, shoot.Name, shoot.Namespace, operation)
+				metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootOperationProgressPercent], prometheus.GaugeValue, operationProgress, shoot.Name, shoot.Namespace, operation)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
