@@ -4,7 +4,7 @@ The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) export
 **This application requires Go 1.9 or later.**
 
 ## Metrics
-|Metic|Description|Scope|Type|
+|Metric|Description|Scope|Type|
 |-----|-----------|-----|----|
 |garden_shoot_operation_states|Operation state of a Shoot|Shoot|Gauge|
 |garden_shoot_info|Information to a Shoot|Shoot|Gauge|
@@ -12,10 +12,14 @@ The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) export
 |garden_shoot_node_min_total|Min node count of a Shoot|Shoot|Gauge|
 |garden_shoot_node_max_total|Max node count of a Shoot|Shoot|Gauge|
 |garden_shoot_operations_total|Count of ongoing operations|Shoot|Gauge|
+|garden_shoot_operation_states|Operation State of a Shoot|Shoot|Gauge|
+|garden_shoot_operation_progress_percent|Operation Percentage of a Shoot|Shoot|Gauge|
 |garden_shoot_response_duration_milliseconds| Response time of the Shoot API server (Not provided when not reachable)|Shoot|Gauge|
-|garden_projects_total|Count of projects|Project|Gauge|
+|garden_projects_status|Status of garden projects|Projects|Gauge|
 |garden_users_total|Count of users|Users|Gauge|
 |garden_scrape_failure_total|Total count of scraping failures, grouped by kind/group of metric(s)|App|Counter|
+|garden_seed_info|Information to a Seed|Seed|Gauge|
+|garden_seed_condition"|Condition State of a Seed|Seed|Gauge|
 
 ## Grafana Dashboards
 Some [Grafana](https://grafana.com/) dashboards are included in the `dashboards` folder. Simply import them and make sure you have your prometheus data source set to `cluster-prometheus`.
