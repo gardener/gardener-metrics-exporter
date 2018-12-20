@@ -105,6 +105,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			// For currently non ongoing operations the value of the metric not will be set to 0.
 			for _, operation := range shootOperations {
 				var operationState float64
+				var operationProgress float64
 				if operation == lastOperation {
 					switch shoot.Status.LastOperation.State {
 					case gardenv1beta1.ShootLastOperationStateSucceeded:
@@ -118,8 +119,15 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 					case gardenv1beta1.ShootLastOperationStateFailed:
 						operationState = 5
 					}
+					operationProgress = float64(shoot.Status.LastOperation.Progress)
 				}
 				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootOperationState], prometheus.GaugeValue, operationState, shoot.Name, shoot.Namespace, operation)
+				if err != nil {
+					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+					continue
+				}
+				ch <- metric
+				metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootOperationProgressPercent], prometheus.GaugeValue, operationProgress, shoot.Name, shoot.Namespace, operation)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue

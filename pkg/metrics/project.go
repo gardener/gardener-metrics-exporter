@@ -15,22 +15,37 @@
 package metrics
 
 import (
+	"github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// collectProjectCountMetrics collects the number of projects within a Garden cluster.
-func (c gardenMetricsCollector) collectProjectCountMetrics(ch chan<- prometheus.Metric) {
+// collectProjectMetrics collects the number of projects within a Garden cluster.
+func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metric) {
+
+	var status float64 = 0
 	projects, err := c.projectInformer.Lister().List(labels.Everything())
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
 		return
 	}
 
-	metric, err := prometheus.NewConstMetric(c.descs[metricGardenProjectsSum], prometheus.GaugeValue, float64(len(projects)))
-	if err != nil {
-		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
-		return
+	for _, project := range projects {
+		switch project.Status.Phase {
+		case v1beta1.ProjectPending:
+			status = 1
+		case v1beta1.ProjectReady:
+			status = 0
+		case v1beta1.ProjectFailed:
+			status = -1
+		case v1beta1.ProjectTerminating:
+			status = 2
+		}
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenProjectsStatus], prometheus.GaugeValue, status, project.ObjectMeta.Name, project.ObjectMeta.ClusterName, string(project.Status.Phase))
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "projects-status"}).Inc()
+			return
+		}
+		ch <- metric
 	}
-	ch <- metric
 }

@@ -92,21 +92,22 @@ func run(o *options, closeCh chan os.Signal) error {
 	stopCh := make(chan struct{})
 
 	// Create informer factories to create informers.
-	gardemInformerFactory, kubeInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
+	gardenInformerFactory, kubeInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
 	if err != nil {
 		return err
 	}
 
 	// Create informers.
 	var (
-		shootInformer       = gardemInformerFactory.Garden().V1beta1().Shoots().Informer()
-		projectInformer     = gardemInformerFactory.Garden().V1beta1().Projects().Informer()
+		shootInformer       = gardenInformerFactory.Garden().V1beta1().Shoots().Informer()
+		seedInformer        = gardenInformerFactory.Garden().V1beta1().Seeds().Informer()
+		projectInformer     = gardenInformerFactory.Garden().V1beta1().Projects().Informer()
 		rolebindingInformer = kubeInformerFactory.Rbac().V1().RoleBindings().Informer()
 	)
 
 	// Start the factories and wait until the creates informes has synce
-	gardemInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(make(<-chan struct{}), shootInformer.HasSynced, projectInformer.HasSynced) {
+	gardenInformerFactory.Start(stopCh)
+	if !cache.WaitForCacheSync(make(<-chan struct{}), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
@@ -115,7 +116,11 @@ func run(o *options, closeCh chan os.Signal) error {
 		return errors.New("Timed out waiting for Kube caches to sync")
 	}
 	// Start the metrics collector
-	metrics.SetupMetricsCollector(gardemInformerFactory.Garden().V1beta1().Shoots(), gardemInformerFactory.Garden().V1beta1().Projects(), kubeInformerFactory.Rbac().V1().RoleBindings(), log)
+	metrics.SetupMetricsCollector(
+		gardenInformerFactory.Garden().V1beta1().Shoots(),
+		gardenInformerFactory.Garden().V1beta1().Seeds(),
+		gardenInformerFactory.Garden().V1beta1().Projects(),
+		kubeInformerFactory.Rbac().V1().RoleBindings(), log)
 
 	// Start the webserver.
 	go server.Serve(o.bindAddress, o.port, log, closeCh, stopCh)

@@ -18,6 +18,7 @@ rules:
   resources:
   - shoots
   - projects
+  - seeds
   verbs:
   - get
   - watch

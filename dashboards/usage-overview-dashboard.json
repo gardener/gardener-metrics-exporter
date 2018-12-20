@@ -147,7 +147,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "garden_projects_total",
+          "expr": "count(garden_projects_status)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
