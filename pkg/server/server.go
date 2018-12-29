@@ -25,9 +25,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var landingPage = []byte(`<html>
+<head><title>Gardener Metrics Exporter</title></head>
+<body>
+<h1>Gardener Metrics Exporter</h1>
+<p><a href='/metrics'>Metrics</a></p>
+</body>
+</html>
+`)
+
 // Serve start the webserver and configure gracefull shut downs.
 func Serve(bindAddress string, port int, logger *logrus.Logger, closeCh chan os.Signal, stopCh chan struct{}) {
 	http.Handle("/metrics", promhttp.Handler())
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "Content-Type: text/html; charset=utf-8")
+		w.Write(landingPage)
+	})
+
 	server := http.Server{
 		Addr: fmt.Sprintf("%s:%d", bindAddress, port),
 	}
