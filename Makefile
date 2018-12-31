@@ -16,6 +16,7 @@ IMAGE_REPOSITORY := eu.gcr.io/gardener-project/gardener/metrics-exporter
 IMAGE_VERSION    := $(shell cat VERSION)
 WORKDIR          := $(shell pwd)
 HOMEDIR          := $(shell echo ${HOME})
+LDFLAGS          := "-s -w -X github.com/gardener/gardener-metrics-exporter/pkg/version.gitVersion=$(IMAGE_VERSION) -X github.com/gardener/gardener-metrics-exporter/pkg/version.gitCommit=$(shell git rev-parse --verify HEAD) -X github.com/gardener/gardener-metrics-exporter/pkg/version.buildDate=$(shell date --rfc-3339=seconds | sed 's/ /T/')"
 
 .PHONY: start
 start:
@@ -25,12 +26,14 @@ start:
 build:
 	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
 		-o $(WORKDIR)/bin/gardener-metrics-exporter \
+		-ldflags $(LDFLAGS) \
 		$(WORKDIR)/cmd/main.go
 
 .PHONY: build-local
 build-local:
 	@go build -i \
 		-o $(WORKDIR)/bin/gardener-metrics-exporter \
+		-ldflags $(LDFLAGS) \
 		$(WORKDIR)/cmd/main.go
 
 .PHONY: docker-build

@@ -6,3 +6,4 @@
 !cmd/
 !vendor/
 !VERSION
+!.git

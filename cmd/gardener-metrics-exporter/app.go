@@ -23,6 +23,7 @@ import (
 
 	"github.com/gardener/gardener-metrics-exporter/pkg/metrics"
 	"github.com/gardener/gardener-metrics-exporter/pkg/server"
+	"github.com/gardener/gardener-metrics-exporter/pkg/version"
 	clientset "github.com/gardener/gardener/pkg/client/garden/clientset/versioned"
 	gardeninformers "github.com/gardener/gardener/pkg/client/garden/informers/externalversions"
 	"github.com/sirupsen/logrus"
@@ -70,7 +71,7 @@ func NewStartGardenMetricsExporter(logger *logrus.Logger, closeCh chan os.Signal
 	log = logger
 	options := options{}
 	cmd := &cobra.Command{
-		Use:  "garden-metrics-exporter",
+		Use:  "gardener-metrics-exporter",
 		Long: "A Prometheus exporter for Gardener related metrics.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !options.validate() {
@@ -82,6 +83,7 @@ func NewStartGardenMetricsExporter(logger *logrus.Logger, closeCh chan os.Signal
 			}
 		},
 	}
+	cmd.AddCommand(version.GetVersionCmd())
 	cmd.Flags().StringVar(&options.bindAddress, "bind-address", "0.0.0.0", "bind address for the webserver")
 	cmd.Flags().IntVar(&options.port, "port", 2718, "port for the webserver")
 	cmd.Flags().StringVar(&options.kubeconfigPath, "kubeconfig", "", "path to kubeconfig file for a Garden cluster")
