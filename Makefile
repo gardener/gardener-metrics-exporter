@@ -59,3 +59,7 @@ revendor:
 .PHONY: clean
 clean:
 	@ rm -rf $(WORKDIR)/bin
+
+.PHONY: check
+check:
+	@$(WORKDIR)/.ci/check
