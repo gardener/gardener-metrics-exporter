@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,11 +25,23 @@ import (
 )
 
 func main() {
-	closeCh := make(chan os.Signal, 2)
-	signal.Notify(closeCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
 	logger := utils.NewLogger()
-	command := app.NewStartGardenMetricsExporter(logger, closeCh)
+
+	// Setup signal handler.
+	signalCh := make(chan os.Signal, 2)
+	ctx, cancel := context.WithCancel(context.Background())
+	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	defer cancel()
+
+	go func() {
+		<-signalCh
+		logger.Info("Received interupt signal.")
+		signal.Stop(signalCh)
+		cancel()
+	}()
+
+	// Init and run app.
+	command := app.NewStartGardenMetricsExporter(ctx, logger)
 	if err := command.Execute(); err != nil {
 		os.Exit(1)
 	}

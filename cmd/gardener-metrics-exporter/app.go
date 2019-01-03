@@ -15,6 +15,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"net"
@@ -67,7 +68,7 @@ func (o *options) validate() bool {
 }
 
 // NewStartGardenMetricsExporter creates a new GardenMetricsExporter command.
-func NewStartGardenMetricsExporter(logger *logrus.Logger, closeCh chan os.Signal) *cobra.Command {
+func NewStartGardenMetricsExporter(ctx context.Context, logger *logrus.Logger) *cobra.Command {
 	log = logger
 	options := options{}
 	cmd := &cobra.Command{
@@ -77,7 +78,7 @@ func NewStartGardenMetricsExporter(logger *logrus.Logger, closeCh chan os.Signal
 			if !options.validate() {
 				os.Exit(1)
 			}
-			if err := run(&options, closeCh); err != nil {
+			if err := run(ctx, &options); err != nil {
 				log.Error(err.Error())
 				os.Exit(1)
 			}
@@ -90,7 +91,7 @@ func NewStartGardenMetricsExporter(logger *logrus.Logger, closeCh chan os.Signal
 	return cmd
 }
 
-func run(o *options, closeCh chan os.Signal) error {
+func run(ctx context.Context, o *options) error {
 	stopCh := make(chan struct{})
 
 	// Create informer factories to create informers.
@@ -109,12 +110,12 @@ func run(o *options, closeCh chan os.Signal) error {
 
 	// Start the factories and wait until the creates informes has synce
 	gardenInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(make(<-chan struct{}), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
 	kubeInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(make(<-chan struct{}), rolebindingInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), rolebindingInformer.HasSynced) {
 		return errors.New("Timed out waiting for Kube caches to sync")
 	}
 	// Start the metrics collector
@@ -125,7 +126,7 @@ func run(o *options, closeCh chan os.Signal) error {
 		kubeInformerFactory.Rbac().V1().RoleBindings(), log)
 
 	// Start the webserver.
-	go server.Serve(o.bindAddress, o.port, log, closeCh, stopCh)
+	go server.Serve(ctx, o.bindAddress, o.port, log, stopCh)
 
 	<-stopCh
 	log.Info("App shut down.")
