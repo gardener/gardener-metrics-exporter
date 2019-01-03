@@ -1,6 +1,11 @@
 .vscode
 .idea
 .DS_Store
+*.coverprofile
+
+bin
+dev
+tmp
 
 gardener-metrics-exporter
 metrics-exporter

@@ -23,7 +23,7 @@ import (
 // collectProjectMetrics collects the number of projects within a Garden cluster.
 func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metric) {
 
-	var status float64 = 0
+	var status float64
 	projects, err := c.projectInformer.Lister().List(labels.Everything())
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
