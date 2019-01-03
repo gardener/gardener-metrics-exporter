@@ -1,5 +1,5 @@
 # Gardener Metrics Exporter
-The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) exporter for [Gardener](https://github.com/gardener/gardener) service-level related metrics.
+The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) metrics exporter for [Gardener](https://github.com/gardener/gardener) service-level related metrics.
 
 **This application requires Go 1.9 or later.**
 
@@ -15,14 +15,14 @@ The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) export
 |garden_shoot_operation_states|Operation State of a Shoot|Shoot|Gauge|
 |garden_shoot_operation_progress_percent|Operation Percentage of a Shoot|Shoot|Gauge|
 |garden_shoot_response_duration_milliseconds| Response time of the Shoot API server (Not provided when not reachable)|Shoot|Gauge|
-|garden_projects_status|Status of garden projects|Projects|Gauge|
-|garden_users_total|Count of users|Users|Gauge|
-|garden_scrape_failure_total|Total count of scraping failures, grouped by kind/group of metric(s)|App|Counter|
 |garden_seed_info|Information to a Seed|Seed|Gauge|
 |garden_seed_condition"|Condition State of a Seed|Seed|Gauge|
+|garden_projects_status|Status of Garden Projects|Projects|Gauge|
+|garden_users_total|Count of users|Users|Gauge|
+|garden_scrape_failure_total|Total count of scraping failures, grouped by kind/group of metric(s)|App|Counter|
 
 ## Grafana Dashboards
-Some [Grafana](https://grafana.com/) dashboards are included in the `dashboards` folder. Simply import them and make sure you have your prometheus data source set to `cluster-prometheus`.
+Some [Grafana](https://grafana.com/) dashboards are included in the `dashboards` folder. Simply import them and make sure you have your Prometheus data source named to `cluster-prometheus`.
 
 ## Usage
 First, clone the repo into your `$GOPATH`.
@@ -34,18 +34,25 @@ cd "$GOPATH/src/github.com/gardener/gardener-metrics-exporter"
 ```
 
 ### Local
-Build the metrics-exporter locally and run it by passing a kubeconfig. Such an enviroment can be setup by following the instructions here: https://github.com/gardener/gardener/blob/master/docs/development/local_setup.md
+The metrics exporter needs to run against a Gardener enviroment (Kubernetes cluster extendend with `garden.sapcloud.io/v1beta1` api group). Such an enviroment can be created by following the instructions here: https://github.com/gardener/gardener/blob/master/docs/development/local_setup.md
 
-Let's build the app locally.
+If the current-context of your `$HOME/.kube/config` point to a Gardener enviroment then you can simply run:
 ```sh
-go build -o gardener-metrics-exporter cmd/main.go
+make start
 ```
 
-Run the binary and pass a kubeconfig. The kubeconfig must point to a Kubernetes cluster which the Gardener is deployed to.
-The user in the config needs permissions to ``GET, LIST, WATCH`` the resources ``shoot(garden.sapcloud.io/v1beta1), namespace(v1), rolebindings (rbac.authorization.k8s.io)`` in all namespaces of the cluster.
+If you plan to pass a specific kubeconfig then you need to build the app locally and pass a kubeconfig to the binary.
+Let's build the app for your enviroment locally and run it. The binary will be located in the `./bin` directory of the repository.
 ```sh
-./gardener-metrics-exporter --kubeconfig=<path-to-kubeconfig-file>
+# Build
+make build-local
+
+# Run
+./bin/gardener-metrics-exporter --kubeconfig=<path-to-kubeconfig-file>
 ```
+
+**Be aware:** The user in the kubeconfig needs permissions to ``GET, LIST, WATCH`` the resources ``Shoot, Seed, Project(garden.sapcloud.io/v1beta1)`` in all namespaces of the cluster.
+
 Verify that everything works by calling the `/metrics` endpoint of the app.
 ```sh
 curl http://localhost:2718/metrics
