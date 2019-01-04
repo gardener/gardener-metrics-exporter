@@ -20,7 +20,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"time"
 
 	"github.com/gardener/gardener-metrics-exporter/pkg/metrics"
 	"github.com/gardener/gardener-metrics-exporter/pkg/server"
@@ -29,8 +28,6 @@ import (
 	gardeninformers "github.com/gardener/gardener/pkg/client/garden/informers/externalversions"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	kubeinformers "k8s.io/client-go/informers"
-	kubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -95,17 +92,16 @@ func run(ctx context.Context, o *options) error {
 	stopCh := make(chan struct{})
 
 	// Create informer factories to create informers.
-	gardenInformerFactory, kubeInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
+	gardenInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
 	if err != nil {
 		return err
 	}
 
 	// Create informers.
 	var (
-		shootInformer       = gardenInformerFactory.Garden().V1beta1().Shoots().Informer()
-		seedInformer        = gardenInformerFactory.Garden().V1beta1().Seeds().Informer()
-		projectInformer     = gardenInformerFactory.Garden().V1beta1().Projects().Informer()
-		rolebindingInformer = kubeInformerFactory.Rbac().V1().RoleBindings().Informer()
+		shootInformer   = gardenInformerFactory.Garden().V1beta1().Shoots().Informer()
+		seedInformer    = gardenInformerFactory.Garden().V1beta1().Seeds().Informer()
+		projectInformer = gardenInformerFactory.Garden().V1beta1().Projects().Informer()
 	)
 
 	// Start the factories and wait until the creates informes has synce
@@ -114,16 +110,8 @@ func run(ctx context.Context, o *options) error {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
-	kubeInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(ctx.Done(), rolebindingInformer.HasSynced) {
-		return errors.New("Timed out waiting for Kube caches to sync")
-	}
 	// Start the metrics collector
-	metrics.SetupMetricsCollector(
-		gardenInformerFactory.Garden().V1beta1().Shoots(),
-		gardenInformerFactory.Garden().V1beta1().Seeds(),
-		gardenInformerFactory.Garden().V1beta1().Projects(),
-		kubeInformerFactory.Rbac().V1().RoleBindings(), log)
+	metrics.SetupMetricsCollector(gardenInformerFactory.Garden().V1beta1().Shoots(), gardenInformerFactory.Garden().V1beta1().Seeds(), gardenInformerFactory.Garden().V1beta1().Projects(), log)
 
 	// Start the webserver.
 	go server.Serve(ctx, o.bindAddress, o.port, log, stopCh)
@@ -165,30 +153,22 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	return client, nil
 }
 
-func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardeninformers.SharedInformerFactory, kubeinformers.SharedInformerFactory, error) {
+func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardeninformers.SharedInformerFactory, error) {
 	restConfig, err := newClientConfig(kubeconfigPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if restConfig == nil {
-		return nil, nil, err
-	}
-	k8sClient, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, nil, err
-	}
-	if k8sClient == nil {
-		return nil, nil, errors.New("k8sClient is nil")
+		return nil, err
 	}
 	gardenClient, err := clientset.NewForConfig(restConfig)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if gardenClient == nil {
-		return nil, nil, errors.New("gardenClient is nil")
+		return nil, errors.New("gardenClient is nil")
 	}
 	gardenInformerFactory := gardeninformers.NewSharedInformerFactory(gardenClient, 0)
-	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(k8sClient, 30*time.Second)
 
-	return gardenInformerFactory, kubeInformerFactory, nil
+	return gardenInformerFactory, nil
 }

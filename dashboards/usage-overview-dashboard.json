@@ -229,7 +229,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "garden_users_total",
+          "expr": "garden_users_total{kind='users'}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
