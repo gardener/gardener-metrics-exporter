@@ -35,15 +35,15 @@ const notesFileSuffix = "NOTES.txt"
 // The chart render is used to render the Helm charts into a RenderedChart struct from which the
 // resulting manifest can be generated.
 type DefaultChartRenderer struct {
-	client       kubernetes.Client
+	client       kubernetes.Interface
 	renderer     *engine.Engine
 	capabilities *chartutil.Capabilities
 }
 
 // New creates a new DefaultChartRenderer object. It requires a Kubernetes client as input which will be
 // injected in the Tiller environment.
-func New(client kubernetes.Client) (ChartRenderer, error) {
-	sv, err := client.Clientset().Discovery().ServerVersion()
+func New(client kubernetes.Interface) (ChartRenderer, error) {
+	sv, err := client.Kubernetes().Discovery().ServerVersion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get kubernetes server version %v", err)
 	}
@@ -60,6 +60,16 @@ func (r *DefaultChartRenderer) Render(chartPath, releaseName, namespace string, 
 	chart, err := chartutil.Load(chartPath)
 	if err != nil {
 		return nil, fmt.Errorf("can't create load chart from path %s:, %s", chartPath, err)
+	}
+	return r.renderRelease(chart, releaseName, namespace, values)
+}
+
+// RenderArchive loads the chart from the given location <chartPath> and calls the Render() function
+// to convert it into a ChartRelease object.
+func (r *DefaultChartRenderer) RenderArchive(archive []byte, releaseName, namespace string, values map[string]interface{}) (*RenderedChart, error) {
+	chart, err := chartutil.LoadArchive(bytes.NewReader(archive))
+	if err != nil {
+		return nil, fmt.Errorf("can't create load chart from archive: %s", err)
 	}
 	return r.renderRelease(chart, releaseName, namespace, values)
 }

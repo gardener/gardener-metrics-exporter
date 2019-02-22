@@ -28,6 +28,12 @@ const (
 	// authenticate against the respective cloud provider (required to store the backups of Shoot clusters).
 	BackupSecretName = "etcd-backup"
 
+	// BackupInfrastructureOperation is a constant for an annotation on a Backupinfrastructure indicating that an operation shall be performed.
+	BackupInfrastructureOperation = "backupinfrastructure.garden.sapcloud.io/operation"
+
+	// BackupInfrastructureReconcile is a constant for an annotation on a Backupinfrastructure indicating that a Backupinfrastructure reconciliation shall be triggered.
+	BackupInfrastructureReconcile = "reconcile"
+
 	// ChartPath is the path to the Helm charts.
 	ChartPath = "charts"
 
@@ -179,6 +185,9 @@ const (
 
 	// KubeSchedulerDeploymentName is the name of the kube-scheduler deployment.
 	KubeSchedulerDeploymentName = "kube-scheduler"
+
+	// KubeSchedulerServerName is the name of the kube-scheduler server.
+	KubeSchedulerServerName = "kube-scheduler-server"
 
 	// KubeAddonManagerDeploymentName is the name of the kube-addon-manager deployment.
 	KubeAddonManagerDeploymentName = "kube-addon-manager"
@@ -341,6 +350,19 @@ const (
 	// delete)).
 	ShootIgnore = "shoot.garden.sapcloud.io/ignore"
 
+	// ShootUID is an annotation key for the shoot namespace in the seed cluster,
+	// which value will be the value of `shoot.status.uid`
+	ShootUID = "shoot.garden.sapcloud.io/uid"
+
+	// AnnotateSeedNamespacePrefix is such a prefix so that the shoot namespace in the seed cluster
+	// will be annotated with the annotations of the shoot resource starting with it.
+	// For example, if the shoot is annotated with <AnnotateSeedNamespacePrefix>key=value,
+	// then the namespace in the seed will be annotated with <AnnotateSeedNamespacePrefix>key=value, as well.
+	AnnotateSeedNamespacePrefix = "custom.shoot.sapcloud.io/"
+
+	//AnnotatePersistentVolumeMinimumSize is used to specify the minimum size of persistent volume in the cluster
+	AnnotatePersistentVolumeMinimumSize = "persistentvolume.garden.sapcloud.io/minimumSize"
+
 	// BackupNamespacePrefix is a constant for backup namespace created for shoot's backup infrastructure related resources.
 	BackupNamespacePrefix = "backup"
 
@@ -374,9 +396,6 @@ const (
 	// NodeExporterImageName is the name of the NodeExporter image.
 	NodeExporterImageName = "node-exporter"
 
-	// HelmTillerImageName is the name of the HelmTiller image.
-	HelmTillerImageName = "helm-tiller"
-
 	// KubeLegoImageName is the name of the KubeLego image.
 	KubeLegoImageName = "kube-lego"
 
@@ -385,12 +404,6 @@ const (
 
 	// KubernetesDashboardImageName is the name of the KubernetesDashboard image.
 	KubernetesDashboardImageName = "kubernetes-dashboard"
-
-	// MonocularAPIImageName is the name of the MonocularAPI image.
-	MonocularAPIImageName = "monocular-api"
-
-	// MonocularUIImageName is the name of the MonocularUI image.
-	MonocularUIImageName = "monocular-ui"
 
 	// BusyboxImageName is the name of the Busybox image.
 	BusyboxImageName = "busybox"
@@ -434,6 +447,23 @@ const (
 	// RubyImageName is the name of the Ruby image.
 	RubyImageName = "ruby"
 
+	// AlicloudControllerManagerImageName is the name of the AlicloudControllerManager image.
+	AlicloudControllerManagerImageName = "alicloud-controller-manager"
+
+	// CSI Images
+
+	// CSIAttacherImageName is the name of csi attacher - https://github.com/kubernetes-csi/external-attacher
+	CSIAttacherImageName = "csi-attacher"
+
+	// CSIDriverRegistrarImageName is the name of driver registrar - https://github.com/kubernetes-csi/driver-registrar
+	CSIDriverRegistrarImageName = "csi-driver-registrar"
+
+	// CSIProvisionerImageName is the name of csi provisioner - https://github.com/kubernetes-csi/external-provisioner
+	CSIProvisionerImageName = "csi-provisioner"
+
+	// CSIPluginAlicloudImageName is the name of csi plugin for Alicloud - https://github.com/AliyunContainerService/csi-plugin
+	CSIPluginAlicloudImageName = "csi-plugin-alicloud"
+
 	// AWSLBReadvertiserImageName is the name of the AWSLBReadvertiser image.
 	AWSLBReadvertiserImageName = "aws-lb-readvertiser"
 
@@ -475,6 +505,10 @@ const (
 
 	// CertBrokerResourceName is the name of the Cert-Broker resources.
 	CertBrokerResourceName = "cert-broker"
+
+	// KubectlVersion specifies the version of kubectl that is used by the scripts bootstrapping shoot worker nodes,
+	// e.g. the cloud-config-downloader script.
+	KubectlVersion = "1.12.3"
 )
 
 var (
@@ -549,6 +583,7 @@ var (
 type CloudConfigUserDataConfig struct {
 	ProvisionCloudProviderConfig bool
 	KubeletParameters            []string
-	WorkerNames                  []string
 	HostnameOverride             bool
+	EnableCSI                    bool
+	ProviderIDProvided           bool
 }

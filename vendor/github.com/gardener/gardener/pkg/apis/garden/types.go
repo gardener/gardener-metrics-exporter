@@ -322,7 +322,7 @@ type DNSProviderConstraint struct {
 
 // KubernetesConstraints contains constraints regarding allowed values of the 'kubernetes' block in the Shoot specification.
 type KubernetesConstraints struct {
-	// Versions is the list of allowed Kubernetes versions for Shoot clusters (e.g., 1.9.1).
+	// Versions is the list of allowed Kubernetes versions for Shoot clusters (e.g., 1.13.1).
 	Versions []string
 }
 
@@ -679,7 +679,7 @@ type ShootSpec struct {
 	// Addons contains information about enabled/disabled addons and their configuration.
 	// +optional
 	Addons *Addons
-	// Backup contains configuration settings for the etcd backups.
+	// DEPRECATED: This field will be removed in a future version.
 	// +optional
 	Backup *Backup
 	// Cloud contains information about the cloud environment and their specific settings.
@@ -1126,11 +1126,11 @@ type Kube2IAMRole struct {
 	Policy string
 }
 
-// Backup holds information about the backup schedule and maximum.
+// Backup - DEPRECATED: This struct will be removed in a future version.
 type Backup struct {
-	// Schedule defines the cron schedule according to which a backup is taken from etcd.
+	// DEPRECATED: This field will be removed in a future version.
 	Schedule string
-	// Maximum indicates how many backups should be kept at maximum.
+	// DEPRECATED: This field will be removed in a future version.
 	Maximum int
 }
 
@@ -1299,7 +1299,6 @@ type OIDCConfig struct {
 	// key=value pairs that describes a required claim in the ID Token. If set, the claim is verified to be present in the ID Token with a matching value.
 	// +optional
 	RequiredClaims map[string]string
-	// ATTENTION: Only meaningful for Kubernetes >= 1.10
 	// List of allowed JOSE asymmetric signing algorithms. JWTs with a 'alg' header value not in this list will be rejected. Values are defined by RFC 7518 https://tools.ietf.org/html/rfc7518#section-3.1
 	// +optional
 	SigningAlgs []string
