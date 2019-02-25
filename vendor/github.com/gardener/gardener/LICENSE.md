@@ -247,6 +247,11 @@ https://git.k8s.io/helm.
 Copyright 2017 The Kubernetes Authors.  
 Apache 2 license (https://git.k8s.io/helm/LICENSE)  
 
+controller-runtime
+https://github.com/kubernetes-sigs/controller-runtime
+Copyright 2018 The Kubernetes Authors.
+Apache 2 license (https://github.com/kubernetes-sigs/controller-runtime/blob/master/LICENSE).  
+
 AWS SDK Go.  
 https://github.com/aws/aws-sdk-go.  
 Copyright 2017 Amazon.com, Inc. or its affiliates.  
@@ -292,6 +297,15 @@ https://github.com/hashicorp/go-multierror
 Copyright (c) 2015, Hashicorp.
 MPL-2.0 (https://github.com/hashicorp/go-multierror/blob/master/LICENSE)
 
+go-jmespath
+https://github.com/jmespath/go-jmespath
+Copyright 2015 James Saryerwinnie
+Apache License, Version 2
+(https://github.com/jmespath/go-jmespath/blob/master/LICENSE)
+
+alibaba-cloud-sdk-go
+https://github.com/aliyun/alibaba-cloud-sdk-go
+Apache License 2.0 (https://github.com/aliyun/alibaba-cloud-sdk-go/blob/master/LICENSE)
 ------
 ## MIT License
 

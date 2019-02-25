@@ -120,6 +120,10 @@ func GetShootCloudProviderWorkers(cloudProvider gardenv1beta1.CloudProvider, sho
 		for _, worker := range cloud.GCP.Workers {
 			workers = append(workers, worker.Worker)
 		}
+	case gardenv1beta1.CloudProviderAlicloud:
+		for _, worker := range cloud.Alicloud.Workers {
+			workers = append(workers, worker.Worker)
+		}
 	case gardenv1beta1.CloudProviderOpenStack:
 		for _, worker := range cloud.OpenStack.Workers {
 			workers = append(workers, worker.Worker)
@@ -133,6 +137,32 @@ func GetShootCloudProviderWorkers(cloudProvider gardenv1beta1.CloudProvider, sho
 	}
 
 	return workers
+}
+
+// GetMachineTypesFromCloudProfile retrieves list of machine types from cloud profile
+func GetMachineTypesFromCloudProfile(cloudProvider gardenv1beta1.CloudProvider, profile *gardenv1beta1.CloudProfile) []gardenv1beta1.MachineType {
+	var (
+		machineTypes []gardenv1beta1.MachineType
+	)
+
+	switch cloudProvider {
+	case gardenv1beta1.CloudProviderAWS:
+		return profile.Spec.AWS.Constraints.MachineTypes
+	case gardenv1beta1.CloudProviderAzure:
+		return profile.Spec.Azure.Constraints.MachineTypes
+	case gardenv1beta1.CloudProviderGCP:
+		return profile.Spec.GCP.Constraints.MachineTypes
+	case gardenv1beta1.CloudProviderOpenStack:
+		for _, openStackMachineType := range profile.Spec.OpenStack.Constraints.MachineTypes {
+			machineTypes = append(machineTypes, openStackMachineType.MachineType)
+		}
+	case gardenv1beta1.CloudProviderLocal:
+		machineTypes = append(machineTypes, gardenv1beta1.MachineType{
+			Name: "local",
+		})
+	}
+
+	return machineTypes
 }
 
 // DetermineCloudProviderInShoot takes a Shoot cloud object and returns the cloud provider this profile is used for.
@@ -366,9 +396,10 @@ func DetermineLatestKubernetesVersion(cloudProfile gardenv1beta1.CloudProfile, c
 }
 
 type ShootedSeed struct {
-	Protected *bool
-	Visible   *bool
-	APIServer *ShootedSeedAPIServer
+	Protected         *bool
+	Visible           *bool
+	MinimumVolumeSize *string
+	APIServer         *ShootedSeedAPIServer
 }
 
 type ShootedSeedAPIServer struct {
@@ -418,8 +449,11 @@ func parseShootedSeed(annotation string) (*ShootedSeed, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	shootedSeed.APIServer = apiServer
+
+	if size, ok := settings["minimumVolumeSize"]; ok {
+		shootedSeed.MinimumVolumeSize = &size
+	}
 
 	if _, ok := flags["protected"]; ok {
 		shootedSeed.Protected = &trueVar

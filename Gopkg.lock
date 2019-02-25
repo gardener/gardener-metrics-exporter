@@ -61,14 +61,18 @@
   revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
-  digest = "1:28b9a1986cb6dfcbc3e5c0c18c150f62d80e10b9fb670ebf869aafd475eebebd"
+  digest = "1:60640f333acb4aaf1292041a75907a18675378010708b2ca0943b5a624b42a72"
   name = "github.com/gardener/gardener"
   packages = [
-    "pkg/apis/componentconfig",
+    "pkg/apis/core",
+    "pkg/apis/core/v1alpha1",
     "pkg/apis/garden",
     "pkg/apis/garden/v1beta1",
     "pkg/apis/garden/v1beta1/helper",
     "pkg/chartrenderer",
+    "pkg/client/core/clientset/versioned",
+    "pkg/client/core/clientset/versioned/scheme",
+    "pkg/client/core/clientset/versioned/typed/core/v1alpha1",
     "pkg/client/garden/clientset/versioned",
     "pkg/client/garden/clientset/versioned/scheme",
     "pkg/client/garden/clientset/versioned/typed/garden/v1beta1",
@@ -78,11 +82,6 @@
     "pkg/client/garden/informers/externalversions/internalinterfaces",
     "pkg/client/garden/listers/garden/v1beta1",
     "pkg/client/kubernetes",
-    "pkg/client/kubernetes/base",
-    "pkg/client/kubernetes/v110",
-    "pkg/client/kubernetes/v111",
-    "pkg/client/kubernetes/v112",
-    "pkg/client/kubernetes/v19",
     "pkg/client/machine/clientset/versioned",
     "pkg/client/machine/clientset/versioned/scheme",
     "pkg/client/machine/clientset/versioned/typed/machine/v1alpha1",
@@ -93,18 +92,19 @@
     "pkg/utils/kubernetes",
   ]
   pruneopts = "UT"
-  revision = "c7e901c7fc86bb23e3f50fbe3c96f3ba0b9d6cb3"
-  version = "0.14.1"
+  revision = "172ca8124d100583fcbbc7bc3383ec1f8b83c10f"
+  version = "0.17.3"
 
 [[projects]]
-  digest = "1:490ab10bb14925418c45bcdd0d429f4894691ec41be389b2ead9a5b2a9262033"
+  digest = "1:45ef8724981e1412df2734c5af2c75775e94d8efa5289ff24c06010476380b35"
   name = "github.com/gardener/machine-controller-manager"
   packages = [
     "pkg/apis/machine",
     "pkg/apis/machine/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "d0161dd1856eb2ad4e956865d2ecd92c5b21b182"
+  revision = "ef3cacda79492fd298ee85446077c1a2497ba407"
+  version = "0.12.0"
 
 [[projects]]
   digest = "1:2cd7915ab26ede7d95b8749e6b1f933f1c6d5398030684e6505940a10f31cfda"
@@ -576,13 +576,14 @@
   version = "kubernetes-1.12.1"
 
 [[projects]]
-  digest = "1:db4cc40a5671216728219c763d85ae1310a5d7fe0326eaace451bd8c7567c18c"
+  digest = "1:7eab2e111283d67bc22663049f754b2ec5c4a694bfdd23d3d4fc1109e785aac1"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
+    "pkg/apis/config",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
@@ -632,10 +633,12 @@
   version = "kubernetes-1.12.1"
 
 [[projects]]
-  digest = "1:ef5c8258430622ecc275a2bdc32d202c821ca2da12f9f4723a01c54f0c1fd113"
+  digest = "1:5fb98c23ffc5462b6790ae26f0b4b24009f28530505f4c0f238c09905a2c0bd2"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
+    "discovery/cached",
+    "dynamic",
     "kubernetes",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
@@ -676,6 +679,7 @@
     "plugin/pkg/client/auth/exec",
     "rest",
     "rest/watch",
+    "restmapper",
     "tools/auth",
     "tools/cache",
     "tools/clientcmd",
@@ -741,6 +745,17 @@
   packages = ["pkg/util/proto"]
   pruneopts = "UT"
   revision = "9dfdf9be683f61f82cda12362c44c784e0778b56"
+
+[[projects]]
+  digest = "1:744e92fc72882b22ae2add854ee1841f95fc5148baaeda2a244e621ad0995d97"
+  name = "sigs.k8s.io/controller-runtime"
+  packages = [
+    "pkg/client",
+    "pkg/client/apiutil",
+  ]
+  pruneopts = "UT"
+  revision = "12d98582e72927b6cd0123e2b4e819f9341ce62c"
+  version = "v0.1.10"
 
 [solve-meta]
   analyzer-name = "dep"

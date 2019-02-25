@@ -26,19 +26,6 @@ func addDefaultingFuncs(scheme *runtime.Scheme) error {
 
 // SetDefaults_Shoot sets default values for Shoot objects.
 func SetDefaults_Shoot(obj *Shoot) {
-	if obj.Spec.Backup == nil {
-		obj.Spec.Backup = &Backup{
-			Schedule: DefaultETCDBackupSchedule,
-			Maximum:  DefaultETCDBackupMaximum,
-		}
-	}
-	if len(obj.Spec.Backup.Schedule) == 0 {
-		obj.Spec.Backup.Schedule = DefaultETCDBackupSchedule
-	}
-	if obj.Spec.Backup.Maximum <= 0 {
-		obj.Spec.Backup.Maximum = DefaultETCDBackupMaximum
-	}
-
 	var (
 		cloud              = obj.Spec.Cloud
 		defaultPodCIDR     = DefaultPodNetworkCIDR
@@ -87,10 +74,12 @@ func SetDefaults_Shoot(obj *Shoot) {
 
 	if cloud.Alicloud != nil {
 		if cloud.Alicloud.Networks.Pods == nil {
-			obj.Spec.Cloud.Alicloud.Networks.Pods = &defaultPodCIDR
+			podCIDR := CIDR("100.64.0.0/11")
+			obj.Spec.Cloud.Alicloud.Networks.Pods = &podCIDR
 		}
 		if cloud.Alicloud.Networks.Services == nil {
-			obj.Spec.Cloud.Alicloud.Networks.Services = &defaultServiceCIDR
+			svcCIDR := CIDR("100.104.0.0/13")
+			obj.Spec.Cloud.Alicloud.Networks.Services = &svcCIDR
 		}
 		if cloud.Alicloud.Networks.Nodes == nil {
 			if cloud.Alicloud.Networks.VPC.CIDR != nil {
