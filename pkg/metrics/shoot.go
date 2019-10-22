@@ -60,6 +60,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		return
 	}
 
+	projects, err := c.projectInformer.Lister().List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "projects-count"}).Inc()
+		return
+	}
+
 	for _, shoot := range shoots {
 		// Some Shoot sanity checks.
 		if shoot == nil || shoot.Spec.Cloud.Seed == nil {
@@ -85,8 +91,19 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			purpose = shootPurpose
 		}
 
+		var projectName string
+		for _, project := range projects {
+			if project.Spec.Namespace != nil && *project.Spec.Namespace == shoot.Namespace {
+				projectName = project.ObjectMeta.Name
+				break
+			}
+		}
+		if projectName == "" {
+			c.logger.Errorf("no project found for shoot %s", shoot.Name)
+		}
+
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, shoot.Namespace, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Cloud.Region, seed)
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Cloud.Region, seed)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue
@@ -95,7 +112,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 		// Collect metrics to the node count of the Shoot.
 		// TODO: Use the metrics of the Machine-Controller-Manager, when available. The mcm should be able to provide the actual amount of nodes/machines.
-		c.collectShootNodeMetrics(shoot, cloudProvider, ch)
+		c.collectShootNodeMetrics(shoot, cloudProvider, projectName, ch)
 
 		if shoot.Status.LastOperation != nil {
 			lastOperation := string(shoot.Status.LastOperation.Type)
@@ -121,13 +138,13 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 					}
 					operationProgress = float64(shoot.Status.LastOperation.Progress)
 				}
-				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootOperationState], prometheus.GaugeValue, operationState, shoot.Name, shoot.Namespace, operation)
+				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootOperationState], prometheus.GaugeValue, operationState, shoot.Name, projectName, operation)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
 				}
 				ch <- metric
-				metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootOperationProgressPercent], prometheus.GaugeValue, operationProgress, shoot.Name, shoot.Namespace, operation)
+				metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootOperationProgressPercent], prometheus.GaugeValue, operationProgress, shoot.Name, projectName, operation)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
@@ -137,7 +154,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 			// Export a metric for each condition of the Shoot.
 			for _, condition := range shoot.Status.Conditions {
-				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, shoot.Namespace, string(condition.Type), lastOperation, purpose, strconv.FormatBool(isSeed))
+				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, projectName, string(condition.Type), lastOperation, purpose, strconv.FormatBool(isSeed))
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
@@ -148,7 +165,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				// response time of a request to the API Server. This information will be extracted if available
 				// and exposed in a seperate metric.
 				if condition.Type == gardenv1beta1.ShootAPIServerAvailable {
-					c.exposeAPIServerResponseTime(condition, shoot, ch)
+					c.exposeAPIServerResponseTime(condition, shoot, projectName, ch)
 				}
 			}
 
@@ -162,7 +179,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	c.exposeShootOperations(shootOperationsCounters, ch)
 }
 
-func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Shoot, cloudProvider gardenv1beta1.CloudProvider, ch chan<- prometheus.Metric) {
+func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Shoot, cloudProvider gardenv1beta1.CloudProvider, projectName string, ch chan<- prometheus.Metric) {
 	var (
 		nodeCountMax int
 		nodeCountMin int
@@ -180,7 +197,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 	}
 
 	// Expose metrics. Start with max node count.
-	metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootNodeMaxTotal], prometheus.GaugeValue, float64(nodeCountMax), shoot.Name, shoot.Namespace)
+	metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootNodeMaxTotal], prometheus.GaugeValue, float64(nodeCountMax), shoot.Name, projectName)
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 		return
@@ -188,7 +205,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 	ch <- metric
 
 	// Continue with min node count.
-	metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootNodeMinTotal], prometheus.GaugeValue, float64(nodeCountMin), shoot.Name, shoot.Namespace)
+	metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootNodeMinTotal], prometheus.GaugeValue, float64(nodeCountMin), shoot.Name, projectName)
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 		return
@@ -210,7 +227,7 @@ func (c gardenMetricsCollector) exposeShootOperations(shootOperations map[string
 	}
 }
 
-func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1beta1.Condition, shoot *gardenv1beta1.Shoot, ch chan<- prometheus.Metric) {
+func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1beta1.Condition, shoot *gardenv1beta1.Shoot, projectName string, ch chan<- prometheus.Metric) {
 	match := shootHealthProbeResponseTimeRegExp.FindAllStringSubmatch(condition.Message, -1)
 	if len(match) != 1 || len(match[0]) != 2 {
 		return
@@ -223,7 +240,7 @@ func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1be
 	if err != nil {
 		return
 	}
-	metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootResponseDuration], prometheus.GaugeValue, responseTimeConv, shoot.Name, shoot.Namespace)
+	metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootResponseDuration], prometheus.GaugeValue, responseTimeConv, shoot.Name, projectName)
 	if err != nil {
 		return
 	}
