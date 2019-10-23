@@ -32,7 +32,7 @@ func init() {
 	userServiceAccountRegExp = exp
 }
 
-// collectProjectMetrics collects the number of projects within a Garden cluster.
+// collectProjectMetrics collect Project metrics.
 func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metric) {
 	projects, err := c.projectInformer.Lister().List(labels.Everything())
 	if err != nil {

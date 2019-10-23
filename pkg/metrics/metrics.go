@@ -28,6 +28,10 @@ const (
 	metricGardenSeedInfo      = "garden_seed_info"
 	metricGardenSeedCondition = "garden_seed_condition"
 
+	// Plant metric
+	metricGardenPlantInfo      = "garden_plant_info"
+	metricGardenPlantCondition = "garden_plant_condition"
+
 	// Shoot metric (available also for Shoots which act as Seed).
 	metricGardenShootInfo                     = "garden_shoot_info"
 	metricGardenShootCondition                = "garden_shoot_condition"
@@ -43,16 +47,19 @@ const (
 
 func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 	return map[string]*prometheus.Desc{
-		metricGardenSeedCondition: prometheus.NewDesc(metricGardenSeedCondition, "Condition state of Seed.", []string{"name", "condition"}, nil),
-		metricGardenSeedInfo:      prometheus.NewDesc(metricGardenSeedInfo, "Information to a Seed.", []string{"name", "namespace", "iaas", "region", "visible", "protected"}, nil),
+		metricGardenSeedCondition: prometheus.NewDesc(metricGardenSeedCondition, "Condition state of a Seed.", []string{"name", "condition"}, nil),
+		metricGardenSeedInfo:      prometheus.NewDesc(metricGardenSeedInfo, "Information about a Seed.", []string{"name", "namespace", "iaas", "region", "visible", "protected"}, nil),
 
 		metricGardenProjectsStatus: prometheus.NewDesc(metricGardenProjectsStatus, "Status of projects.", []string{"name", "cluster", "phase"}, nil),
 		metricGardenUsersSum:       prometheus.NewDesc(metricGardenUsersSum, "Count of users.", []string{"kind"}, nil),
 
-		metricGardenShootInfo:                     prometheus.NewDesc(metricGardenShootInfo, "Information to a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
+		metricGardenPlantInfo:      prometheus.NewDesc(metricGardenPlantInfo, "Information about a plant.", []string{"name", "project", "provider", "region", "version"}, nil),
+		metricGardenPlantCondition: prometheus.NewDesc(metricGardenPlantCondition, "Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition"}, nil),
+
+		metricGardenShootInfo:                     prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
 		metricGardenShootOperationState:           prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation"}, nil),
 		metricGardenShootOperationProgressPercent: prometheus.NewDesc(metricGardenShootOperationProgressPercent, "Operation progress percent of a Shoot.", []string{"name", "project", "operation"}, nil),
-		metricGardenShootCondition:                prometheus.NewDesc(metricGardenShootCondition, "Condition state of Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition", "operation", "purpose", "is_seed"}, nil),
+		metricGardenShootCondition:                prometheus.NewDesc(metricGardenShootCondition, "Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition", "operation", "purpose", "is_seed"}, nil),
 		metricGardenShootResponseDuration:         prometheus.NewDesc(metricGardenShootResponseDuration, "Response time of the Shoot API server. Not provided when not reachable.", []string{"name", "project"}, nil),
 
 		metricGardenShootNodeMaxTotal: prometheus.NewDesc(metricGardenShootNodeMaxTotal, "Max node count of a Shoot.", []string{"name", "project"}, nil),
@@ -66,6 +73,7 @@ type gardenMetricsCollector struct {
 	shootInformer   gardencoreinformers.ShootInformer
 	seedInformer    gardencoreinformers.SeedInformer
 	projectInformer gardencoreinformers.ProjectInformer
+	plantInformer   gardencoreinformers.PlantInformer
 	descs           map[string]*prometheus.Desc
 	logger          *logrus.Logger
 }
@@ -78,18 +86,21 @@ func (c *gardenMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect implements the prometheus.Collect interface, which intends the gardenMetricsCollector to be a Prometheus collector.
+// TODO Can we run the collectors in parallel?
 func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	c.collectProjectMetrics(ch)
 	c.collectShootMetrics(ch)
 	c.collectSeedMetrics(ch)
+	c.collectPlantMetrics(ch)
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, plantInformer gardencoreinformers.PlantInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
 		shootInformer:   shootInformer,
 		seedInformer:    seedInformer,
 		projectInformer: projectInformer,
+		plantInformer:   plantInformer,
 		descs:           getGardenMetricsDefinitions(),
 		logger:          logger,
 	}

@@ -15,6 +15,8 @@
 package metrics
 
 import (
+	"fmt"
+
 	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
 	constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
 
@@ -51,4 +53,18 @@ func usedAsSeed(shoot *gardenv1alpha1.Shoot) bool {
 		return false
 	}
 	return true
+}
+
+func findProject(projects []*gardenv1alpha1.Project, match string) (*string, error) {
+	var projectName string
+	for _, project := range projects {
+		if project.Spec.Namespace != nil && *project.Spec.Namespace == match {
+			projectName = project.Name
+			break
+		}
+	}
+	if projectName == "" {
+		return nil, fmt.Errorf("no project found for shoot %s", match)
+	}
+	return &projectName, nil
 }

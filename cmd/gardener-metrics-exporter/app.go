@@ -103,16 +103,17 @@ func run(ctx context.Context, o *options) error {
 		shootInformer   = gardenInformerFactory.Core().V1alpha1().Shoots().Informer()
 		seedInformer    = gardenInformerFactory.Core().V1alpha1().Seeds().Informer()
 		projectInformer = gardenInformerFactory.Core().V1alpha1().Projects().Informer()
+		plantInformer   = gardenInformerFactory.Core().V1alpha1().Plants().Informer()
 	)
 
 	// Start the factories and wait until the creates informes has synce
 	gardenInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, plantInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
 	// Start the metrics collector
-	metrics.SetupMetricsCollector(gardenInformerFactory.Core().V1alpha1().Shoots(), gardenInformerFactory.Core().V1alpha1().Seeds(), gardenInformerFactory.Core().V1alpha1().Projects(), log)
+	metrics.SetupMetricsCollector(gardenInformerFactory.Core().V1alpha1().Shoots(), gardenInformerFactory.Core().V1alpha1().Seeds(), gardenInformerFactory.Core().V1alpha1().Projects(), gardenInformerFactory.Core().V1alpha1().Plants(), log)
 
 	// Start the webserver.
 	go server.Serve(ctx, o.bindAddress, o.port, log, stopCh)

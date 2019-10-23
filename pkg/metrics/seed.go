@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// collectProjectMetrics collects the number of projects within a Garden cluster.
+// collectProjectMetrics collect Seed metrics.
 func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) {
 	seeds, err := c.seedInformer.Lister().List(labels.Everything())
 	if err != nil {
