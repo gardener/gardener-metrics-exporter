@@ -17,6 +17,7 @@ package metrics
 import (
 	"strconv"
 
+	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -30,13 +31,25 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 	}
 
 	for _, seed := range seeds {
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedInfo], prometheus.GaugeValue, 0, seed.ObjectMeta.Name, seed.ObjectMeta.Namespace, seed.Spec.Cloud.Profile, seed.Spec.Cloud.Region, strconv.FormatBool(*seed.Spec.Visible), strconv.FormatBool(*seed.Spec.Protected))
+		var (
+			protected bool
+			visible   = true
+		)
+		for _, t := range seed.Spec.Taints {
+			if t.Key == gardenv1alpha1.SeedTaintProtected {
+				protected = true
+			}
+			if t.Key == gardenv1alpha1.SeedTaintInvisible {
+				visible = false
+			}
+		}
+
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedInfo], prometheus.GaugeValue, 0, seed.ObjectMeta.Name, seed.ObjectMeta.Namespace, seed.Spec.Provider.Type, seed.Spec.Provider.Region, strconv.FormatBool(visible), strconv.FormatBool(protected))
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue
 		}
 		ch <- metric
-
 		// Export a metric for each condition of the Seed.
 		for _, condition := range seed.Status.Conditions {
 			metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), seed.Name, string(condition.Type))

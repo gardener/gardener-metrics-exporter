@@ -15,8 +15,9 @@
 package metrics
 
 import (
-	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
-	"github.com/gardener/gardener/pkg/operation/common"
+	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
+	constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
+
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -28,24 +29,24 @@ var (
 	}, []string{"kind"})
 )
 
-func mapConditionStatus(status gardenv1beta1.ConditionStatus) float64 {
+func mapConditionStatus(status gardenv1alpha1.ConditionStatus) float64 {
 	switch status {
-	case gardenv1beta1.ConditionTrue:
+	case gardenv1alpha1.ConditionTrue:
 		return 1
-	case gardenv1beta1.ConditionFalse:
+	case gardenv1alpha1.ConditionFalse:
 		return 0
-	case gardenv1beta1.ConditionProgressing:
+	case gardenv1alpha1.ConditionProgressing:
 		return 2
 	default:
 		return -1
 	}
 }
 
-func usedAsSeed(shoot *gardenv1beta1.Shoot) bool {
-	if shoot.Namespace != common.GardenNamespace {
+func usedAsSeed(shoot *gardenv1alpha1.Shoot) bool {
+	if shoot.Namespace != constants.GardenNamespace {
 		return false
 	}
-	_, ok := shoot.Annotations[common.ShootUseAsSeed]
+	_, ok := shoot.Annotations[constants.AnnotationShootUseAsSeed]
 	if !ok {
 		return false
 	}

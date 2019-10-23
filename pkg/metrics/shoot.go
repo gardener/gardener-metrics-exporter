@@ -20,10 +20,8 @@ import (
 	"strconv"
 	"strings"
 
-	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
-	"github.com/gardener/gardener/pkg/apis/garden/v1beta1/helper"
-	"github.com/gardener/gardener/pkg/operation/common"
-	operationshoot "github.com/gardener/gardener/pkg/operation/shoot"
+	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
+	constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -33,9 +31,9 @@ var (
 	shootHealthProbeResponseTimeRegExp *regexp.Regexp
 
 	shootOperations = [3]string{
-		string(gardenv1beta1.ShootLastOperationTypeCreate),
-		string(gardenv1beta1.ShootLastOperationTypeReconcile),
-		string(gardenv1beta1.ShootLastOperationTypeDelete),
+		string(gardenv1alpha1.LastOperationTypeCreate),
+		string(gardenv1alpha1.LastOperationTypeReconcile),
+		string(gardenv1alpha1.LastOperationTypeDelete),
 	}
 )
 
@@ -68,26 +66,20 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 	for _, shoot := range shoots {
 		// Some Shoot sanity checks.
-		if shoot == nil || shoot.Spec.Cloud.Seed == nil {
+		if shoot == nil || shoot.Spec.SeedName == nil {
 			continue
-		}
-
-		// Determine the cloud provider.
-		cloudProvider, err := helper.DetermineCloudProviderInShoot(shoot.Spec.Cloud)
-		if err != nil {
-			return
 		}
 
 		var (
 			isSeed  bool
 			purpose string
 
-			iaas = string(cloudProvider)
-			seed = *(shoot.Spec.Cloud.Seed)
+			iaas = shoot.Spec.Provider.Type
+			seed = *shoot.Spec.SeedName
 		)
 		isSeed = usedAsSeed(shoot)
 
-		if shootPurpose, ok := shoot.Annotations[common.GardenPurpose]; ok {
+		if shootPurpose, ok := shoot.Annotations[constants.GardenPurpose]; ok {
 			purpose = shootPurpose
 		}
 
@@ -103,7 +95,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Cloud.Region, seed)
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Region, seed)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue
@@ -112,7 +104,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 		// Collect metrics to the node count of the Shoot.
 		// TODO: Use the metrics of the Machine-Controller-Manager, when available. The mcm should be able to provide the actual amount of nodes/machines.
-		c.collectShootNodeMetrics(shoot, cloudProvider, projectName, ch)
+		c.collectShootNodeMetrics(shoot, projectName, ch)
 
 		if shoot.Status.LastOperation != nil {
 			lastOperation := string(shoot.Status.LastOperation.Type)
@@ -125,16 +117,18 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				var operationProgress float64
 				if operation == lastOperation {
 					switch shoot.Status.LastOperation.State {
-					case gardenv1beta1.ShootLastOperationStateSucceeded:
+					case gardenv1alpha1.LastOperationStateSucceeded:
 						operationState = 1
-					case gardenv1beta1.ShootLastOperationStateProcessing:
+					case gardenv1alpha1.LastOperationStateProcessing:
 						operationState = 2
-					case gardenv1beta1.ShootLastOperationStatePending:
+					case gardenv1alpha1.LastOperationStatePending:
 						operationState = 3
-					case gardenv1beta1.ShootLastOperationStateError:
+					case gardenv1alpha1.LastOperationStateAborted:
 						operationState = 4
-					case gardenv1beta1.ShootLastOperationStateFailed:
+					case gardenv1alpha1.LastOperationStateError:
 						operationState = 5
+					case gardenv1alpha1.LastOperationStateFailed:
+						operationState = 6
 					}
 					operationProgress = float64(shoot.Status.LastOperation.Progress)
 				}
@@ -164,14 +158,14 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				// Handle the ShootAPIServerAvailable condition special. This condition can transport a measured
 				// response time of a request to the API Server. This information will be extracted if available
 				// and exposed in a seperate metric.
-				if condition.Type == gardenv1beta1.ShootAPIServerAvailable {
+				if condition.Type == gardenv1alpha1.ShootAPIServerAvailable {
 					c.exposeAPIServerResponseTime(condition, shoot, projectName, ch)
 				}
 			}
 
 			// Collect the current count of ongoing operations.
 			if !isSeed {
-				shootOperationsCounters[fmt.Sprintf("%s:%s:%s:%s:%s:%s", lastOperation, lastOperationState, iaas, seed, shoot.Spec.Kubernetes.Version, shoot.Spec.Cloud.Region)]++
+				shootOperationsCounters[fmt.Sprintf("%s:%s:%s:%s:%s:%s", lastOperation, lastOperationState, iaas, seed, shoot.Spec.Kubernetes.Version, shoot.Spec.Region)]++
 			}
 		}
 	}
@@ -179,21 +173,16 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	c.exposeShootOperations(shootOperationsCounters, ch)
 }
 
-func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Shoot, cloudProvider gardenv1beta1.CloudProvider, projectName string, ch chan<- prometheus.Metric) {
+func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1alpha1.Shoot, projectName string, ch chan<- prometheus.Metric) {
 	var (
-		nodeCountMax int
-		nodeCountMin int
+		nodeCountMax int32
+		nodeCountMin int32
 	)
 
-	operationShoot := operationshoot.Shoot{
-		Info:          shoot,
-		CloudProvider: cloudProvider,
-	}
-
-	workers := operationShoot.GetWorkers()
+	workers := shoot.Spec.Provider.Workers
 	for _, worker := range workers {
-		nodeCountMax += worker.AutoScalerMax
-		nodeCountMin += worker.AutoScalerMin
+		nodeCountMax += worker.Minimum
+		nodeCountMin += worker.Maximum
 	}
 
 	// Expose metrics. Start with max node count.
@@ -227,7 +216,7 @@ func (c gardenMetricsCollector) exposeShootOperations(shootOperations map[string
 	}
 }
 
-func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1beta1.Condition, shoot *gardenv1beta1.Shoot, projectName string, ch chan<- prometheus.Metric) {
+func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1alpha1.Condition, shoot *gardenv1alpha1.Shoot, projectName string, ch chan<- prometheus.Metric) {
 	match := shootHealthProbeResponseTimeRegExp.FindAllStringSubmatch(condition.Message, -1)
 	if len(match) != 1 || len(match[0]) != 2 {
 		return

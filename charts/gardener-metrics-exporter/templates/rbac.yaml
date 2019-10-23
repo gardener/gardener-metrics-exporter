@@ -3,14 +3,15 @@
 apiVersion: {{ include "rbacversion" . }}
 kind: ClusterRole
 metadata:
-  name: garden.sapcloud.io:metrics-exporter
+  name: gardener.cloud:metrics-exporter
 rules:
 - apiGroups:
-  - garden.sapcloud.io
+  - core.gardener.cloud
   resources:
   - shoots
   - projects
   - seeds
+  - plants
   verbs:
   - get
   - watch
@@ -19,13 +20,13 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: {{ include "rbacversion" . }}
 metadata:
-  name: garden.sapcloud.io:metrics-exporter
+  name: gardener.cloud:metrics-exporter
 subjects:
 - kind: ServiceAccount
   name: gardener-metrics-exporter
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: garden.sapcloud.io:metrics-exporter
+  name: gardener.cloud:metrics-exporter
   apiGroup: rbac.authorization.k8s.io
 {{ end }}

@@ -15,7 +15,7 @@
 package metrics
 
 import (
-	gardeninformers "github.com/gardener/gardener/pkg/client/garden/informers/externalversions/garden/v1beta1"
+	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions/core/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
@@ -63,9 +63,9 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 }
 
 type gardenMetricsCollector struct {
-	shootInformer   gardeninformers.ShootInformer
-	seedInformer    gardeninformers.SeedInformer
-	projectInformer gardeninformers.ProjectInformer
+	shootInformer   gardencoreinformers.ShootInformer
+	seedInformer    gardencoreinformers.SeedInformer
+	projectInformer gardencoreinformers.ProjectInformer
 	descs           map[string]*prometheus.Desc
 	logger          *logrus.Logger
 }
@@ -85,7 +85,7 @@ func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardeninformers.ShootInformer, seedInformer gardeninformers.SeedInformer, projectInformer gardeninformers.ProjectInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
 		shootInformer:   shootInformer,
 		seedInformer:    seedInformer,
