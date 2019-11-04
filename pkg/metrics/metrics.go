@@ -18,6 +18,7 @@ import (
 	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions/core/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -83,6 +84,7 @@ func (c *gardenMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, desc := range c.descs {
 		ch <- desc
 	}
+	registerShootCustomizationMetrics(ch)
 }
 
 // Collect implements the prometheus.Collect interface, which intends the gardenMetricsCollector to be a Prometheus collector.
@@ -106,4 +108,28 @@ func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seed
 	}
 	prometheus.MustRegister(&metricsCollector)
 	prometheus.MustRegister(ScrapeFailures)
+}
+
+type metricDefintion struct {
+	name        string
+	help        string
+	labels      []string
+	valueType   prometheus.ValueType
+	desc        *prometheus.Desc
+	collectFunc func(interface{}, ...interface{}) (*float64, *[]string, error)
+}
+
+func (m *metricDefintion) collect(ch chan<- prometheus.Metric, obj interface{}, projectName ...interface{}) {
+	value, labels, err := m.collectFunc(obj, projectName...)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	metric, err := prometheus.NewConstMetric(m.desc, m.valueType, *value, *labels...)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	ch <- metric
 }

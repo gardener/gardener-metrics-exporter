@@ -101,6 +101,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		// TODO: Use the metrics of the Machine-Controller-Manager, when available. The mcm should be able to provide the actual amount of nodes/machines.
 		c.collectShootNodeMetrics(shoot, projectName, ch)
 
+		collectShootCustomizationMetrics(shoot, projectName, ch)
+
 		if shoot.Status.LastOperation != nil {
 			lastOperation := string(shoot.Status.LastOperation.Type)
 			lastOperationState := string(shoot.Status.LastOperation.State)
