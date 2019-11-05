@@ -17,7 +17,7 @@ package metrics
 import (
 	"regexp"
 
-	"github.com/gardener/gardener/pkg/apis/garden/v1beta1"
+	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -32,7 +32,7 @@ func init() {
 	userServiceAccountRegExp = exp
 }
 
-// collectProjectMetrics collects the number of projects within a Garden cluster.
+// collectProjectMetrics collect Project metrics.
 func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metric) {
 	projects, err := c.projectInformer.Lister().List(labels.Everything())
 	if err != nil {
@@ -43,13 +43,13 @@ func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metri
 	var status float64
 	for _, project := range projects {
 		switch project.Status.Phase {
-		case v1beta1.ProjectPending:
+		case gardenv1alpha1.ProjectPending:
 			status = 1
-		case v1beta1.ProjectReady:
+		case gardenv1alpha1.ProjectReady:
 			status = 0
-		case v1beta1.ProjectFailed:
+		case gardenv1alpha1.ProjectFailed:
 			status = -1
-		case v1beta1.ProjectTerminating:
+		case gardenv1alpha1.ProjectTerminating:
 			status = 2
 		}
 		metric, err := prometheus.NewConstMetric(c.descs[metricGardenProjectsStatus], prometheus.GaugeValue, status, project.ObjectMeta.Name, project.ObjectMeta.ClusterName, string(project.Status.Phase))

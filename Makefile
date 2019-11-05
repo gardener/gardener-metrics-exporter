@@ -24,14 +24,16 @@ start:
 
 .PHONY: build
 build:
-	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build \
+		-mod=vendor \
 		-o $(WORKDIR)/bin/gardener-metrics-exporter \
 		-ldflags $(LDFLAGS) \
 		$(WORKDIR)/cmd/main.go
 
 .PHONY: build-local
 build-local:
-	@go build -i \
+	@GO111MODULE=on go build -i \
+		-mod=vendor \
 		-o $(WORKDIR)/bin/gardener-metrics-exporter \
 		-ldflags $(LDFLAGS) \
 		$(WORKDIR)/cmd/main.go
@@ -53,7 +55,8 @@ docker-push: docker-build
 
 .PHONY: revendor
 revendor:
-	@dep ensure -update
+	@GO111MODULE=on go mod vendor
+	@GO111MODULE=on go mod tidy
 	# The machine-controller-manager repository references different version of the k8s.io packages which results in
 	# vendoring issues. To circumvent them and to avoid the necessity of copying their content into our repository we
 	# delete troubling files here (in fact, we are only requiring the types.go file).

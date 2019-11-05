@@ -1,5 +1,5 @@
 #####################      builder       #####################
-FROM golang:1.11.5 AS builder
+FROM golang:1.13.3 AS builder
 
 WORKDIR /go/src/github.com/gardener/gardener-metrics-exporter
 COPY . .
@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
   cmd/main.go
 
 #############      gardener-metrics-exporter     #############
-FROM alpine:3.7 AS metrics-exporter
+FROM alpine:3.8 AS metrics-exporter
 
 RUN apk add --update bash curl
 

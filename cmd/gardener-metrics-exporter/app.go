@@ -24,8 +24,9 @@ import (
 	"github.com/gardener/gardener-metrics-exporter/pkg/metrics"
 	"github.com/gardener/gardener-metrics-exporter/pkg/server"
 	"github.com/gardener/gardener-metrics-exporter/pkg/version"
-	clientset "github.com/gardener/gardener/pkg/client/garden/clientset/versioned"
-	gardeninformers "github.com/gardener/gardener/pkg/client/garden/informers/externalversions"
+	clientset "github.com/gardener/gardener/pkg/client/core/clientset/versioned"
+	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/rest"
@@ -99,19 +100,20 @@ func run(ctx context.Context, o *options) error {
 
 	// Create informers.
 	var (
-		shootInformer   = gardenInformerFactory.Garden().V1beta1().Shoots().Informer()
-		seedInformer    = gardenInformerFactory.Garden().V1beta1().Seeds().Informer()
-		projectInformer = gardenInformerFactory.Garden().V1beta1().Projects().Informer()
+		shootInformer   = gardenInformerFactory.Core().V1alpha1().Shoots().Informer()
+		seedInformer    = gardenInformerFactory.Core().V1alpha1().Seeds().Informer()
+		projectInformer = gardenInformerFactory.Core().V1alpha1().Projects().Informer()
+		plantInformer   = gardenInformerFactory.Core().V1alpha1().Plants().Informer()
 	)
 
 	// Start the factories and wait until the creates informes has synce
 	gardenInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, plantInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
 	// Start the metrics collector
-	metrics.SetupMetricsCollector(gardenInformerFactory.Garden().V1beta1().Shoots(), gardenInformerFactory.Garden().V1beta1().Seeds(), gardenInformerFactory.Garden().V1beta1().Projects(), log)
+	metrics.SetupMetricsCollector(gardenInformerFactory.Core().V1alpha1().Shoots(), gardenInformerFactory.Core().V1alpha1().Seeds(), gardenInformerFactory.Core().V1alpha1().Projects(), gardenInformerFactory.Core().V1alpha1().Plants(), log)
 
 	// Start the webserver.
 	go server.Serve(ctx, o.bindAddress, o.port, log, stopCh)
@@ -153,7 +155,7 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	return client, nil
 }
 
-func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardeninformers.SharedInformerFactory, error) {
+func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardencoreinformers.SharedInformerFactory, error) {
 	restConfig, err := newClientConfig(kubeconfigPath)
 	if err != nil {
 		return nil, err
@@ -168,7 +170,7 @@ func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gard
 	if gardenClient == nil {
 		return nil, errors.New("gardenClient is nil")
 	}
-	gardenInformerFactory := gardeninformers.NewSharedInformerFactory(gardenClient, 0)
+	gardenInformerFactory := gardencoreinformers.NewSharedInformerFactory(gardenClient, 0)
 
 	return gardenInformerFactory, nil
 }

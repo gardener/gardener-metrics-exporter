@@ -34,7 +34,7 @@ cd "$GOPATH/src/github.com/gardener/gardener-metrics-exporter"
 ```
 
 ### Local
-The metrics exporter needs to run against a Gardener enviroment (Kubernetes cluster extendend with `garden.sapcloud.io/v1beta1` api group). Such an enviroment can be created by following the instructions here: https://github.com/gardener/gardener/blob/master/docs/development/local_setup.md
+The metrics exporter needs to run against a Gardener enviroment (Kubernetes cluster extendend with `core.gardener.cloud/v1alpha1` api group). Such an enviroment can be created by following the instructions here: https://github.com/gardener/gardener/blob/master/docs/development/local_setup.md
 
 If the current-context of your `$HOME/.kube/config` point to a Gardener enviroment then you can simply run:
 ```sh
@@ -51,7 +51,7 @@ make build-local
 ./bin/gardener-metrics-exporter --kubeconfig=<path-to-kubeconfig-file>
 ```
 
-**Be aware:** The user in the kubeconfig needs permissions to ``GET, LIST, WATCH`` the resources ``Shoot, Seed, Project(garden.sapcloud.io/v1beta1)`` in all namespaces of the cluster.
+**Be aware:** The user in the kubeconfig needs permissions to ``GET, LIST, WATCH`` the resources ``Shoot, Seed, Project, Plant (core.gardener.cloud/v1alpha1)`` in all namespaces of the cluster.
 
 Verify that everything works by calling the `/metrics` endpoint of the app.
 ```sh
