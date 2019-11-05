@@ -125,6 +125,8 @@ github.com/gardener/gardener v0.0.0-20190830053951-194cf8abb797/go.mod h1:UjyQiG
 github.com/gardener/gardener v0.0.0-20191004085047-5707d498b40c/go.mod h1:zvajWsteDY43oECil7ADr4NNp88CMltFEutUp1jX+zA=
 github.com/gardener/gardener v0.0.0-20191017105650-90c425422051 h1:7fZhgC6hYuX4ook05AbUGyYik1reZYmWFWiWYXdM0Vc=
 github.com/gardener/gardener v0.0.0-20191017105650-90c425422051/go.mod h1:EPowOY6iwWqit6mED3UOQv72bodT3YlYe/xnZHjvHWY=
+github.com/gardener/gardener v0.0.0-20191106070411-9c31920dd749 h1:U4xlS7jgXjYgS3cvKMHtjtEPH/50ldWIIgXONUr1YvE=
+github.com/gardener/gardener v0.0.0-20191107054722-54aec8c876f7 h1:q5FFMwd1PHxhBuOWe9YglqvPThHTPatyJ0Wm7SFLhJk=
 github.com/gardener/gardener-extensions v0.0.0-20190725050243-a80ef643c64b/go.mod h1:uXjtl3KeVdQXuGIP26+84wJY1Kwru67l0FXm7A5DiME=
 github.com/gardener/gardener-extensions v0.0.0-20190820050625-a15de8a82f6b/go.mod h1:q69+1cUGSfQ8gSMWzU7GFz/R8K8MpOLQBT2wJJcCjEA=
 github.com/gardener/gardener-extensions v0.0.0-20190906160200-5c329d46ae81/go.mod h1:OBUAbab8OMm8pvzr/1/cdwIQnQYuMoGDTNR2c+i9nYo=
@@ -365,6 +367,7 @@ github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829/go.mod 
 github.com/prometheus/client_golang v1.0.0/go.mod h1:db9x61etRT2tGnBNRi70OPL5FsnadC4Ky3P0J6CfImo=
 github.com/prometheus/client_golang v1.1.0 h1:BQ53HtBmfOitExawJ6LokA4x8ov/z0SYYb0+HxJfRI8=
 github.com/prometheus/client_golang v1.1.0/go.mod h1:I1FGZT9+L76gKKOs5djB6ezCbFQP1xR9D75/vuwEF3g=
+github.com/prometheus/client_golang v1.2.1 h1:JnMpQc6ppsNgw9QPAGF6Dod479itz7lvlsMzzNayLOI=
 github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=
 github.com/prometheus/client_model v0.0.0-20190115171406-56726106282f/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=
 github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90 h1:S/YWwWx/RA8rT8tKFRuGUZhuA90OyIBpPCXkcbwU8DE=
