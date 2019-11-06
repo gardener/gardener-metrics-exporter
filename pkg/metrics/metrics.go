@@ -28,10 +28,6 @@ const (
 	metricGardenSeedInfo      = "garden_seed_info"
 	metricGardenSeedCondition = "garden_seed_condition"
 
-	// Plant metric
-	metricGardenPlantInfo      = "garden_plant_info"
-	metricGardenPlantCondition = "garden_plant_condition"
-
 	// Shoot metric (available also for Shoots which act as Seed).
 	metricGardenShootInfo                     = "garden_shoot_info"
 	metricGardenShootCondition                = "garden_shoot_condition"
@@ -52,9 +48,6 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenProjectsStatus: prometheus.NewDesc(metricGardenProjectsStatus, "Status of projects.", []string{"name", "cluster", "phase"}, nil),
 		metricGardenUsersSum:       prometheus.NewDesc(metricGardenUsersSum, "Count of users.", []string{"kind"}, nil),
-
-		metricGardenPlantInfo:      prometheus.NewDesc(metricGardenPlantInfo, "Information about a plant.", []string{"name", "project", "provider", "region", "version"}, nil),
-		metricGardenPlantCondition: prometheus.NewDesc(metricGardenPlantCondition, "Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition"}, nil),
 
 		metricGardenShootInfo:                     prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
 		metricGardenShootOperationState:           prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation"}, nil),
@@ -84,6 +77,7 @@ func (c *gardenMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 		ch <- desc
 	}
 	registerShootCustomizationMetrics(ch)
+	registerPlantMetrics(ch)
 }
 
 // Collect implements the prometheus.Collect interface, which intends the gardenMetricsCollector to be a Prometheus collector.

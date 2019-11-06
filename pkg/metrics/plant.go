@@ -15,9 +15,93 @@
 package metrics
 
 import (
+	"fmt"
+
+	"github.com/gardener/gardener-metrics-exporter/pkg/template"
+	"github.com/gardener/gardener-metrics-exporter/pkg/utils"
+	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 )
+
+const metricPlantPrefix = "garden_plant"
+
+/*
+	metricGardenPlantInfo:      prometheus.NewDesc(metricGardenPlantInfo, "Information about a plant.", []string{"name", "project", "provider", "region", "version"}, nil),
+	metricGardenPlantCondition: prometheus.NewDesc(metricGardenPlantCondition, "Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition"}, nil),
+*/
+
+var plantMetrics = []*template.MetricTemplate{
+	{
+		Name:   fmt.Sprintf("%s_info", metricPlantPrefix),
+		Help:   "Information about a plant.",
+		Labels: []string{"name", "project", "provider", "region", "version"},
+		Type:   template.Gauge,
+		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
+			plant, projectName, err := checkPlantMetricParameters(obj, params...)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			var (
+				k8sVersion = unknown
+				provider   = unknown
+				region     = unknown
+			)
+			if plant.Status.ClusterInfo != nil {
+				if plant.Status.ClusterInfo.Kubernetes.Version != "" {
+					k8sVersion = plant.Status.ClusterInfo.Kubernetes.Version
+				}
+				if plant.Status.ClusterInfo.Cloud.Type != "" {
+					provider = plant.Status.ClusterInfo.Cloud.Type
+				}
+				if plant.Status.ClusterInfo.Cloud.Region != "" {
+					region = plant.Status.ClusterInfo.Cloud.Region
+				}
+			}
+
+			return &[]float64{1.0}, &[][]string{{plant.ObjectMeta.Name, *projectName, provider, region, k8sVersion}}, nil
+		},
+	},
+
+	{
+		Name:   fmt.Sprintf("%s_condition", metricPlantPrefix),
+		Help:   "Condition state of a Plant. (-1=Unknown|0=Unhealthy|1=Healthy|2=Progressing)",
+		Labels: []string{"name", "project", "condition"},
+		Type:   template.Gauge,
+		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
+			plant, projectName, err := checkPlantMetricParameters(obj, params...)
+			if err != nil {
+				return nil, nil, err
+			}
+			var (
+				conditionCount = len(plant.Status.Conditions)
+				values         = make([]float64, 0, conditionCount)
+				labels         = make([][]string, 0, conditionCount)
+			)
+			for _, c := range plant.Status.Conditions {
+				labels = append(labels, []string{plant.ObjectMeta.Name, *projectName, string(c.Type)})
+				values = append(values, mapConditionStatus(c.Status))
+			}
+			return &values, &labels, nil
+		},
+	},
+}
+
+func checkPlantMetricParameters(obj interface{}, params ...interface{}) (*gardenv1alpha1.Plant, *string, error) {
+	if len(params) != 1 {
+		return nil, nil, fmt.Errorf("Invalid amount of parameters")
+	}
+	plant, ok := obj.(*gardenv1alpha1.Plant)
+	if !ok {
+		return nil, nil, utils.NewTypeConversionError()
+	}
+	projectName, ok := params[0].(*string)
+	if !ok {
+		return nil, nil, utils.NewTypeConversionError()
+	}
+	return plant, projectName, nil
+}
 
 // collectPlantMetrics collects Plant metrics.
 func (c gardenMetricsCollector) collectPlantMetrics(ch chan<- prometheus.Metric) {
@@ -33,45 +117,32 @@ func (c gardenMetricsCollector) collectPlantMetrics(ch chan<- prometheus.Metric)
 	}
 
 	for _, plant := range plants {
-		var (
-			k8sVersion = "unknown"
-			provider   = "unknown"
-			region     = "unknown"
-		)
-
 		projectName, err := findProject(projects, plant.Namespace)
 		if err != nil {
-			c.logger.Error(err.Error())
 			continue
 		}
 
-		if plant.Status.ClusterInfo != nil {
-			if plant.Status.ClusterInfo.Kubernetes.Version != "" {
-				k8sVersion = plant.Status.ClusterInfo.Kubernetes.Version
-			}
-			if plant.Status.ClusterInfo.Cloud.Type != "" {
-				provider = plant.Status.ClusterInfo.Cloud.Type
-			}
-			if plant.Status.ClusterInfo.Cloud.Region != "" {
-				region = plant.Status.ClusterInfo.Cloud.Region
-			}
+		for _, c := range plantMetrics {
+			c.Collect(ch, plant, projectName)
 		}
+	}
+}
 
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenPlantInfo], prometheus.GaugeValue, 0, plant.ObjectMeta.Name, *projectName, provider, region, k8sVersion)
+func registerPlantMetrics(ch chan<- *prometheus.Desc) {
+	for _, c := range plantMetrics {
+		c.Register(ch)
+	}
+}
+
+func collectPlantMetrics(plants []*gardenv1alpha1.Plant, projects []*gardenv1alpha1.Project, ch chan<- prometheus.Metric) {
+	for _, plant := range plants {
+		projectName, err := findProject(projects, plant.Namespace)
 		if err != nil {
-			ScrapeFailures.With(prometheus.Labels{"kind": "plants"}).Inc()
 			continue
 		}
-		ch <- metric
 
-		// Export a metric for each condition of the Plant.
-		for _, condition := range plant.Status.Conditions {
-			metric, err := prometheus.NewConstMetric(c.descs[metricGardenPlantCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), plant.Name, *projectName, string(condition.Type))
-			if err != nil {
-				ScrapeFailures.With(prometheus.Labels{"kind": "plants"}).Inc()
-				continue
-			}
-			ch <- metric
+		for _, c := range plantMetrics {
+			c.Collect(ch, plant, projectName)
 		}
 	}
 }
