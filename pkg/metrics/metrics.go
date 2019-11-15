@@ -56,7 +56,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 		metricGardenPlantInfo:      prometheus.NewDesc(metricGardenPlantInfo, "Information about a plant.", []string{"name", "project", "provider", "region", "version"}, nil),
 		metricGardenPlantCondition: prometheus.NewDesc(metricGardenPlantCondition, "Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition"}, nil),
 
-		metricGardenShootInfo:                     prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed"}, nil),
+		metricGardenShootInfo:                     prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed", "is_seed"}, nil),
 		metricGardenShootOperationState:           prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation"}, nil),
 		metricGardenShootOperationProgressPercent: prometheus.NewDesc(metricGardenShootOperationProgressPercent, "Operation progress percent of a Shoot.", []string{"name", "project", "operation"}, nil),
 		metricGardenShootCondition:                prometheus.NewDesc(metricGardenShootCondition, "Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition", "operation", "purpose", "is_seed"}, nil),
