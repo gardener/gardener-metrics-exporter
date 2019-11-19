@@ -90,7 +90,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, *projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Region, seed)
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, *projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Region, seed, strconv.FormatBool(isSeed))
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue
