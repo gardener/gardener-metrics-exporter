@@ -83,6 +83,7 @@ func (c *gardenMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, desc := range c.descs {
 		ch <- desc
 	}
+	registerShootCustomizationMetrics(ch)
 }
 
 // Collect implements the prometheus.Collect interface, which intends the gardenMetricsCollector to be a Prometheus collector.

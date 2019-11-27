@@ -23,6 +23,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const unknown = "unknown"
+
 var (
 	// ScrapeFailures is a metric, which counts the amount scrape issues grouped by kind.
 	ScrapeFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
