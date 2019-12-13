@@ -99,6 +99,11 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 		ch <- metric
 
+		shootCreation := shoot.CreationTimestamp
+		metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootCreation], prometheus.GaugeValue, float64(shootCreation.Unix()), shoot.Name, *projectName, string(shoot.UID))
+
+		ch <- metric
+
 		// Collect metrics to the node count of the Shoot.
 		// TODO: Use the metrics of the Machine-Controller-Manager, when available. The mcm should be able to provide the actual amount of nodes/machines.
 		c.collectShootNodeMetrics(shoot, projectName, ch)
