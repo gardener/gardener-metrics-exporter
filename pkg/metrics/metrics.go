@@ -35,6 +35,7 @@ const (
 	// Shoot metric (available also for Shoots which act as Seed).
 	metricGardenShootInfo                     = "garden_shoot_info"
 	metricGardenShootCondition                = "garden_shoot_condition"
+	metricGardenShootCreation                 = "garden_shoot_creation_timestamp"
 	metricGardenShootOperationState           = "garden_shoot_operation_states"
 	metricGardenShootOperationProgressPercent = "garden_shoot_operation_progress_percent"
 	metricGardenShootNodeMaxTotal             = "garden_shoot_node_max_total"
@@ -49,6 +50,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 	return map[string]*prometheus.Desc{
 		metricGardenSeedCondition: prometheus.NewDesc(metricGardenSeedCondition, "Condition state of a Seed.", []string{"name", "condition"}, nil),
 		metricGardenSeedInfo:      prometheus.NewDesc(metricGardenSeedInfo, "Information about a Seed.", []string{"name", "namespace", "iaas", "region", "visible", "protected"}, nil),
+		metricGardenShootCreation: prometheus.NewDesc(metricGardenShootCreation, "Timestamp of the shoot creation.", []string{"name", "project", "uid"}, nil),
 
 		metricGardenProjectsStatus: prometheus.NewDesc(metricGardenProjectsStatus, "Status of projects.", []string{"name", "cluster", "phase"}, nil),
 		metricGardenUsersSum:       prometheus.NewDesc(metricGardenUsersSum, "Count of users.", []string{"kind"}, nil),
