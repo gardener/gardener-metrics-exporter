@@ -99,6 +99,16 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 		ch <- metric
 
+		hibernatedVal := 0
+
+		if shoot.Status.IsHibernated {
+			hibernatedVal = 1
+		}
+
+		metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootHibernated], prometheus.GaugeValue, float64(hibernatedVal), shoot.Name, *projectName, string(shoot.UID))
+
+		ch <- metric
+
 		shootCreation := shoot.CreationTimestamp
 		metric, err = prometheus.NewConstMetric(c.descs[metricGardenShootCreation], prometheus.GaugeValue, float64(shootCreation.Unix()), shoot.Name, *projectName, string(shoot.UID))
 
