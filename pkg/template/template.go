@@ -50,11 +50,11 @@ func (m *MetricTemplate) Register(ch chan<- *prometheus.Desc) {
 
 // Collect triggers the collection of metric samples which are created based on
 // template by executing the internal CollectFunc.
-func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, parameters ...interface{}) {
+func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, parameters ...interface{}) *[]float64{
 	values, labelValues, err := m.CollectFunc(obj, parameters...)
 	if err != nil {
 		log.Error(err.Error())
-		return
+		return nil
 	}
 
 	var (
@@ -65,7 +65,7 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 
 	if !noLabels && len(vals) != len(labels) {
 		log.Error("Amount of values does not fit with amount of labelsets")
-		return
+		return nil
 	}
 
 	for i := range vals {
@@ -78,10 +78,12 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 
 		if err != nil {
 			log.Error(err.Error())
-			return
+			return nil
 		}
-		ch <- metric
+			ch <- metric
 	}
+
+	return values
 }
 
 func mapType(t Type) prometheus.ValueType {
