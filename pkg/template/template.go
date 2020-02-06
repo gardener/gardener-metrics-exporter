@@ -15,8 +15,10 @@
 package template
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 // Type define a metric type for a Prometheus metric.
@@ -50,11 +52,11 @@ func (m *MetricTemplate) Register(ch chan<- *prometheus.Desc) {
 
 // Collect triggers the collection of metric samples which are created based on
 // template by executing the internal CollectFunc.
-func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, parameters ...interface{}) *[]float64{
+func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, parameters ...interface{}) {
 	values, labelValues, err := m.CollectFunc(obj, parameters...)
 	if err != nil {
 		log.Error(err.Error())
-		return nil
+		return
 	}
 
 	var (
@@ -65,7 +67,7 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 
 	if !noLabels && len(vals) != len(labels) {
 		log.Error("Amount of values does not fit with amount of labelsets")
-		return nil
+		return
 	}
 
 	for i := range vals {
@@ -78,12 +80,14 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 
 		if err != nil {
 			log.Error(err.Error())
-			return nil
+			return
 		}
 			ch <- metric
 	}
 
-	return values
+	m.sendMergedMetric(ch, vals, labels)
+
+	return
 }
 
 func mapType(t Type) prometheus.ValueType {
@@ -94,5 +98,37 @@ func mapType(t Type) prometheus.ValueType {
 		return prometheus.CounterValue
 	default:
 		return prometheus.UntypedValue
+	}
+}
+
+func (mt *MetricTemplate) sendMergedMetric(ch chan<- prometheus.Metric, vals []float64, labels [][]string) {
+	var metricShootsCustomPrefix = "garden_shoots_custom"
+	l := make(map[string]string)
+	l["customizations"] = strings.Replace(mt.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
+	var noLabels = len(labels) == 0
+
+	if noLabels {
+		if len(vals) == 0 {
+			return
+		}
+		var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
+		var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[0])
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		ch <- m
+
+	} else {
+		for i := range vals {
+			l[mt.Labels[0]] = labels[i][0]
+			var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
+			var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[i])
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			ch <- m
+		}
 	}
 }
