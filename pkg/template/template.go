@@ -32,6 +32,11 @@ var (
 	Counter Type = "counter"
 )
 
+const (
+	metricShootsCustomPrefix = "garden_shoots_custom"
+	metricShootsPrefix = "garden_shoots"
+)
+
 // MetricTemplate define a template for metrics of same kind. It holds all necessary
 // information about the metric and instructions how to collect metric samples.
 type MetricTemplate struct {
@@ -85,7 +90,13 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 			ch <- metric
 	}
 
-	m.sendMergedMetric(ch, vals, labels)
+	// build and send merged metric for customization metrics
+	if strings.Contains(m.Name, metricShootsCustomPrefix) {
+		mm := m.buildMergedMetric(vals, labels)
+		if mm != nil {
+			ch <- mm
+		}
+	}
 
 	return
 }
@@ -101,34 +112,34 @@ func mapType(t Type) prometheus.ValueType {
 	}
 }
 
-func (mt *MetricTemplate) sendMergedMetric(ch chan<- prometheus.Metric, vals []float64, labels [][]string) {
-	var metricShootsCustomPrefix = "garden_shoots_custom"
+func (m *MetricTemplate) buildMergedMetric(vals []float64, labels [][]string) prometheus.Metric {
 	l := make(map[string]string)
-	l["customizations"] = strings.Replace(mt.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
+	l["customizations"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
 	var noLabels = len(labels) == 0
 
 	if noLabels {
 		if len(vals) == 0 {
-			return
+			return nil
 		}
 		var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
 		var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[0])
 		if err != nil {
 			log.Error(err.Error())
-			return
+			return nil
 		}
-		ch <- m
+		return m
 
 	} else {
 		for i := range vals {
-			l[mt.Labels[0]] = labels[i][0]
+			l[m.Labels[0]] = labels[i][0]
 			var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
 			var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[i])
 			if err != nil {
 				log.Error(err.Error())
-				return
+				return nil
 			}
-			ch <- m
+			return m
 		}
 	}
+	return nil
 }
