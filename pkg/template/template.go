@@ -118,6 +118,7 @@ func (m *MetricTemplate) buildMergedMetric(vals []float64, labels [][]string) pr
 	var noLabels = len(labels) == 0
 
 	if noLabels {
+		// TODO  closer look
 		if len(vals) == 0 {
 			return nil
 		}
