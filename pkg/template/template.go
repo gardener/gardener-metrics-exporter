@@ -92,10 +92,7 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 
 	// build and send merged metric for customization metrics
 	if strings.Contains(m.Name, metricShootsCustomPrefix) {
-		mm := m.buildMergedMetric(vals, labels)
-		if mm != nil {
-			ch <- mm
-		}
+		m.sendMergedMetric(vals, labels, ch)
 	}
 
 	return
@@ -112,7 +109,7 @@ func mapType(t Type) prometheus.ValueType {
 	}
 }
 
-func (m *MetricTemplate) buildMergedMetric(vals []float64, labels [][]string) prometheus.Metric {
+func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch chan<- prometheus.Metric) {
 	l := make(map[string]string)
 	l["customizations"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
 	var noLabels = len(labels) == 0
@@ -120,15 +117,15 @@ func (m *MetricTemplate) buildMergedMetric(vals []float64, labels [][]string) pr
 	if noLabels {
 		// TODO  closer look
 		if len(vals) == 0 {
-			return nil
+			return
 		}
 		var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
 		var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[0])
 		if err != nil {
 			log.Error(err.Error())
-			return nil
+			return
 		}
-		return m
+		ch <- m
 
 	} else {
 		for i := range vals {
@@ -137,10 +134,10 @@ func (m *MetricTemplate) buildMergedMetric(vals []float64, labels [][]string) pr
 			var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[i])
 			if err != nil {
 				log.Error(err.Error())
-				return nil
+				continue
 			}
-			return m
+			ch <-  m
 		}
 	}
-	return nil
+	return
 }
