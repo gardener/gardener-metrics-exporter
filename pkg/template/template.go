@@ -111,7 +111,7 @@ func mapType(t Type) prometheus.ValueType {
 
 func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch chan<- prometheus.Metric) {
 	l := make(map[string]string)
-	l["customizations"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
+	l["customization"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
 	var noLabels = len(labels) == 0
 
 	if noLabels {
