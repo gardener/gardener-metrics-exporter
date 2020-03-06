@@ -16,8 +16,6 @@ package metrics
 
 import (
 	"fmt"
-	"sync"
-
 	"github.com/gardener/gardener-metrics-exporter/pkg/template"
 	"github.com/gardener/gardener-metrics-exporter/pkg/utils"
 	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
@@ -616,17 +614,15 @@ func registerShootCustomizationMetrics(ch chan<- *prometheus.Desc) {
 
 func collectShootCustomizationMetrics(shoots []*gardenv1alpha1.Shoot, ch chan<- prometheus.Metric) {
 	var (
-		wg  sync.WaitGroup
 		run = func(c *template.MetricTemplate) {
 			c.Collect(ch, shoots)
-			wg.Done()
 		}
 	)
-	wg.Add(len(shootCustomizationMetrics))
+
 	for _, c := range shootCustomizationMetrics {
-		go run(c)
+		run(c)
 	}
-	wg.Wait()
+	return
 }
 
 func mapLabelAndValues(list *map[string]float64) (*[]float64, *[][]string) {

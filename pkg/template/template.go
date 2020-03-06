@@ -15,8 +15,10 @@
 package template
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 // Type define a metric type for a Prometheus metric.
@@ -28,6 +30,11 @@ var (
 
 	// Counter is a type which refers to Prometheus Counter value.
 	Counter Type = "counter"
+)
+
+const (
+	metricShootsCustomPrefix = "garden_shoots_custom"
+	metricShootsPrefix = "garden_shoots"
 )
 
 // MetricTemplate define a template for metrics of same kind. It holds all necessary
@@ -80,8 +87,15 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 			log.Error(err.Error())
 			return
 		}
-		ch <- metric
+			ch <- metric
 	}
+
+	// build and send merged metric for customization metrics
+	if strings.Contains(m.Name, metricShootsCustomPrefix) {
+		m.sendMergedMetric(vals, labels, ch)
+	}
+
+	return
 }
 
 func mapType(t Type) prometheus.ValueType {
@@ -93,4 +107,37 @@ func mapType(t Type) prometheus.ValueType {
 	default:
 		return prometheus.UntypedValue
 	}
+}
+
+func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch chan<- prometheus.Metric) {
+	l := make(map[string]string)
+	l["customization"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
+	var noLabels = len(labels) == 0
+
+	if noLabels {
+		// TODO  closer look
+		if len(vals) == 0 {
+			return
+		}
+		var desc = prometheus.NewDesc(metricShootsCustomPrefix, "Collection of all collected customization metrics.", nil, l)
+		var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[0])
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		ch <- m
+
+	} else {
+		for i := range vals {
+			l[m.Labels[0]] = labels[i][0]
+			var desc = prometheus.NewDesc(metricShootsCustomPrefix, "Collection of all collected customization metrics.", nil, l)
+			var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[i])
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			ch <-  m
+		}
+	}
+	return
 }
