@@ -111,7 +111,7 @@ func mapType(t Type) prometheus.ValueType {
 
 func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch chan<- prometheus.Metric) {
 	l := make(map[string]string)
-	l["customizations"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
+	l["customization"] = strings.Replace(m.Name, fmt.Sprintf("%s_", metricShootsCustomPrefix), "", 1)
 	var noLabels = len(labels) == 0
 
 	if noLabels {
@@ -119,7 +119,7 @@ func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch 
 		if len(vals) == 0 {
 			return
 		}
-		var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
+		var desc = prometheus.NewDesc(metricShootsCustomPrefix, "Collection of all collected customization metrics.", nil, l)
 		var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[0])
 		if err != nil {
 			log.Error(err.Error())
@@ -130,7 +130,7 @@ func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch 
 	} else {
 		for i := range vals {
 			l[m.Labels[0]] = labels[i][0]
-			var desc = prometheus.NewDesc(fmt.Sprintf("%s_merged", metricShootsCustomPrefix), "Collection of all collected customization metrics.", nil, l)
+			var desc = prometheus.NewDesc(metricShootsCustomPrefix, "Collection of all collected customization metrics.", nil, l)
 			var m, err = prometheus.NewConstMetric(desc, prometheus.GaugeValue, vals[i])
 			if err != nil {
 				log.Error(err.Error())
