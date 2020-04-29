@@ -17,8 +17,11 @@ package v1alpha1
 import (
 	"math"
 
+	v1alpha1constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
 	"github.com/gardener/gardener/pkg/utils"
+	versionutils "github.com/gardener/gardener/pkg/utils/version"
 
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -72,7 +75,7 @@ func SetDefaults_VolumeType(obj *VolumeType) {
 
 // SetDefaults_Shoot sets default values for Shoot objects.
 func SetDefaults_Shoot(obj *Shoot) {
-	k8sVersionLessThan116, _ := utils.CompareVersions(obj.Spec.Kubernetes.Version, "<", "1.16")
+	k8sVersionLessThan116, _ := versionutils.CompareVersions(obj.Spec.Kubernetes.Version, "<", "1.16")
 	// Error is ignored here because we cannot do anything meaningful with it.
 	// k8sVersionLessThan116 will default to `false`.
 
@@ -117,12 +120,26 @@ func SetDefaults_Shoot(obj *Shoot) {
 	}
 	if obj.Spec.Addons.KubernetesDashboard.AuthenticationMode == nil {
 		var defaultAuthMode string
-		if k8sVersionLessThan116 {
+		if *obj.Spec.Kubernetes.KubeAPIServer.EnableBasicAuthentication {
 			defaultAuthMode = KubernetesDashboardAuthModeBasic
 		} else {
 			defaultAuthMode = KubernetesDashboardAuthModeToken
 		}
 		obj.Spec.Addons.KubernetesDashboard.AuthenticationMode = &defaultAuthMode
+	}
+
+	if obj.Spec.Purpose == nil {
+		p := ShootPurposeEvaluation
+
+		// backwards compatibility - take purpose from annotation if given. If not, default.
+		// TODO: This code can be removed in a future version
+		if v, ok := obj.Annotations[v1alpha1constants.GardenerPurpose]; ok && (v == string(ShootPurposeEvaluation) || v == string(ShootPurposeTesting) || v == string(ShootPurposeDevelopment) || v == string(ShootPurposeProduction) || (v == string(ShootPurposeInfrastructure) && obj.Namespace == v1alpha1constants.GardenNamespace)) {
+			p = ShootPurpose(v)
+		} else if v, ok := obj.Annotations[v1alpha1constants.GardenPurpose]; ok && (v == string(ShootPurposeEvaluation) || v == string(ShootPurposeTesting) || v == string(ShootPurposeDevelopment) || v == string(ShootPurposeProduction) || (v == string(ShootPurposeInfrastructure) && obj.Namespace == v1alpha1constants.GardenNamespace)) {
+			p = ShootPurpose(v)
+		}
+
+		obj.Spec.Purpose = &p
 	}
 }
 
@@ -155,6 +172,14 @@ func SetDefaults_Worker(obj *Worker) {
 	}
 	if obj.MaxUnavailable == nil {
 		obj.MaxUnavailable = &DefaultWorkerMaxUnavailable
+	}
+}
+
+// SetDefaults_NginxIngress sets default values for NginxIngress objects.
+func SetDefaults_NginxIngress(obj *NginxIngress) {
+	if obj.ExternalTrafficPolicy == nil {
+		v := corev1.ServiceExternalTrafficPolicyTypeCluster
+		obj.ExternalTrafficPolicy = &v
 	}
 }
 

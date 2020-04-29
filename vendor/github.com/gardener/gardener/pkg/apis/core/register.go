@@ -15,7 +15,6 @@
 package core
 
 import (
-	"github.com/gardener/gardener/pkg/apis/garden"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -50,24 +49,26 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&BackupBucketList{},
 		&BackupEntry{},
 		&BackupEntryList{},
-		&garden.CloudProfile{},
-		&garden.CloudProfileList{},
+		&CloudProfile{},
+		&CloudProfileList{},
 		&ControllerRegistration{},
 		&ControllerRegistrationList{},
 		&ControllerInstallation{},
 		&ControllerInstallationList{},
 		&Plant{},
 		&PlantList{},
-		&garden.Project{},
-		&garden.ProjectList{},
-		&garden.Quota{},
-		&garden.QuotaList{},
-		&garden.SecretBinding{},
-		&garden.SecretBindingList{},
-		&garden.Seed{},
-		&garden.SeedList{},
-		&garden.Shoot{},
-		&garden.ShootList{},
+		&Project{},
+		&ProjectList{},
+		&Quota{},
+		&QuotaList{},
+		&SecretBinding{},
+		&SecretBindingList{},
+		&Seed{},
+		&SeedList{},
+		&ShootState{},
+		&ShootStateList{},
+		&Shoot{},
+		&ShootList{},
 	)
 	return nil
 }
