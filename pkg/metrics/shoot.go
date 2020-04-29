@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
-	constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -81,8 +80,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		)
 		isSeed = usedAsSeed(shoot)
 
-		if shootPurpose, ok := shoot.Annotations[constants.GardenPurpose]; ok {
-			purpose = shootPurpose
+		if shoot.Spec.Purpose != nil {
+			purpose = string(*shoot.Spec.Purpose)
 		}
 
 		projectName, err := findProject(projects, shoot.Namespace)
