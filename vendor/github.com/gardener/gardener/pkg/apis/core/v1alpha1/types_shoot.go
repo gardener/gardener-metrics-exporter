@@ -15,7 +15,6 @@
 package v1alpha1
 
 import (
-	"encoding/json"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -77,8 +76,14 @@ type ShootSpec struct {
 	// operations should be performed.
 	// +optional
 	Maintenance *Maintenance `json:"maintenance,omitempty"`
+	// Monitoring contains information about custom monitoring configurations for the shoot.
+	// +optional
+	Monitoring *Monitoring `json:"monitoring,omitempty"`
 	// Provider contains all provider-specific and provider-relevant information.
 	Provider Provider `json:"provider"`
+	// Purpose is the purpose class for this cluster.
+	// +optional
+	Purpose *ShootPurpose `json:"purpose,omitempty"`
 	// Region is a name of a region.
 	Region string `json:"region"`
 	// SecretBindingName is the name of the a SecretBinding that has a reference to the provider secret.
@@ -93,7 +98,14 @@ type ShootSpec struct {
 type ShootStatus struct {
 	// Conditions represents the latest available observations of a Shoots's current state.
 	// +optional
-	Conditions []Condition `json:"conditions,omitempty"`
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	// Constraints represents conditions of a Shoot's current state that constraint some operations on it.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Constraints []Condition `json:"constraints,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 	// Gardener holds information about the Gardener which last acted on the Shoot.
 	Gardener Gardener `json:"gardener"`
 	// IsHibernated indicates whether the Shoot is currently hibernated.
@@ -104,6 +116,9 @@ type ShootStatus struct {
 	// LastError holds information about the last occurred error during an operation.
 	// +optional
 	LastError *LastError `json:"lastError,omitempty"`
+	// LastErrors holds information about the last occurred error(s) during an operation.
+	// +optional
+	LastErrors []LastError `json:"lastErrors,omitempty"`
 	// ObservedGeneration is the most recent generation observed for this Shoot. It corresponds to the
 	// Shoot's generation, which is updated on mutation by the API Server.
 	// +optional
@@ -138,7 +153,7 @@ type Addons struct {
 	NginxIngress *NginxIngress `json:"nginx-ingress,omitempty"`
 }
 
-// Addon also enabling or disabling a specific addon and is used to derive from.
+// Addon allows enabling or disabling a specific addon and is used to derive from.
 type Addon struct {
 	// Enabled indicates whether the addon is enabled or not.
 	Enabled bool `json:"enabled"`
@@ -165,6 +180,14 @@ type NginxIngress struct {
 	// LoadBalancerSourceRanges is list of whitelist IP sources for NginxIngress
 	// +optional
 	LoadBalancerSourceRanges []string `json:"loadBalancerSourceRanges,omitempty"`
+	// Config contains custom configuration for the nginx-ingress-controller configuration.
+	// See https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/configmap.md#configuration-options
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
+	// ExternalTrafficPolicy controls the `.spec.externalTrafficPolicy` value of the load balancer `Service`
+	// exposing the nginx-ingress. Defaults to `Cluster`.
+	// +optional
+	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicyType `json:"externalTrafficPolicy,omitempty"`
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,8 +202,10 @@ type DNS struct {
 	Domain *string `json:"domain,omitempty"`
 	// Providers is a list of DNS providers that shall be enabled for this shoot cluster. Only relevant if
 	// not a default domain is used.
+	// +patchMergeKey=type
+	// +patchStrategy=merge
 	// +optional
-	Providers []DNSProvider `json:"providers,omitempty"`
+	Providers []DNSProvider `json:"providers,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 }
 
 // DNSProvider contains information about a DNS provider.
@@ -234,7 +259,8 @@ type Extension struct {
 
 // Hibernation contains information whether the Shoot is suspended or not.
 type Hibernation struct {
-	// Enabled is true if the Shoot's desired state is hibernated, false otherwise.
+	// Enabled specifies whether the Shoot needs to be hibernated or not. If it is true, the Shoot's desired state is to be hibernated.
+	// If it is false or nil, the Shoot's desired state is to be awaken.
 	// +optional
 	Enabled *bool `json:"enabled,omitempty"`
 	// Schedules determine the hibernation schedules.
@@ -322,8 +348,10 @@ type KubeAPIServerConfig struct {
 	KubernetesConfig `json:",inline"`
 	// AdmissionPlugins contains the list of user-defined admission plugins (additional to those managed by Gardener), and, if desired, the corresponding
 	// configuration.
+	// +patchMergeKey=name
+	// +patchStrategy=merge
 	// +optional
-	AdmissionPlugins []AdmissionPlugin `json:"admissionPlugins,omitempty"`
+	AdmissionPlugins []AdmissionPlugin `json:"admissionPlugins,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 	// APIAudiences are the identifiers of the API. The service account token authenticator will
 	// validate that tokens used against the API are bound to at least one of these audiences.
 	// If `serviceAccountConfig.issuer` is configured and this is not, this defaults to a single
@@ -443,66 +471,30 @@ type KubeControllerManagerConfig struct {
 	NodeCIDRMaskSize *int32 `json:"nodeCIDRMaskSize,omitempty"`
 }
 
-// GardenerDuration is a workaround for missing OpenAPI functions on metav1.Duration struct.
-type GardenerDuration struct {
-	time.Duration `protobuf:"varint,1,opt,name=duration,casttype=time.Duration"`
-}
-
-// OpenAPISchemaType is used by the kube-openapi generator when constructing
-// the OpenAPI spec of this type.
-//
-// See: https://github.com/kubernetes/kube-openapi/tree/master/pkg/generators
-func (GardenerDuration) OpenAPISchemaType() []string { return []string{"string"} }
-
-// OpenAPISchemaFormat is used by the kube-openapi generator when constructing
-// the OpenAPI spec of this type.
-func (GardenerDuration) OpenAPISchemaFormat() string { return "date-time" }
-
-// UnmarshalJSON implements the json.Unmarshaller interface.
-func (d *GardenerDuration) UnmarshalJSON(b []byte) error {
-	var str string
-	err := json.Unmarshal(b, &str)
-	if err != nil {
-		return err
-	}
-
-	pd, err := time.ParseDuration(str)
-	if err != nil {
-		return err
-	}
-	d.Duration = pd
-	return nil
-}
-
-// MarshalJSON implements the json.Marshaler interface.
-func (d *GardenerDuration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.Duration.String())
-}
-
 // HorizontalPodAutoscalerConfig contains horizontal pod autoscaler configuration settings for the kube-controller-manager.
 // Note: Descriptions were taken from the Kubernetes documentation.
 type HorizontalPodAutoscalerConfig struct {
 	// The period after which a ready pod transition is considered to be the first.
 	// +optional
-	CPUInitializationPeriod *GardenerDuration `json:"cpuInitializationPeriod,omitempty"`
+	CPUInitializationPeriod *metav1.Duration `json:"cpuInitializationPeriod,omitempty"`
 	// The period since last downscale, before another downscale can be performed in horizontal pod autoscaler.
 	// +optional
-	DownscaleDelay *GardenerDuration `json:"downscaleDelay,omitempty"`
+	DownscaleDelay *metav1.Duration `json:"downscaleDelay,omitempty"`
 	// The configurable window at which the controller will choose the highest recommendation for autoscaling.
 	// +optional
-	DownscaleStabilization *GardenerDuration `json:"downscaleStabilization,omitempty"`
+	DownscaleStabilization *metav1.Duration `json:"downscaleStabilization,omitempty"`
 	// The configurable period at which the horizontal pod autoscaler considers a Pod “not yet ready” given that it’s unready and it has  transitioned to unready during that time.
 	// +optional
-	InitialReadinessDelay *GardenerDuration `json:"initialReadinessDelay,omitempty"`
+	InitialReadinessDelay *metav1.Duration `json:"initialReadinessDelay,omitempty"`
 	// The period for syncing the number of pods in horizontal pod autoscaler.
 	// +optional
-	SyncPeriod *GardenerDuration `json:"syncPeriod,omitempty"`
+	SyncPeriod *metav1.Duration `json:"syncPeriod,omitempty"`
 	// The minimum change (from 1.0) in the desired-to-actual metrics ratio for the horizontal pod autoscaler to consider scaling.
 	// +optional
 	Tolerance *float64 `json:"tolerance,omitempty"`
 	// The period since last upscale, before another upscale can be performed in horizontal pod autoscaler.
 	// +optional
-	UpscaleDelay *GardenerDuration `json:"upscaleDelay,omitempty"`
+	UpscaleDelay *metav1.Duration `json:"upscaleDelay,omitempty"`
 }
 
 const (
@@ -627,7 +619,7 @@ type KubeletConfigEviction struct {
 	NodeFSInodesFree *string `json:"nodeFSInodesFree,omitempty"`
 }
 
-// KubeletConfigEviction contains configuration for the kubelet eviction minimum reclaim.
+// KubeletConfigEvictionMinimumReclaim contains configuration for the kubelet eviction minimum reclaim.
 type KubeletConfigEvictionMinimumReclaim struct {
 	// MemoryAvailable is the threshold for the memory reclaim on the host server.
 	// +optional
@@ -680,7 +672,8 @@ type Networking struct {
 	// +optional
 	Pods *string `json:"pods,omitempty"`
 	// Nodes is the CIDR of the entire node network.
-	Nodes string `json:"nodes"`
+	// +optional
+	Nodes *string `json:"nodes,omitempty"`
 	// Services is the CIDR of the service network.
 	// +optional
 	Services *string `json:"services,omitempty"`
@@ -727,6 +720,24 @@ type MaintenanceTimeWindow struct {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+// Monitoring relevant types                                                                    //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Monitoring contains information about the monitoring configuration for the shoot.
+type Monitoring struct {
+	// Alerting contains information about the alerting configuration for the shoot cluster.
+	// +optional
+	Alerting *Alerting `json:"alerting,omitempty"`
+}
+
+// Alerting contains information about how alerting will be done (i.e. who will receive alerts and how).
+type Alerting struct {
+	// MonitoringEmailReceivers is a list of recipients for alerts
+	// +optional
+	EmailReceivers []string `json:"emailReceivers,omitempty"`
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 // Provider relevant types                                                                      //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -744,7 +755,9 @@ type Provider struct {
 	// +optional
 	InfrastructureConfig *ProviderConfig `json:"infrastructureConfig,omitempty"`
 	// Workers is a list of worker groups.
-	Workers []Worker `json:"workers"`
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	Workers []Worker `json:"workers" patchStrategy:"merge" patchMergeKey:"name"`
 }
 
 // Worker is the base definition of a worker group.
@@ -822,7 +835,8 @@ type ShootMachineImage struct {
 // Volume contains information about the volume type and size.
 type Volume struct {
 	// Type is the machine type of the worker group.
-	Type string `json:"type"`
+	// +optional
+	Type *string `json:"type,omitempty"`
 	// Size is the size of the root volume.
 	Size string `json:"size"`
 }
@@ -851,14 +865,30 @@ const (
 )
 
 const (
+	// ShootAPIServerAvailable is a constant for a condition type indicating that the Shoot cluster's API server is available.
+	ShootAPIServerAvailable ConditionType = "APIServerAvailable"
 	// ShootControlPlaneHealthy is a constant for a condition type indicating the control plane health.
 	ShootControlPlaneHealthy ConditionType = "ControlPlaneHealthy"
 	// ShootEveryNodeReady is a constant for a condition type indicating the node health.
 	ShootEveryNodeReady ConditionType = "EveryNodeReady"
 	// ShootSystemComponentsHealthy is a constant for a condition type indicating the system components health.
 	ShootSystemComponentsHealthy ConditionType = "SystemComponentsHealthy"
-	// ShootAlertsInactive is a constant for a condition type indicating the Shoot cluster alert states.
-	ShootAlertsInactive ConditionType = "AlertsInactive"
-	// ShootAPIServerAvailable is a constant for a condition type indicating that the Shoot clusters API server is available.
-	ShootAPIServerAvailable ConditionType = "APIServerAvailable"
+	// ShootHibernationPossible is a constant for a condition type indicating whether the Shoot can be hibernated.
+	ShootHibernationPossible ConditionType = "HibernationPossible"
+)
+
+// ShootPurpose is a type alias for string.
+type ShootPurpose string
+
+const (
+	// ShootPurposeEvaluation is a constant for the evaluation purpose.
+	ShootPurposeEvaluation ShootPurpose = "evaluation"
+	// ShootPurposeTesting is a constant for the testing purpose.
+	ShootPurposeTesting ShootPurpose = "testing"
+	// ShootPurposeDevelopment is a constant for the development purpose.
+	ShootPurposeDevelopment ShootPurpose = "development"
+	// ShootPurposeProduction is a constant for the production purpose.
+	ShootPurposeProduction ShootPurpose = "production"
+	// ShootPurposeInfrastructure is a constant for the infrastructure purpose.
+	ShootPurposeInfrastructure ShootPurpose = "infrastructure"
 )
