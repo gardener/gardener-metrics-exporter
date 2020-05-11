@@ -16,9 +16,10 @@ package metrics
 
 import (
 	"fmt"
+
 	"github.com/gardener/gardener-metrics-exporter/pkg/template"
 	"github.com/gardener/gardener-metrics-exporter/pkg/utils"
-	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
+	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -35,7 +36,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -55,7 +56,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{"extension"},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -80,7 +81,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -99,7 +100,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -118,7 +119,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -137,7 +138,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{"featuregate"},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -162,7 +163,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{"admissionplugin"},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -187,7 +188,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -206,7 +207,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -225,7 +226,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{"featuregate"},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -260,7 +261,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{"featuregate"},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -287,7 +288,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -308,7 +309,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{"mode"},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -341,7 +342,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -360,7 +361,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -382,7 +383,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -404,7 +405,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -426,7 +427,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -450,7 +451,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -471,7 +472,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -490,7 +491,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -513,7 +514,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -532,7 +533,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -553,7 +554,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -572,7 +573,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -591,7 +592,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1alpha1.Shoot)
+			shoots, ok := obj.([]*gardenv1beta1.Shoot)
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
@@ -612,7 +613,7 @@ func registerShootCustomizationMetrics(ch chan<- *prometheus.Desc) {
 	}
 }
 
-func collectShootCustomizationMetrics(shoots []*gardenv1alpha1.Shoot, ch chan<- prometheus.Metric) {
+func collectShootCustomizationMetrics(shoots []*gardenv1beta1.Shoot, ch chan<- prometheus.Metric) {
 	var (
 		run = func(c *template.MetricTemplate) {
 			c.Collect(ch, shoots)
