@@ -17,8 +17,8 @@ package metrics
 import (
 	"fmt"
 
-	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
-	constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
+	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -33,20 +33,20 @@ var (
 	}, []string{"kind"})
 )
 
-func mapConditionStatus(status gardenv1alpha1.ConditionStatus) float64 {
+func mapConditionStatus(status gardenv1beta1.ConditionStatus) float64 {
 	switch status {
-	case gardenv1alpha1.ConditionTrue:
+	case gardenv1beta1.ConditionTrue:
 		return 1
-	case gardenv1alpha1.ConditionFalse:
+	case gardenv1beta1.ConditionFalse:
 		return 0
-	case gardenv1alpha1.ConditionProgressing:
+	case gardenv1beta1.ConditionProgressing:
 		return 2
 	default:
 		return -1
 	}
 }
 
-func usedAsSeed(shoot *gardenv1alpha1.Shoot) bool {
+func usedAsSeed(shoot *gardenv1beta1.Shoot) bool {
 	if shoot.Namespace != constants.GardenNamespace {
 		return false
 	}
@@ -57,7 +57,7 @@ func usedAsSeed(shoot *gardenv1alpha1.Shoot) bool {
 	return true
 }
 
-func findProject(projects []*gardenv1alpha1.Project, match string) (*string, error) {
+func findProject(projects []*gardenv1beta1.Project, match string) (*string, error) {
 	var projectName string
 	for _, project := range projects {
 		if project.Spec.Namespace != nil && *project.Spec.Namespace == match {

@@ -42,13 +42,16 @@ const (
 	// controllers in order to communicate with the shoot's API server. The client certificate has administrator
 	// privileges.
 	SecretNameGardener = "gardener"
+	// SecretNameGardenerInternal is a constant for the name of a Kubernetes secret object that contains the client
+	// certificate and a kubeconfig for a shoot cluster. It is used by Gardener and can be used by extension
+	// controllers in order to communicate with the shoot's API server. The client certificate has administrator
+	// privileges. The difference to the "gardener" secret is that is contains the in-cluster endpoint as address to
+	// for the shoot API server instead the DNS name or load balancer address.
+	SecretNameGardenerInternal = "gardener-internal"
 
 	// DeploymentNameClusterAutoscaler is a constant for the name of a Kubernetes deployment object that contains
 	// the cluster-autoscaler pod.
 	DeploymentNameClusterAutoscaler = "cluster-autoscaler"
-	// DeploymentNameDependencyWatchdog is a constant for the name of a Kubernetes deployment object that contains
-	// the dependency-watchdog pod.
-	DeploymentNameDependencyWatchdog = "dependency-watchdog"
 	// DeploymentNameKubeAPIServer is a constant for the name of a Kubernetes deployment object that contains
 	// the kube-apiserver pod.
 	DeploymentNameKubeAPIServer = "kube-apiserver"
@@ -92,8 +95,6 @@ const (
 	// the prometheus pod.
 	StatefulSetNamePrometheus = "prometheus"
 
-	// GardenPurpose is a constant for the key in a label describing the purpose of the respective object.
-	GardenPurpose = "garden.sapcloud.io/purpose"
 	// GardenerPurpose is a constant for the key in a label describing the purpose of the respective object.
 	GardenerPurpose = "gardener.cloud/purpose"
 
@@ -108,9 +109,12 @@ const (
 	// GardenerOperationRestore is a constant for the value of the operation annotation describing a restoration
 	// operation.
 	GardenerOperationRestore = "restore"
+	// GardenerOperationWaitForState is a constant for the value of the operation annotation for waiting a state
+	GardenerOperationWaitForState = "wait-for-state"
 
 	// DeprecatedGardenRole is the key for an annotation on a Kubernetes object indicating what it is used for.
-	// +deprecated
+	//
+	// Deprecated: Use `GardenRole` instead.
 	DeprecatedGardenRole = "garden.sapcloud.io/role"
 	// GardenRole is a constant for a label that describes a role.
 	GardenRole = "gardener.cloud/role"
@@ -133,9 +137,10 @@ const (
 	// GardenRoleOptionalAddon is the value of the GardenRole key indicating type 'optional-addon'.
 	GardenRoleOptionalAddon = "optional-addon"
 
-	// DeprecatedGardenRoleBackup is the value of GardenRole key indicating type 'backup'.
-	// +deprecated
-	DeprecatedGardenRoleBackup = "backup"
+	// DeprecatedShootUID is an annotation key for the shoot namespace in the seed cluster,
+	// which value will be the value of `shoot.status.uid`
+	// +deprecated: Use `Cluster` resource instead.
+	DeprecatedShootUID = "shoot.garden.sapcloud.io/uid"
 
 	// SeedResourceManagerClass is the resource-class managed by the Gardener-Resource-Manager
 	// instance in the garden namespace on the seeds.
@@ -199,6 +204,15 @@ const (
 	LabelControllerManager = "controller-manager"
 	// LabelScheduler is a constant for a label for the kube-scheduler.
 	LabelScheduler = "scheduler"
+	// LabelExtensionProjectRole is a constant for a label value for extension project roles
+	LabelExtensionProjectRole = "extension-project-role"
+
+	// LabelAPIServerExposure is a constant for label key which gardener can add to various objects related
+	// to kube-apiserver exposure.
+	LabelAPIServerExposure = "core.gardener.cloud/apiserver-exposure"
+	// LabelAPIServerExposureGardenerManaged is a constant for label value which gardener sets on the label key
+	// "core.gardener.cloud/apiserver-exposure" to indicate that it's responsible for apiserver exposure (via SNI).
+	LabelAPIServerExposureGardenerManaged = "gardener-managed"
 
 	// GardenNamespace is the namespace in which the configuration and secrets for
 	// the Gardener controller manager will be stored (e.g., secrets for the Seed clusters).
@@ -207,19 +221,30 @@ const (
 
 	// AnnotationShootUseAsSeed is a constant for an annotation on a Shoot resource indicating that the Shoot shall be registered as Seed in the
 	// Garden cluster once successfully created.
-	AnnotationShootUseAsSeed = "shoot.garden.sapcloud.io/use-as-seed"
+	AnnotationShootUseAsSeed = "shoot.gardener.cloud/use-as-seed"
+	// AnnotationShootUseAsSeedDeprecated is a constant for an annotation on a Shoot resource indicating that the Shoot shall be registered as Seed in the
+	// Garden cluster once successfully created.
+	//
+	// Deprecated: Use `AnnotationShootUseAsSeed` instead.
+	AnnotationShootUseAsSeedDeprecated = "shoot.garden.sapcloud.io/use-as-seed"
 	// AnnotationShootIgnoreAlerts is the key for an annotation of a Shoot cluster whose value indicates
 	// if alerts for this cluster should be ignored
-	AnnotationShootIgnoreAlerts = "shoot.garden.sapcloud.io/ignore-alerts"
-	// AnnotationShootOperatedBy is the key for an annotation of a Shoot cluster whose value must be a valid email address and
-	// is used to send alerts to.
-	AnnotationShootOperatedBy = "garden.sapcloud.io/operatedBy"
+	AnnotationShootIgnoreAlerts = "shoot.gardener.cloud/ignore-alerts"
+	// AnnotationShootIgnoreAlertsDeprecated is the key for an annotation of a Shoot cluster whose value indicates
+	// if alerts for this cluster should be ignored
+	//
+	// Deprecated: Use `AnnotationShootIgnoreAlerts` instead.
+	AnnotationShootIgnoreAlertsDeprecated = "shoot.garden.sapcloud.io/ignore-alerts"
 	// AnnotationShootSkipCleanup is a key for an annotation on a Shoot resource that declares that the clean up steps should be skipped when the
 	// cluster is deleted. Concretely, this will skip everything except the deletion of (load balancer) services and persistent volume resources.
 	AnnotationShootSkipCleanup = "shoot.gardener.cloud/skip-cleanup"
 
 	// OperatingSystemConfigUnitNameKubeletService is a constant for a unit in the operating system config that contains the kubelet service.
 	OperatingSystemConfigUnitNameKubeletService = "kubelet.service"
+	// OperatingSystemConfigUnitNameDockerService is a constant for a unit in the operating system config that contains the docker service.
+	OperatingSystemConfigUnitNameDockerService = "docker.service"
+	// OperatingSystemConfigUnitNameContainerDService is a constant for a unit in the operating system config that contains the containerd service.
+	OperatingSystemConfigUnitNameContainerDService = "containerd.service"
 	// OperatingSystemConfigFilePathKernelSettings is a constant for a path to a file in the operating system config that contains some general kernel settings.
 	OperatingSystemConfigFilePathKernelSettings = "/etc/sysctl.d/99-k8s-general.conf"
 	// OperatingSystemConfigFilePathKubeletConfig is a constant for a path to a file in the operating system config that contains the kubelet configuration.
@@ -244,4 +269,12 @@ const (
 	// EventResourceReferenced indicates that the resource deletion is in waiting mode because the resource is still
 	// being referenced by at least one other resource (e.g. a SecretBinding is still referenced by a Shoot)
 	EventResourceReferenced = "ResourceReferenced"
+
+	// LabelPodMaintenanceRestart is a constant for a label that describes that a pod should be restarted during maintenance.
+	LabelPodMaintenanceRestart = "maintenance.gardener.cloud/restart"
+
+	// LabelWorkerPool is a constant for a label that indicates the worker pool the node belongs to
+	LabelWorkerPool = "worker.gardener.cloud/pool"
+	// LabelWorkerPool is a deprecated constant for a label that indicates the worker pool the node belongs to
+	LabelWorkerPoolDeprecated = "worker.garden.sapcloud.io/group"
 )

@@ -17,7 +17,7 @@ package metrics
 import (
 	"strconv"
 
-	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
+	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -36,10 +36,10 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 			visible   = true
 		)
 		for _, t := range seed.Spec.Taints {
-			if t.Key == gardenv1alpha1.SeedTaintProtected {
+			if t.Key == gardenv1beta1.SeedTaintProtected {
 				protected = true
 			}
-			if t.Key == gardenv1alpha1.SeedTaintInvisible {
+			if t.Key == gardenv1beta1.SeedTaintInvisible {
 				visible = false
 			}
 		}

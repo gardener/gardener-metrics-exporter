@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"strings"
 
-	gardenv1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
+	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -30,9 +30,9 @@ var (
 	shootHealthProbeResponseTimeRegExp *regexp.Regexp
 
 	shootOperations = [3]string{
-		string(gardenv1alpha1.LastOperationTypeCreate),
-		string(gardenv1alpha1.LastOperationTypeReconcile),
-		string(gardenv1alpha1.LastOperationTypeDelete),
+		string(gardenv1beta1.LastOperationTypeCreate),
+		string(gardenv1beta1.LastOperationTypeReconcile),
+		string(gardenv1beta1.LastOperationTypeDelete),
 	}
 )
 
@@ -130,17 +130,17 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				var operationProgress float64
 				if operation == lastOperation {
 					switch shoot.Status.LastOperation.State {
-					case gardenv1alpha1.LastOperationStateSucceeded:
+					case gardenv1beta1.LastOperationStateSucceeded:
 						operationState = 1
-					case gardenv1alpha1.LastOperationStateProcessing:
+					case gardenv1beta1.LastOperationStateProcessing:
 						operationState = 2
-					case gardenv1alpha1.LastOperationStatePending:
+					case gardenv1beta1.LastOperationStatePending:
 						operationState = 3
-					case gardenv1alpha1.LastOperationStateAborted:
+					case gardenv1beta1.LastOperationStateAborted:
 						operationState = 4
-					case gardenv1alpha1.LastOperationStateError:
+					case gardenv1beta1.LastOperationStateError:
 						operationState = 5
-					case gardenv1alpha1.LastOperationStateFailed:
+					case gardenv1beta1.LastOperationStateFailed:
 						operationState = 6
 					}
 					operationProgress = float64(shoot.Status.LastOperation.Progress)
@@ -171,7 +171,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				// Handle the ShootAPIServerAvailable condition special. This condition can transport a measured
 				// response time of a request to the API Server. This information will be extracted if available
 				// and exposed in a seperate metric.
-				if condition.Type == gardenv1alpha1.ShootAPIServerAvailable {
+				if condition.Type == gardenv1beta1.ShootAPIServerAvailable {
 					c.exposeAPIServerResponseTime(condition, shoot, projectName, ch)
 				}
 			}
@@ -186,7 +186,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	c.exposeShootOperations(shootOperationsCounters, ch)
 }
 
-func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1alpha1.Shoot, projectName *string, ch chan<- prometheus.Metric) {
+func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Shoot, projectName *string, ch chan<- prometheus.Metric) {
 	var (
 		nodeCountMax int32
 		nodeCountMin int32
@@ -229,7 +229,7 @@ func (c gardenMetricsCollector) exposeShootOperations(shootOperations map[string
 	}
 }
 
-func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1alpha1.Condition, shoot *gardenv1alpha1.Shoot, projectName *string, ch chan<- prometheus.Metric) {
+func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1beta1.Condition, shoot *gardenv1beta1.Shoot, projectName *string, ch chan<- prometheus.Metric) {
 	match := shootHealthProbeResponseTimeRegExp.FindAllStringSubmatch(condition.Message, -1)
 	if len(match) != 1 || len(match[0]) != 2 {
 		return
