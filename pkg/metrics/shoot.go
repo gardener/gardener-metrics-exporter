@@ -196,6 +196,14 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 	for _, worker := range workers {
 		nodeCountMax += worker.Minimum
 		nodeCountMin += worker.Maximum
+
+		// Expose metrics about the Shoot's nodes.
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootNodeInfo], prometheus.GaugeValue, 0, shoot.Name, *projectName, worker.Name, worker.Machine.Image.Name, *worker.Machine.Image.Version)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+			return
+		}
+		ch <- metric
 	}
 
 	// Expose metrics. Start with max node count.

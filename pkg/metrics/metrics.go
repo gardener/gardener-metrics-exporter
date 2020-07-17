@@ -45,6 +45,7 @@ const (
 
 	// Aggregated Shoot metrics (exclude Shoots which act as Seed).
 	metricGardenOperationsTotal = "garden_shoot_operations_total"
+	metricGardenShootNodeInfo   = "garden_shoot_node_info"
 )
 
 func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
@@ -72,6 +73,8 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 		metricGardenShootNodeMaxTotal: prometheus.NewDesc(metricGardenShootNodeMaxTotal, "Max node count of a Shoot.", []string{"name", "project"}, nil),
 
 		metricGardenShootNodeMinTotal: prometheus.NewDesc(metricGardenShootNodeMinTotal, "Min node count of a Shoot.", []string{"name", "project"}, nil),
+
+		metricGardenShootNodeInfo: prometheus.NewDesc(metricGardenShootNodeInfo, "Information about the nodes in a Shoot.", []string{"name", "project", "worker_group", "image", "version"}, nil),
 
 		metricGardenShootOperationProgressPercent: prometheus.NewDesc(metricGardenShootOperationProgressPercent, "Operation progress percent of a Shoot.", []string{"name", "project", "operation"}, nil),
 
