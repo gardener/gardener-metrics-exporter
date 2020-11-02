@@ -41,7 +41,6 @@ const (
 	metricGardenShootNodeMinTotal             = "garden_shoot_node_min_total"
 	metricGardenShootOperationProgressPercent = "garden_shoot_operation_progress_percent"
 	metricGardenShootOperationState           = "garden_shoot_operation_states"
-	metricGardenShootResponseDuration         = "garden_shoot_response_duration_milliseconds"
 
 	// Aggregated Shoot metrics (exclude Shoots which act as Seed).
 	metricGardenOperationsTotal = "garden_shoot_operations_total"
@@ -79,8 +78,6 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 		metricGardenShootOperationProgressPercent: prometheus.NewDesc(metricGardenShootOperationProgressPercent, "Operation progress percent of a Shoot.", []string{"name", "project", "operation"}, nil),
 
 		metricGardenShootOperationState: prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation"}, nil),
-
-		metricGardenShootResponseDuration: prometheus.NewDesc(metricGardenShootResponseDuration, "Response time of the Shoot API server. Not provided when not reachable.", []string{"name", "project"}, nil),
 
 		metricGardenUsersSum: prometheus.NewDesc(metricGardenUsersSum, "Count of users.", []string{"kind"}, nil),
 	}

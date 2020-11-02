@@ -167,13 +167,6 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 					continue
 				}
 				ch <- metric
-
-				// Handle the ShootAPIServerAvailable condition special. This condition can transport a measured
-				// response time of a request to the API Server. This information will be extracted if available
-				// and exposed in a seperate metric.
-				if condition.Type == gardenv1beta1.ShootAPIServerAvailable {
-					c.exposeAPIServerResponseTime(condition, shoot, projectName, ch)
-				}
 			}
 
 			// Collect the current count of ongoing operations.
@@ -235,24 +228,4 @@ func (c gardenMetricsCollector) exposeShootOperations(shootOperations map[string
 		}
 		ch <- metric
 	}
-}
-
-func (c gardenMetricsCollector) exposeAPIServerResponseTime(condition gardenv1beta1.Condition, shoot *gardenv1beta1.Shoot, projectName *string, ch chan<- prometheus.Metric) {
-	match := shootHealthProbeResponseTimeRegExp.FindAllStringSubmatch(condition.Message, -1)
-	if len(match) != 1 || len(match[0]) != 2 {
-		return
-	}
-	responseTime := match[0][1]
-	if responseTime == "unknown" {
-		return
-	}
-	responseTimeConv, err := strconv.ParseFloat(responseTime, 64)
-	if err != nil {
-		return
-	}
-	metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootResponseDuration], prometheus.GaugeValue, responseTimeConv, shoot.Name, *projectName)
-	if err != nil {
-		return
-	}
-	ch <- metric
 }

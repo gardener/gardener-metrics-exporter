@@ -14,7 +14,6 @@ The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/) metric
 |garden_shoot_operations_total|Count of ongoing operations|Shoot|Gauge|
 |garden_shoot_operation_states|Operation State of a Shoot|Shoot|Gauge|
 |garden_shoot_operation_progress_percent|Operation Percentage of a Shoot|Shoot|Gauge|
-|garden_shoot_response_duration_milliseconds| Response time of the Shoot API server (Not provided when not reachable)|Shoot|Gauge|
 |garden_seed_info|Information to a Seed|Seed|Gauge|
 |garden_seed_condition|Condition State of a Seed|Seed|Gauge|
 |garden_projects_status|Status of Garden Projects|Projects|Gauge|

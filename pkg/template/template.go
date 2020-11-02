@@ -34,7 +34,7 @@ var (
 
 const (
 	metricShootsCustomPrefix = "garden_shoots_custom"
-	metricShootsPrefix = "garden_shoots"
+	metricShootsPrefix       = "garden_shoots"
 )
 
 // MetricTemplate define a template for metrics of same kind. It holds all necessary
@@ -87,7 +87,7 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 			log.Error(err.Error())
 			return
 		}
-			ch <- metric
+		ch <- metric
 	}
 
 	// build and send merged metric for customization metrics
@@ -136,7 +136,7 @@ func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch 
 				log.Error(err.Error())
 				continue
 			}
-			ch <-  m
+			ch <- m
 		}
 	}
 	return
