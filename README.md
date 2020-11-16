@@ -1,8 +1,7 @@
 # Gardener Metrics Exporter
 
-The `gardener-metrics-exporter` is a [Prometheus](https://prometheus.io/)
-metrics exporter for [Gardener](https://github.com/gardener/gardener)
-service-level related metrics.
+The `gardener-metrics-exporter` is a [Prometheus][] metrics exporter for
+[Gardener][] service-level related metrics.
 
 **This application requires Go 1.9 or later.**
 
@@ -26,9 +25,9 @@ service-level related metrics.
 
 ## Grafana Dashboards
 
-Some [Grafana](https://grafana.com/) dashboards are included in the `dashboards`
-folder. Simply import them and make sure you have your Prometheus data source
-named to `cluster-prometheus`.
+Some [Grafana][] dashboards are included in the `dashboards` folder. Simply
+import them and make sure you have your Prometheus data source named to
+`cluster-prometheus`.
 
 ## Usage
 
@@ -46,8 +45,8 @@ cd "$GOPATH/src/github.com/gardener/gardener-metrics-exporter"
 
 The metrics exporter needs to run against a Gardener enviroment (Kubernetes
 cluster extendend with `core.gardener.cloud/v1alpha1` api group). Such an
-enviroment can be created by following the instructions here:
-https://github.com/gardener/gardener/blob/master/docs/development/local_setup.md
+enviroment can be created by following the instructions the [gardener local
+setup][].
 
 If the current-context of your `$HOME/.kube/config` point to a Gardener
 enviroment then you can simply run:
@@ -79,8 +78,8 @@ Verify that everything works by calling the `/metrics` endpoint of the app.
 curl http://localhost:2718/metrics
 ```
 
-Run a local [Prometheus](https://prometheus.io/download/) instance and add the
-following scrape config snippet to your config.
+Run a local [Prometheus][] instance and add the following scrape config snippet
+to your config.
 
 ```yaml
 scrape_configs:
@@ -125,3 +124,8 @@ scrape_configs:
      regex: '^garden_.*$'
      action: keep
 ```
+
+[grafana]: https://grafana.com/
+[prometheus]: https://prometheus.io/
+[gardener]: https://github.com/gardener/gardener
+[gardener local setup]: https://github.com/gardener/gardener/blob/master/docs/development/local_setup.md
