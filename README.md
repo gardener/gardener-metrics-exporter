@@ -43,20 +43,20 @@ cd "$GOPATH/src/github.com/gardener/gardener-metrics-exporter"
 
 ### Local
 
-The metrics exporter needs to run against a Gardener enviroment (Kubernetes
+The metrics exporter needs to run against a Gardener environment (Kubernetes
 cluster extendend with `core.gardener.cloud/v1alpha1` api group). Such an
-enviroment can be created by following the instructions the [gardener local
+environment can be created by following the instructions the [gardener local
 setup][].
 
 If the current-context of your `$HOME/.kube/config` point to a Gardener
-enviroment then you can simply run:
+environment then you can simply run:
 
 ```sh
 make start
 ```
 
 If you plan to pass a specific kubeconfig then you need to build the app locally
-and pass a kubeconfig to the binary. Let's build the app for your enviroment
+and pass a kubeconfig to the binary. Let's build the app for your environment
 locally and run it. The binary will be located in the `./bin` directory of the
 repository.
 
