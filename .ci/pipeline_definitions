@@ -1,17 +1,17 @@
 metrics-exporter:
-  template: 'default'
+  template: default
   base_definition:
     repo: ~
     traits:
       version:
-        preprocess: 'inject-commit-hash'
+        preprocess: inject-commit-hash
         inject_effective_version: true
       publish:
         dockerimages:
           metrics-exporter:
-            registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/metrics-exporter'
-            dockerfile: 'Dockerfile'
+            registry: gcr-readwrite
+            image: eu.gcr.io/gardener-project/gardener/metrics-exporter
+            dockerfile: Dockerfile
             target: metrics-exporter
             tag_as_latest: true
     steps:
@@ -29,7 +29,7 @@ metrics-exporter:
     release:
       traits:
         version:
-          preprocess: 'finalize'
+          preprocess: finalize
         release:
-          nextversion: 'bump_minor'
+          nextversion: bump_minor
         component_descriptor: ~
