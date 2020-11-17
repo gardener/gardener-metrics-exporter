@@ -4,6 +4,7 @@
 # Exclude folders relevant for build
 !pkg/
 !cmd/
-!vendor/
+!go.mod
+!go.sum
 !VERSION
 !.git

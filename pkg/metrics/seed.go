@@ -31,18 +31,16 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 	}
 
 	for _, seed := range seeds {
-		var (
-			protected bool
-			visible   = true
-		)
+		var protected bool
+
 		for _, t := range seed.Spec.Taints {
 			if t.Key == gardenv1beta1.SeedTaintProtected {
 				protected = true
-			}
-			if t.Key == gardenv1beta1.SeedTaintInvisible {
-				visible = false
+				break
 			}
 		}
+
+		visible := seed.Spec.Settings.Scheduling.Visible
 
 		metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedInfo], prometheus.GaugeValue, 0, seed.ObjectMeta.Name, seed.ObjectMeta.Namespace, seed.Spec.Provider.Type, seed.Spec.Provider.Region, strconv.FormatBool(visible), strconv.FormatBool(protected))
 		if err != nil {
