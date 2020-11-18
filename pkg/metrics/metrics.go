@@ -20,66 +20,196 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	metricGardenProjectsStatus = "garden_projects_status"
-	metricGardenUsersSum       = "garden_users_total"
-
-	// Seed metric
-	metricGardenSeedInfo      = "garden_seed_info"
-	metricGardenSeedCondition = "garden_seed_condition"
-
-	// Plant metric
-	metricGardenPlantInfo      = "garden_plant_info"
-	metricGardenPlantCondition = "garden_plant_condition"
-
-	// Shoot metric (available also for Shoots which act as Seed).
-	metricGardenShootCondition                = "garden_shoot_condition"
-	metricGardenShootCreation                 = "garden_shoot_creation_timestamp"
-	metricGardenShootHibernated               = "garden_shoot_hibernated"
-	metricGardenShootInfo                     = "garden_shoot_info"
-	metricGardenShootNodeMaxTotal             = "garden_shoot_node_max_total"
-	metricGardenShootNodeMinTotal             = "garden_shoot_node_min_total"
-	metricGardenShootOperationProgressPercent = "garden_shoot_operation_progress_percent"
-	metricGardenShootOperationState           = "garden_shoot_operation_states"
-
-	// Aggregated Shoot metrics (exclude Shoots which act as Seed).
-	metricGardenOperationsTotal = "garden_shoot_operations_total"
-	metricGardenShootNodeInfo   = "garden_shoot_node_info"
-)
-
 func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 	return map[string]*prometheus.Desc{
-		metricGardenOperationsTotal: prometheus.NewDesc(metricGardenOperationsTotal, "Count of ongoing operations.", []string{"operation", "state", "iaas", "seed", "version", "region"}, nil),
+		metricGardenOperationsTotal: prometheus.NewDesc(
+			metricGardenOperationsTotal,
+			"Count of ongoing operations.",
+			[]string{
+				"operation",
+				"state",
+				"iaas",
+				"seed",
+				"version",
+				"region",
+			},
+			nil,
+		),
 
-		metricGardenPlantCondition: prometheus.NewDesc(metricGardenPlantCondition, "Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition"}, nil),
+		metricGardenPlantCondition: prometheus.NewDesc(
+			metricGardenPlantCondition,
+			"Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
+			[]string{
+				"name",
+				"project",
+				"condition",
+			},
+			nil,
+		),
 
-		metricGardenPlantInfo: prometheus.NewDesc(metricGardenPlantInfo, "Information about a plant.", []string{"name", "project", "provider", "region", "version"}, nil),
+		metricGardenPlantInfo: prometheus.NewDesc(
+			metricGardenPlantInfo,
+			"Information about a plant.",
+			[]string{
+				"name",
+				"project",
+				"provider",
+				"region",
+				"version",
+			},
+			nil,
+		),
 
-		metricGardenProjectsStatus: prometheus.NewDesc(metricGardenProjectsStatus, "Status of projects.", []string{"name", "cluster", "phase"}, nil),
+		metricGardenProjectsStatus: prometheus.NewDesc(
+			metricGardenProjectsStatus,
+			"Status of projects.",
+			[]string{
+				"name",
+				"cluster",
+				"phase",
+			},
+			nil,
+		),
 
-		metricGardenSeedCondition: prometheus.NewDesc(metricGardenSeedCondition, "Condition state of a Seed.", []string{"name", "condition"}, nil),
+		metricGardenSeedCondition: prometheus.NewDesc(
+			metricGardenSeedCondition,
+			"Condition state of a Seed.",
+			[]string{
+				"name",
+				"condition",
+			},
+			nil,
+		),
 
-		metricGardenSeedInfo: prometheus.NewDesc(metricGardenSeedInfo, "Information about a Seed.", []string{"name", "namespace", "iaas", "region", "visible", "protected"}, nil),
+		metricGardenSeedInfo: prometheus.NewDesc(
+			metricGardenSeedInfo,
+			"Information about a Seed.",
+			[]string{
+				"name",
+				"namespace",
+				"iaas",
+				"region",
+				"visible",
+				"protected",
+			},
+			nil,
+		),
 
-		metricGardenShootCondition: prometheus.NewDesc(metricGardenShootCondition, "Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition", "operation", "purpose", "is_seed", "iaas", "seed_iaas", "seed_region"}, nil),
+		metricGardenShootCondition: prometheus.NewDesc(
+			metricGardenShootCondition,
+			"Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
+			[]string{
+				"name",
+				"project",
+				"condition",
+				"operation",
+				"purpose",
+				"is_seed",
+				"iaas",
+				"seed_iaas",
+				"seed_region",
+			},
+			nil,
+		),
 
-		metricGardenShootCreation: prometheus.NewDesc(metricGardenShootCreation, "Timestamp of the shoot creation.", []string{"name", "project", "uid"}, nil),
+		metricGardenShootCreation: prometheus.NewDesc(
+			metricGardenShootCreation,
+			"Timestamp of the shoot creation.",
+			[]string{
+				"name",
+				"project",
+				"uid",
+			},
+			nil,
+		),
 
-		metricGardenShootHibernated: prometheus.NewDesc(metricGardenShootHibernated, "Hibernation status of a shoot.", []string{"name", "project", "uid"}, nil),
+		metricGardenShootHibernated: prometheus.NewDesc(
+			metricGardenShootHibernated,
+			"Hibernation status of a shoot.",
+			[]string{
+				"name",
+				"project",
+				"uid",
+			},
+			nil,
+		),
 
-		metricGardenShootInfo: prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed", "is_seed", "seed_iaas", "seed_region"}, nil),
+		metricGardenShootInfo: prometheus.NewDesc(
+			metricGardenShootInfo,
+			"Information about a Shoot.",
+			[]string{
+				"name",
+				"project",
+				"iaas",
+				"version",
+				"region",
+				"seed",
+				"is_seed",
+				"seed_iaas",
+				"seed_region",
+			},
+			nil,
+		),
 
-		metricGardenShootNodeMaxTotal: prometheus.NewDesc(metricGardenShootNodeMaxTotal, "Max node count of a Shoot.", []string{"name", "project"}, nil),
+		metricGardenShootNodeMaxTotal: prometheus.NewDesc(
+			metricGardenShootNodeMaxTotal,
+			"Max node count of a Shoot.",
+			[]string{"name",
+				"project",
+			},
+			nil,
+		),
 
-		metricGardenShootNodeMinTotal: prometheus.NewDesc(metricGardenShootNodeMinTotal, "Min node count of a Shoot.", []string{"name", "project"}, nil),
+		metricGardenShootNodeMinTotal: prometheus.NewDesc(
+			metricGardenShootNodeMinTotal,
+			"Min node count of a Shoot.",
+			[]string{"name",
+				"project"},
+			nil,
+		),
 
-		metricGardenShootNodeInfo: prometheus.NewDesc(metricGardenShootNodeInfo, "Information about the nodes in a Shoot.", []string{"name", "project", "worker_group", "image", "version"}, nil),
+		metricGardenShootNodeInfo: prometheus.NewDesc(
+			metricGardenShootNodeInfo,
+			"Information about the nodes in a Shoot.",
+			[]string{
+				"name",
+				"project",
+				"worker_group",
+				"image",
+				"version",
+			},
+			nil,
+		),
 
-		metricGardenShootOperationProgressPercent: prometheus.NewDesc(metricGardenShootOperationProgressPercent, "Operation progress percent of a Shoot.", []string{"name", "project", "operation"}, nil),
+		metricGardenShootOperationProgressPercent: prometheus.NewDesc(
+			metricGardenShootOperationProgressPercent,
+			"Operation progress percent of a Shoot.",
+			[]string{
+				"name",
+				"project",
+				"operation",
+			},
+			nil,
+		),
 
-		metricGardenShootOperationState: prometheus.NewDesc(metricGardenShootOperationState, "Operation state of a Shoot.", []string{"name", "project", "operation"}, nil),
+		metricGardenShootOperationState: prometheus.NewDesc(
+			metricGardenShootOperationState,
+			"Operation state of a Shoot.",
+			[]string{"name",
+				"project",
+				"operation",
+			},
+			nil,
+		),
 
-		metricGardenUsersSum: prometheus.NewDesc(metricGardenUsersSum, "Count of users.", []string{"kind"}, nil),
+		metricGardenUsersSum: prometheus.NewDesc(
+			metricGardenUsersSum,
+			"Count of users.",
+			[]string{
+				"kind",
+			},
+			nil,
+		),
 	}
 }
 
