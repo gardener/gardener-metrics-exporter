@@ -113,7 +113,13 @@ func run(ctx context.Context, o *options) error {
 	}
 
 	// Start the metrics collector
-	metrics.SetupMetricsCollector(gardenInformerFactory.Core().V1beta1().Shoots(), gardenInformerFactory.Core().V1beta1().Seeds(), gardenInformerFactory.Core().V1beta1().Projects(), gardenInformerFactory.Core().V1beta1().Plants(), log)
+	metrics.SetupMetricsCollector(
+		gardenInformerFactory.Core().V1beta1().Shoots(),
+		gardenInformerFactory.Core().V1beta1().Seeds(),
+		gardenInformerFactory.Core().V1beta1().Projects(),
+		gardenInformerFactory.Core().V1beta1().Plants(),
+		log,
+	)
 
 	// Start the webserver.
 	go server.Serve(ctx, o.bindAddress, o.port, log, stopCh)

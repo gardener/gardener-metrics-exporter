@@ -57,7 +57,18 @@ func (c gardenMetricsCollector) collectPlantMetrics(ch chan<- prometheus.Metric)
 			}
 		}
 
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenPlantInfo], prometheus.GaugeValue, 0, plant.ObjectMeta.Name, *projectName, provider, region, k8sVersion)
+		metric, err := prometheus.NewConstMetric(
+			c.descs[metricGardenPlantInfo],
+			prometheus.GaugeValue,
+			0,
+			[]string{
+				plant.ObjectMeta.Name,
+				*projectName,
+				provider,
+				region,
+				k8sVersion,
+			}...,
+		)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "plants"}).Inc()
 			continue
@@ -66,7 +77,16 @@ func (c gardenMetricsCollector) collectPlantMetrics(ch chan<- prometheus.Metric)
 
 		// Export a metric for each condition of the Plant.
 		for _, condition := range plant.Status.Conditions {
-			metric, err := prometheus.NewConstMetric(c.descs[metricGardenPlantCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), plant.Name, *projectName, string(condition.Type))
+			metric, err := prometheus.NewConstMetric(
+				c.descs[metricGardenPlantCondition],
+				prometheus.GaugeValue,
+				mapConditionStatus(condition.Status),
+				[]string{
+					plant.Name,
+					*projectName,
+					string(condition.Type),
+				}...,
+			)
 			if err != nil {
 				ScrapeFailures.With(prometheus.Labels{"kind": "plants"}).Inc()
 				continue

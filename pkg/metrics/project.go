@@ -52,7 +52,16 @@ func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metri
 		case gardenv1beta1.ProjectTerminating:
 			status = 2
 		}
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenProjectsStatus], prometheus.GaugeValue, status, project.ObjectMeta.Name, project.ObjectMeta.ClusterName, string(project.Status.Phase))
+		metric, err := prometheus.NewConstMetric(
+			c.descs[metricGardenProjectsStatus],
+			prometheus.GaugeValue,
+			status,
+			[]string{
+				project.ObjectMeta.Name,
+				project.ObjectMeta.ClusterName,
+				string(project.Status.Phase),
+			}...,
+		)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "projects-status"}).Inc()
 			return

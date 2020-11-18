@@ -42,7 +42,19 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 
 		visible := seed.Spec.Settings.Scheduling.Visible
 
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedInfo], prometheus.GaugeValue, 0, seed.ObjectMeta.Name, seed.ObjectMeta.Namespace, seed.Spec.Provider.Type, seed.Spec.Provider.Region, strconv.FormatBool(visible), strconv.FormatBool(protected))
+		metric, err := prometheus.NewConstMetric(
+			c.descs[metricGardenSeedInfo],
+			prometheus.GaugeValue,
+			0,
+			[]string{
+				seed.ObjectMeta.Name,
+				seed.ObjectMeta.Namespace,
+				seed.Spec.Provider.Type,
+				seed.Spec.Provider.Region,
+				strconv.FormatBool(visible),
+				strconv.FormatBool(protected),
+			}...,
+		)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue
@@ -50,7 +62,15 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 		ch <- metric
 		// Export a metric for each condition of the Seed.
 		for _, condition := range seed.Status.Conditions {
-			metric, err := prometheus.NewConstMetric(c.descs[metricGardenSeedCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), seed.Name, string(condition.Type))
+			metric, err := prometheus.NewConstMetric(
+				c.descs[metricGardenSeedCondition],
+				prometheus.GaugeValue,
+				mapConditionStatus(condition.Status),
+				[]string{
+					seed.Name,
+					string(condition.Type),
+				}...,
+			)
 			if err != nil {
 				ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
 				continue
