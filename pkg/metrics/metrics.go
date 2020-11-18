@@ -61,13 +61,13 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenSeedInfo: prometheus.NewDesc(metricGardenSeedInfo, "Information about a Seed.", []string{"name", "namespace", "iaas", "region", "visible", "protected"}, nil),
 
-		metricGardenShootCondition: prometheus.NewDesc(metricGardenShootCondition, "Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition", "operation", "purpose", "is_seed", "iaas"}, nil),
+		metricGardenShootCondition: prometheus.NewDesc(metricGardenShootCondition, "Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing", []string{"name", "project", "condition", "operation", "purpose", "is_seed", "iaas", "seed_iaas", "seed_region"}, nil),
 
 		metricGardenShootCreation: prometheus.NewDesc(metricGardenShootCreation, "Timestamp of the shoot creation.", []string{"name", "project", "uid"}, nil),
 
 		metricGardenShootHibernated: prometheus.NewDesc(metricGardenShootHibernated, "Hibernation status of a shoot.", []string{"name", "project", "uid"}, nil),
 
-		metricGardenShootInfo: prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed", "is_seed"}, nil),
+		metricGardenShootInfo: prometheus.NewDesc(metricGardenShootInfo, "Information about a Shoot.", []string{"name", "project", "iaas", "version", "region", "seed", "is_seed", "seed_iaas", "seed_region"}, nil),
 
 		metricGardenShootNodeMaxTotal: prometheus.NewDesc(metricGardenShootNodeMaxTotal, "Max node count of a Shoot.", []string{"name", "project"}, nil),
 

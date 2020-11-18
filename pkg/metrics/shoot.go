@@ -63,6 +63,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		return
 	}
 
+	seeds := c.getSeeds()
+
 	collectShootCustomizationMetrics(shoots, ch)
 
 	for _, shoot := range shoots {
@@ -91,7 +93,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
-		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, *projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Region, seed, strconv.FormatBool(isSeed))
+		metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootInfo], prometheus.GaugeValue, 0, shoot.Name, *projectName, iaas, shoot.Spec.Kubernetes.Version, shoot.Spec.Region, seed, strconv.FormatBool(isSeed), seeds[*shoot.Spec.SeedName].Spec.Provider.Type, seeds[*shoot.Spec.SeedName].Spec.Provider.Region)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 			continue
@@ -114,10 +116,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		ch <- metric
 
 		// Collect metrics to the node count of the Shoot.
-		// TODO: Use the metrics of the Machine-Controller-Manager, when available. The mcm should be able to provide the actual amount of nodes/machines.
 		c.collectShootNodeMetrics(shoot, projectName, ch)
-
-		// collectShootCustomizationMetrics(shoot, projectName, ch)
 
 		if shoot.Status.LastOperation != nil {
 			lastOperation := string(shoot.Status.LastOperation.Type)
@@ -161,7 +160,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 			// Export a metric for each condition of the Shoot.
 			for _, condition := range shoot.Status.Conditions {
-				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, *projectName, string(condition.Type), lastOperation, purpose, strconv.FormatBool(isSeed), iaas)
+				metric, err := prometheus.NewConstMetric(c.descs[metricGardenShootCondition], prometheus.GaugeValue, mapConditionStatus(condition.Status), shoot.Name, *projectName, string(condition.Type), lastOperation, purpose, strconv.FormatBool(isSeed), iaas, seeds[*shoot.Spec.SeedName].Spec.Provider.Type, seeds[*shoot.Spec.SeedName].Spec.Provider.Region)
 				if err != nil {
 					ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
 					continue
@@ -228,4 +227,20 @@ func (c gardenMetricsCollector) exposeShootOperations(shootOperations map[string
 		}
 		ch <- metric
 	}
+}
+
+func (c gardenMetricsCollector) getSeeds() map[string]*gardenv1beta1.Seed {
+	s, err := c.seedInformer.Lister().List(labels.Everything())
+	seeds := make(map[string]*gardenv1beta1.Seed)
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
+	}
+
+	for _, seed := range s {
+		if seed == nil {
+			continue
+		}
+		seeds[seed.Name] = seed
+	}
+	return seeds
 }
