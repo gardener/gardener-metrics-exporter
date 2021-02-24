@@ -213,6 +213,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 			// Export a metric for each condition of the Shoot.
 			for _, condition := range shoot.Status.Conditions {
+				var hasErrors bool
+
+				if len(shoot.Status.LastErrors) > 0 {
+					hasErrors = true
+				}
+
 				metric, err := prometheus.NewConstMetric(
 					c.descs[metricGardenShootCondition],
 					prometheus.GaugeValue,
@@ -228,6 +234,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
 						uid,
+						strconv.FormatBool(hasErrors),
+						shootIsCompliant(shoot.Status.Constraints),
 					}...,
 				)
 				if err != nil {
@@ -352,4 +360,13 @@ func (c gardenMetricsCollector) getSeeds() map[string]*gardenv1beta1.Seed {
 		seeds[seed.Name] = seed
 	}
 	return seeds
+}
+
+func shootIsCompliant(constraints []gardenv1beta1.Condition) string {
+	for _, constraint := range constraints {
+		if constraint.Type == gardenv1beta1.ShootMaintenancePreconditionsSatisfied {
+			return string(constraint.Status)
+		}
+	}
+	return "Unknown"
 }
