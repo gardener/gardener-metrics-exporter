@@ -74,8 +74,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		}
 
 		var (
-			isSeed  bool
-			purpose string
+			isSeed       bool
+			purpose, uid string
 
 			iaas = shoot.Spec.Provider.Type
 			seed = *shoot.Spec.SeedName
@@ -122,10 +122,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			hibernatedVal = 1
 		}
 
+		uid = string(shoot.UID)
+
 		labels := []string{
 			shoot.Name,
 			*projectName,
-			string(shoot.UID),
+			uid,
 		}
 
 		metric, err = prometheus.NewConstMetric(
@@ -225,6 +227,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						iaas,
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
+						uid,
 					}...,
 				)
 				if err != nil {
