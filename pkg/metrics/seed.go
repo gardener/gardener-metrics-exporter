@@ -19,6 +19,7 @@ import (
 
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -28,6 +29,22 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
 		return
+	}
+
+	// Fetch all Shoots.
+	shoots, err := c.shootInformer.Lister().Shoots(metav1.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+		return
+	}
+
+	hostedShootCount := make(map[string]float64)
+	for _, shoot := range shoots {
+		// Initialize
+		if _, ok := hostedShootCount[*shoot.Spec.SeedName]; !ok {
+			hostedShootCount[*shoot.Spec.SeedName] = 0
+		}
+		hostedShootCount[*shoot.Spec.SeedName] = hostedShootCount[*shoot.Spec.SeedName] + 1
 	}
 
 	for _, seed := range seeds {
@@ -60,6 +77,28 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 			continue
 		}
 		ch <- metric
+
+		if val, ok := hostedShootCount[seed.ObjectMeta.Name]; ok {
+			metric, err := prometheus.NewConstMetric(
+				c.descs[metricGardenSeedUsage],
+				prometheus.GaugeValue,
+				val,
+				[]string{
+					seed.ObjectMeta.Name,
+					seed.ObjectMeta.Namespace,
+					seed.Spec.Provider.Type,
+					seed.Spec.Provider.Region,
+					strconv.FormatBool(visible),
+					strconv.FormatBool(protected),
+					"shoot",
+				}...,
+			)
+			if err != nil {
+				ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+				continue
+			}
+			ch <- metric
+		}
 
 		for kind, resource := range seed.Status.Capacity {
 			metric, err = prometheus.NewConstMetric(

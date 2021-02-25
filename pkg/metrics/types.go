@@ -8,6 +8,7 @@ const (
 	metricGardenSeedInfo      = "garden_seed_info"
 	metricGardenSeedCondition = "garden_seed_condition"
 	metricGardenSeedCapacity  = "garden_seed_capacity"
+	metricGardenSeedUsage     = "garden_seed_usage"
 
 	// Plant metric
 	metricGardenPlantInfo      = "garden_plant_info"
