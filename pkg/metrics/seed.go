@@ -60,6 +60,29 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 			continue
 		}
 		ch <- metric
+
+		for kind, resource := range seed.Status.Capacity {
+			metric, err = prometheus.NewConstMetric(
+				c.descs[metricGardenSeedCapacity],
+				prometheus.GaugeValue,
+				float64(resource.Value()),
+				[]string{
+					seed.ObjectMeta.Name,
+					seed.ObjectMeta.Namespace,
+					seed.Spec.Provider.Type,
+					seed.Spec.Provider.Region,
+					strconv.FormatBool(visible),
+					strconv.FormatBool(protected),
+					kind.String(),
+				}...,
+			)
+			if err != nil {
+				ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+				continue
+			}
+			ch <- metric
+		}
+
 		// Export a metric for each condition of the Seed.
 		for _, condition := range seed.Status.Conditions {
 			metric, err := prometheus.NewConstMetric(
