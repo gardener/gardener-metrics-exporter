@@ -110,6 +110,21 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
+		metricGardenSeedUsage: prometheus.NewDesc(
+			metricGardenSeedUsage,
+			"Seed usage.",
+			[]string{
+				"name",
+				"namespace",
+				"iaas",
+				"region",
+				"visible",
+				"protected",
+				"resource",
+			},
+			nil,
+		),
+
 		metricGardenShootCondition: prometheus.NewDesc(
 			metricGardenShootCondition,
 			"Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
