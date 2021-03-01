@@ -20,6 +20,7 @@ The `gardener-metrics-exporter` is a [Prometheus][] metrics exporter for
 | garden_seed_info                        | Information to a Seed                                                     | Seed     | Gauge   |
 | garden_seed_capacity                    | Information regarding a seed's capacity with respect to certain resources | Seed     | Gauge   |
 | garden_seed_condition                   | Condition State of a Seed                                                 | Seed     | Gauge   |
+| garden_seed_usage                       | Actual usage of seed by resources                                         | Seed     | Gauge   |
 | garden_projects_status                  | Status of Garden Projects                                                 | Projects | Gauge   |
 | garden_users_total                      | Count of users                                                            | Users    | Gauge   |
 | garden_scrape_failure_total             | Total count of scraping failures, grouped by kind/group of metric(s)      | App      | Counter |
