@@ -40,7 +40,9 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 
 	hostedShootCount := make(map[string]float64)
 	for _, shoot := range shoots {
-		// Initialize
+		if shoot.Spec.SeedName == nil {
+			continue
+		}
 		if _, ok := hostedShootCount[*shoot.Spec.SeedName]; !ok {
 			hostedShootCount[*shoot.Spec.SeedName] = 0
 		}
