@@ -16,7 +16,22 @@ metrics-exporter:
             tag_as_latest: true
     steps:
       check:
-        image: 'golang:1.15.5'
+        image: 'golang:1.15.8'
+
+  release-branches:
+    index: 1
+    branches: ['release-*']
+    inherit:
+      metrics-exporter:
+        base_definition:
+          steps:
+            verify:
+              image: 'golang:1.15.8'
+        jobs:
+          release:
+            traits:
+              release:
+                nextversion: 'bump_patch'
   jobs:
     head-update:
       traits:
