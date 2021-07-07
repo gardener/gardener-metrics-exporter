@@ -218,6 +218,9 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				if len(shoot.Status.LastErrors) > 0 {
 					hasErrors = true
 				}
+				if condition.Type == "" {
+					continue
+				}
 
 				metric, err := prometheus.NewConstMetric(
 					c.descs[metricGardenShootCondition],

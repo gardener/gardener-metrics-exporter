@@ -126,6 +126,9 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 
 		// Export a metric for each condition of the Seed.
 		for _, condition := range seed.Status.Conditions {
+			if condition.Type == "" {
+				continue
+			}
 			metric, err := prometheus.NewConstMetric(
 				c.descs[metricGardenSeedCondition],
 				prometheus.GaugeValue,
