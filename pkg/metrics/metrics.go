@@ -16,12 +16,24 @@ package metrics
 
 import (
 	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions/core/v1beta1"
+	gardenmanagedseedinformers "github.com/gardener/gardener/pkg/client/seedmanagement/informers/externalversions/seedmanagement/v1alpha1"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
 func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 	return map[string]*prometheus.Desc{
+		metricGardenManagedSeedInfo: prometheus.NewDesc(
+			metricGardenManagedSeedInfo,
+			"Information about a managed seed.",
+			[]string{
+				"name",
+				"shoot",
+			},
+			nil,
+		),
+
 		metricGardenOperationsTotal: prometheus.NewDesc(
 			metricGardenOperationsTotal,
 			"Count of ongoing operations.",
@@ -247,12 +259,13 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 }
 
 type gardenMetricsCollector struct {
-	shootInformer   gardencoreinformers.ShootInformer
-	seedInformer    gardencoreinformers.SeedInformer
-	projectInformer gardencoreinformers.ProjectInformer
-	plantInformer   gardencoreinformers.PlantInformer
-	descs           map[string]*prometheus.Desc
-	logger          *logrus.Logger
+	managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer
+	shootInformer       gardencoreinformers.ShootInformer
+	seedInformer        gardencoreinformers.SeedInformer
+	projectInformer     gardencoreinformers.ProjectInformer
+	plantInformer       gardencoreinformers.PlantInformer
+	descs               map[string]*prometheus.Desc
+	logger              *logrus.Logger
 }
 
 // Describe implements the prometheus.Describe interface, which intends the gardenMetricsCollector to be a Prometheus collector.
@@ -266,6 +279,7 @@ func (c *gardenMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect implements the prometheus.Collect interface, which intends the gardenMetricsCollector to be a Prometheus collector.
 // TODO Can we run the collectors in parallel?
 func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
+	c.collectManagedSeedMetrics(ch)
 	c.collectProjectMetrics(ch)
 	c.collectShootMetrics(ch)
 	c.collectSeedMetrics(ch)
@@ -273,14 +287,15 @@ func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, plantInformer gardencoreinformers.PlantInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, plantInformer gardencoreinformers.PlantInformer, managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
-		shootInformer:   shootInformer,
-		seedInformer:    seedInformer,
-		projectInformer: projectInformer,
-		plantInformer:   plantInformer,
-		descs:           getGardenMetricsDefinitions(),
-		logger:          logger,
+		managedSeedInformer: managedSeedInformer,
+		shootInformer:       shootInformer,
+		seedInformer:        seedInformer,
+		projectInformer:     projectInformer,
+		plantInformer:       plantInformer,
+		descs:               getGardenMetricsDefinitions(),
+		logger:              logger,
 	}
 	prometheus.MustRegister(&metricsCollector)
 	prometheus.MustRegister(ScrapeFailures)
