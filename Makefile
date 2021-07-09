@@ -31,7 +31,7 @@ build:
 
 .PHONY: build-local
 build-local:
-	@go build -i \
+	@go build \
 		-o $(WORKDIR)/bin/gardener-metrics-exporter \
 		-ldflags $(LDFLAGS) \
 		$(WORKDIR)/cmd/main.go
