@@ -15,6 +15,7 @@
 package metrics
 
 import (
+	"github.com/gardener/gardener/pkg/apis/seedmanagement/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,6 +30,10 @@ func (c gardenMetricsCollector) collectManagedSeedMetrics(ch chan<- prometheus.M
 		return
 	}
 
+	generateManagedSeedInfoMetrics(managedSeeds, c.descs[metricGardenManagedSeedInfo], ch)
+}
+
+func generateManagedSeedInfoMetrics(managedSeeds []*v1alpha1.ManagedSeed, desc *prometheus.Desc, ch chan<- prometheus.Metric) {
 	for _, ms := range managedSeeds {
 		// Some sanity checks.
 		if ms == nil || ms.Spec.Shoot == nil {
@@ -37,7 +42,7 @@ func (c gardenMetricsCollector) collectManagedSeedMetrics(ch chan<- prometheus.M
 
 		// Expose a metric that exposes information about a managed seed.
 		metric, err := prometheus.NewConstMetric(
-			c.descs[metricGardenManagedSeedInfo],
+			desc,
 			prometheus.GaugeValue,
 			0,
 			[]string{
