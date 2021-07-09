@@ -63,6 +63,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		return
 	}
 
+	managedSeeds, err := c.managedSeedInformer.Lister().ManagedSeeds(metav1.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "managedSeeds"}).Inc()
+		return
+	}
+
 	seeds := c.getSeeds()
 
 	collectShootCustomizationMetrics(shoots, ch)
@@ -80,7 +86,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			iaas = shoot.Spec.Provider.Type
 			seed = *shoot.Spec.SeedName
 		)
-		isSeed = usedAsSeed(shoot)
+		isSeed = usedAsSeed(shoot, managedSeeds)
 
 		if shoot.Spec.Purpose != nil {
 			purpose = string(*shoot.Spec.Purpose)

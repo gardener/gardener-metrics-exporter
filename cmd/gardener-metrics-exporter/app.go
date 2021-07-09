@@ -26,6 +26,8 @@ import (
 	"github.com/gardener/gardener-metrics-exporter/pkg/version"
 	clientset "github.com/gardener/gardener/pkg/client/core/clientset/versioned"
 	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions"
+	seedmanagementclientset "github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned"
+	gardenmanagedseedinformers "github.com/gardener/gardener/pkg/client/seedmanagement/informers/externalversions"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -93,23 +95,29 @@ func run(ctx context.Context, o *options) error {
 	stopCh := make(chan struct{})
 
 	// Create informer factories to create informers.
-	gardenInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
+	gardenInformerFactory, gardenManagedSeedInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
 	if err != nil {
 		return err
 	}
 
 	// Create informers.
 	var (
-		shootInformer   = gardenInformerFactory.Core().V1beta1().Shoots().Informer()
-		seedInformer    = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
-		projectInformer = gardenInformerFactory.Core().V1beta1().Projects().Informer()
-		plantInformer   = gardenInformerFactory.Core().V1beta1().Plants().Informer()
+		managedSeedInformer = gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds().Informer()
+		shootInformer       = gardenInformerFactory.Core().V1beta1().Shoots().Informer()
+		seedInformer        = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
+		projectInformer     = gardenInformerFactory.Core().V1beta1().Projects().Informer()
+		plantInformer       = gardenInformerFactory.Core().V1beta1().Plants().Informer()
 	)
 
-	// Start the factories and wait until the creates informes has synce
+	// Start the factories and wait until the informers have synced.
 	gardenInformerFactory.Start(stopCh)
 	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, plantInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
+	}
+
+	gardenManagedSeedInformerFactory.Start((stopCh))
+	if !cache.WaitForCacheSync(ctx.Done(), managedSeedInformer.HasSynced) {
+		return errors.New("Timed out waiting for Managed Seed caches to sync")
 	}
 
 	// Start the metrics collector
@@ -118,6 +126,7 @@ func run(ctx context.Context, o *options) error {
 		gardenInformerFactory.Core().V1beta1().Seeds(),
 		gardenInformerFactory.Core().V1beta1().Projects(),
 		gardenInformerFactory.Core().V1beta1().Plants(),
+		gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds(),
 		log,
 	)
 
@@ -161,22 +170,27 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	return client, nil
 }
 
-func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardencoreinformers.SharedInformerFactory, error) {
+func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardencoreinformers.SharedInformerFactory, gardenmanagedseedinformers.SharedInformerFactory, error) {
 	restConfig, err := newClientConfig(kubeconfigPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if restConfig == nil {
-		return nil, err
+		return nil, nil, err
 	}
 	gardenClient, err := clientset.NewForConfig(restConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if gardenClient == nil {
-		return nil, errors.New("gardenClient is nil")
+		return nil, nil, errors.New("gardenClient is nil")
 	}
-	gardenInformerFactory := gardencoreinformers.NewSharedInformerFactory(gardenClient, 0)
+	gardenManagedSeedClient, err := seedmanagementclientset.NewForConfig(restConfig)
+	if gardenManagedSeedClient == nil {
+		return nil, nil, errors.New("gardenManagedSeedClient is nil")
+	}
 
-	return gardenInformerFactory, nil
+	gardenInformerFactory := gardencoreinformers.NewSharedInformerFactory(gardenClient, 0)
+	gardenManagedSeedInformerFactory := gardenmanagedseedinformers.NewSharedInformerFactory(gardenManagedSeedClient, 0)
+	return gardenInformerFactory, gardenManagedSeedInformerFactory, nil
 }
