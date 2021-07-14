@@ -16,6 +16,14 @@ rules:
   - get
   - watch
   - list
+- apiGroups:
+  - seedmanagement.gardener.cloud
+  resources:
+  - managedseeds
+  verbs:
+  - get
+  - watch
+  - list
 ---
 kind: ClusterRoleBinding
 apiVersion: {{ include "rbacversion" . }}
