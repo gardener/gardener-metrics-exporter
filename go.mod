@@ -1,6 +1,6 @@
 module github.com/gardener/gardener-metrics-exporter
 
-go 1.15
+go 1.16
 
 require (
 	github.com/gardener/gardener v1.27.1
