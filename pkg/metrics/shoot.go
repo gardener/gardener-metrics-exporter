@@ -283,6 +283,18 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 		nodeCountMax += worker.Minimum
 		nodeCountMin += worker.Maximum
 
+		var criName string
+		var containerRuntimes []string
+
+		if worker.CRI == nil {
+			criName = "docker (default)"
+		} else {
+			criName = string(worker.CRI.Name)
+			for _, runtime := range worker.CRI.ContainerRuntimes {
+				containerRuntimes = append(containerRuntimes, runtime.Type)
+			}
+		}
+
 		// Expose metrics about the Shoot's nodes.
 		metric, err := prometheus.NewConstMetric(
 			c.descs[metricGardenShootNodeInfo],
@@ -294,6 +306,8 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 				worker.Name,
 				worker.Machine.Image.Name,
 				*worker.Machine.Image.Version,
+				criName,
+				strings.Join(containerRuntimes, ", "),
 			}...,
 		)
 		if err != nil {
