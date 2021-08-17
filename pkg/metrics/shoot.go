@@ -17,6 +17,7 @@ package metrics
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -293,6 +294,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 			for _, runtime := range worker.CRI.ContainerRuntimes {
 				containerRuntimes = append(containerRuntimes, runtime.Type)
 			}
+			sort.Strings(containerRuntimes)
 		}
 
 		// Expose metrics about the Shoot's nodes.
