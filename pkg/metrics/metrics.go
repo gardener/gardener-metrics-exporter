@@ -222,6 +222,8 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"worker_group",
 				"image",
 				"version",
+				"cri",
+				"container_runtimes",
 			},
 			nil,
 		),
