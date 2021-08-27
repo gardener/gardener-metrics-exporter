@@ -31,7 +31,7 @@ spec:
       {{- end }}
       containers:
       - name: gardener-metrics-exporter
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        image: "{{ include "image" .Values.image }}"
         imagePullPolicy: IfNotPresent
         command:
         - /gardener-metrics-exporter
