@@ -241,6 +241,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						purpose,
 						strconv.FormatBool(isSeed),
 						iaas,
+						seed,
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
 						uid,

@@ -148,6 +148,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"purpose",
 				"is_seed",
 				"iaas",
+				"seed",
 				"seed_iaas",
 				"seed_region",
 				"uid",
