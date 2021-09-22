@@ -1,5 +1,5 @@
 #####################      builder       #####################
-FROM golang:1.16 AS builder
+FROM golang:1.17 AS builder
 
 ENV GO111MODULE=on
 WORKDIR /go/src/github.com/gardener/gardener-metrics-exporter
@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
   cmd/main.go
 
 #############      gardener-metrics-exporter     #############
-FROM alpine:3.12 AS metrics-exporter
+FROM alpine:3.14.2 AS metrics-exporter
 
 COPY --from=builder /go/bin/gardener-metrics-exporter /gardener-metrics-exporter
 
