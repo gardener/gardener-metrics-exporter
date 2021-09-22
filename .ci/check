@@ -14,7 +14,7 @@ fi
 # Install Golint.
 if ! which golint 1>/dev/null; then
   echo -n "Installing golint... "
-  go get -u golang.org/x/lint/golint
+  go install golang.org/x/lint/golint@v0.0.0-20210508222113-6edffad5e616
   echo "done."
 fi
 
