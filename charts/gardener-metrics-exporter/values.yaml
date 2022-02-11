@@ -1,7 +1,17 @@
-server:
-  bindAddress: 0.0.0.0
-  port: 2718
-image:
-  repository: eu.gcr.io/gardener-project/gardener/metrics-exporter
-  tag: latest
-# kubeconfig: a3ViZWNvbmZpZwo=
+global:
+  virtualGarden:
+    enabled: false
+    user:
+      name: ""
+  server:
+    bindAddress: 0.0.0.0
+    port: 2718
+  image:
+    repository: eu.gcr.io/gardener-project/gardener/metrics-exporter
+    tag: latest
+  # kubeconfig: a3ViZWNvbmZpZwo=
+
+  serviceAccountTokenVolumeProjection:
+    enabled: false
+    expirationSeconds: 43200
+    audience: ""
