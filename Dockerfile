@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
   cmd/main.go
 
 #############      gardener-metrics-exporter     #############
-FROM alpine:3.14.2 AS metrics-exporter
+FROM alpine:3.14.6 AS metrics-exporter
 
 COPY --from=builder /go/bin/gardener-metrics-exporter /gardener-metrics-exporter
 
