@@ -93,6 +93,14 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			purpose = string(*shoot.Spec.Purpose)
 		}
 
+		if shoot.ObjectMeta.Labels != nil {
+			for k, v := range shoot.ObjectMeta.Labels {
+				if k == "business-critical" && v == "true" {
+					purpose = "business-critical"
+				}
+			}
+		}
+
 		projectName, err := findProject(projects, shoot.Namespace)
 		if err != nil {
 			c.logger.Error(err.Error())
