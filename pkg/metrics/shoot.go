@@ -35,6 +35,20 @@ var (
 		string(gardenv1beta1.LastOperationTypeReconcile),
 		string(gardenv1beta1.LastOperationTypeDelete),
 	}
+
+	userErrorCodes = map[gardenv1beta1.ErrorCode]bool{
+		gardenv1beta1.ErrorInfraUnauthenticated:          true,
+		gardenv1beta1.ErrorInfraUnauthorized:             true,
+		gardenv1beta1.ErrorInfraQuotaExceeded:            true,
+		gardenv1beta1.ErrorInfraRateLimitsExceeded:       false,
+		gardenv1beta1.ErrorInfraDependencies:             true,
+		gardenv1beta1.ErrorRetryableInfraDependencies:    false,
+		gardenv1beta1.ErrorInfraResourcesDepleted:        true,
+		gardenv1beta1.ErrorCleanupClusterResources:       true,
+		gardenv1beta1.ErrorConfigurationProblem:          true,
+		gardenv1beta1.ErrorRetryableConfigurationProblem: true,
+		gardenv1beta1.ErrorProblematicWebhook:            true,
+	}
 )
 
 func init() {
@@ -228,11 +242,6 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 			// Export a metric for each condition of the Shoot.
 			for _, condition := range shoot.Status.Conditions {
-				var hasErrors bool
-
-				if len(shoot.Status.LastErrors) > 0 {
-					hasErrors = true
-				}
 				if condition.Type == "" {
 					continue
 				}
@@ -253,7 +262,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
 						seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
 						uid,
-						strconv.FormatBool(hasErrors),
+						strconv.FormatBool(hasUserErrors(shoot.Status.LastErrors)),
 						shootIsCompliant(shoot.Status.Constraints),
 					}...,
 				)
@@ -280,6 +289,17 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	}
 
 	c.exposeShootOperations(shootOperationsCounters, ch)
+}
+
+func hasUserErrors(lastErrors []gardenv1beta1.LastError) bool {
+	for _, lastError := range lastErrors {
+		for _, code := range lastError.Codes {
+			if userError := userErrorCodes[code]; userError {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Shoot, projectName *string, ch chan<- prometheus.Metric) {
