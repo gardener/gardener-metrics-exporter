@@ -72,6 +72,7 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 				seed.Spec.Provider.Region,
 				strconv.FormatBool(visible),
 				strconv.FormatBool(protected),
+				getK8sVersion(seed),
 			}...,
 		)
 		if err != nil {
@@ -145,4 +146,12 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 			ch <- metric
 		}
 	}
+}
+
+func getK8sVersion(seed *gardenv1beta1.Seed) string {
+	version := ""
+	if seed.Status.KubernetesVersion != nil {
+		version = *seed.Status.KubernetesVersion
+	}
+	return version
 }

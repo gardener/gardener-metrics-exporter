@@ -103,6 +103,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"region",
 				"visible",
 				"protected",
+				"version",
 			},
 			nil,
 		),
