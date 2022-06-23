@@ -64,6 +64,6 @@ func Serve(ctx context.Context, bindAddress string, port int, logger *logrus.Log
 
 	logger.Infof("Starting webserver on port %d...", port)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		logger.Errorf("Server starting error. %s", err.Error())
+		logger.Fatalf("Server starting error. %s", err.Error())
 	}
 }
