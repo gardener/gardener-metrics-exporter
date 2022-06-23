@@ -77,7 +77,6 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			"Status of projects.",
 			[]string{
 				"name",
-				"cluster",
 				"phase",
 			},
 			nil,
