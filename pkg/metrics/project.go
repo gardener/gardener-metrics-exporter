@@ -58,7 +58,6 @@ func (c gardenMetricsCollector) collectProjectMetrics(ch chan<- prometheus.Metri
 			status,
 			[]string{
 				project.ObjectMeta.Name,
-				project.ObjectMeta.ClusterName,
 				string(project.Status.Phase),
 			}...,
 		)
