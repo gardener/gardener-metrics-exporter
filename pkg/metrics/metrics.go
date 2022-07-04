@@ -225,6 +225,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"version",
 				"cri",
 				"container_runtimes",
+				"architecture",
 			},
 			nil,
 		),

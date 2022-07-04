@@ -339,6 +339,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 				*worker.Machine.Image.Version,
 				criName,
 				strings.Join(containerRuntimes, ", "),
+				*worker.Machine.Architecture,
 			}...,
 		)
 		if err != nil {
