@@ -9,7 +9,6 @@ rules:
   - shoots
   - projects
   - seeds
-  - plants
   verbs:
   - get
   - watch

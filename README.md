@@ -71,7 +71,7 @@ make build-local
 ```
 
 **Be aware:** The user in the kubeconfig needs permissions to ``GET, LIST,
-*WATCH`` the resources ``Shoot, Seed, Project, Plant
+*WATCH`` the resources ``Shoot, Seed, Project
 *(core.gardener.cloud/v1alpha1)`` in all namespaces of the cluster.
 
 Verify that everything works by calling the `/metrics` endpoint of the app.
