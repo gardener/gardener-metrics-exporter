@@ -48,30 +48,6 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
-		metricGardenPlantCondition: prometheus.NewDesc(
-			metricGardenPlantCondition,
-			"Condition state of a Plant. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
-			[]string{
-				"name",
-				"project",
-				"condition",
-			},
-			nil,
-		),
-
-		metricGardenPlantInfo: prometheus.NewDesc(
-			metricGardenPlantInfo,
-			"Information about a plant.",
-			[]string{
-				"name",
-				"project",
-				"provider",
-				"region",
-				"version",
-			},
-			nil,
-		),
-
 		metricGardenProjectsStatus: prometheus.NewDesc(
 			metricGardenProjectsStatus,
 			"Status of projects.",
@@ -267,7 +243,6 @@ type gardenMetricsCollector struct {
 	shootInformer       gardencoreinformers.ShootInformer
 	seedInformer        gardencoreinformers.SeedInformer
 	projectInformer     gardencoreinformers.ProjectInformer
-	plantInformer       gardencoreinformers.PlantInformer
 	descs               map[string]*prometheus.Desc
 	logger              *logrus.Logger
 }
@@ -287,17 +262,15 @@ func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	c.collectProjectMetrics(ch)
 	c.collectShootMetrics(ch)
 	c.collectSeedMetrics(ch)
-	c.collectPlantMetrics(ch)
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, plantInformer gardencoreinformers.PlantInformer, managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
 		managedSeedInformer: managedSeedInformer,
 		shootInformer:       shootInformer,
 		seedInformer:        seedInformer,
 		projectInformer:     projectInformer,
-		plantInformer:       plantInformer,
 		descs:               getGardenMetricsDefinitions(),
 		logger:              logger,
 	}

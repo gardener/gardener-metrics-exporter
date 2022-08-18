@@ -11,10 +11,6 @@ const (
 	metricGardenSeedCapacity    = "garden_seed_capacity"
 	metricGardenSeedUsage       = "garden_seed_usage"
 
-	// Plant metric
-	metricGardenPlantInfo      = "garden_plant_info"
-	metricGardenPlantCondition = "garden_plant_condition"
-
 	// Shoot metric (available also for Shoots which act as Seed).
 	metricGardenShootCondition                = "garden_shoot_condition"
 	metricGardenShootCreation                 = "garden_shoot_creation_timestamp"
