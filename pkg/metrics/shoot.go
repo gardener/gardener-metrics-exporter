@@ -94,6 +94,16 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 	collectShootCustomizationMetrics(shoots, ch)
 
+	secretBindingMap := make(map[string]*gardenv1beta1.SecretBinding)
+	for _, secretBinding := range secretBindings {
+		secretBindingMap[fmt.Sprintf("%s/%s", secretBinding.Namespace, secretBinding.Name)] = secretBinding
+	}
+
+	projectMap := make(map[string]*gardenv1beta1.Project)
+	for _, project := range projects {
+		projectMap[*project.Spec.Namespace] = project
+	}
+
 	for _, shoot := range shoots {
 		// Some Shoot sanity checks.
 		if shoot == nil || shoot.Spec.SeedName == nil {
@@ -102,16 +112,10 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 
 		var costObject, costObjectOwner string
 
-		secretBindingName := shoot.Spec.SecretBindingName
-		for _, secretBinding := range secretBindings {
-			if secretBinding.Name == secretBindingName && secretBinding.Namespace == shoot.Namespace {
-				secretNamespace := secretBinding.SecretRef.Namespace
-				for _, project := range projects {
-					if *project.Spec.Namespace == secretNamespace {
-						costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
-						costObjectOwner = project.Spec.Owner.Name
-					}
-				}
+		if secretBinding, ok := secretBindingMap[fmt.Sprintf("%s/%s", shoot.Namespace, shoot.Spec.SecretBindingName)]; ok {
+			if project, ok := projectMap[secretBinding.SecretRef.Namespace]; ok {
+				costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
+				costObjectOwner = project.Spec.Owner.Name
 			}
 		}
 
