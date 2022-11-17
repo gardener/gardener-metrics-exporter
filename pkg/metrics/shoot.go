@@ -84,6 +84,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		return
 	}
 
+	secretBindings, err := c.secretBindingInformer.Lister().SecretBindings(metav1.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "secretBindings"}).Inc()
+		return
+	}
+
 	seeds := c.getSeeds()
 
 	collectShootCustomizationMetrics(shoots, ch)
@@ -92,6 +98,21 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		// Some Shoot sanity checks.
 		if shoot == nil || shoot.Spec.SeedName == nil {
 			continue
+		}
+
+		var costObject, costObjectOwner string
+
+		secretBindingName := shoot.Spec.SecretBindingName
+		for _, secretBinding := range secretBindings {
+			if secretBinding.Name == secretBindingName && secretBinding.Namespace == shoot.Namespace {
+				secretNamespace := secretBinding.SecretRef.Namespace
+				for _, project := range projects {
+					if *project.Spec.Namespace == secretNamespace {
+						costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
+						costObjectOwner = project.Spec.Owner.Name
+					}
+				}
+			}
 		}
 
 		var (
@@ -137,6 +158,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
 				seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
 				string(shoot.UID),
+				costObject,
+				costObjectOwner,
 			}...,
 		)
 
