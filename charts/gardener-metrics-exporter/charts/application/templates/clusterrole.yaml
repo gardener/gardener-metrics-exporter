@@ -9,6 +9,7 @@ rules:
   - shoots
   - projects
   - seeds
+  - secretbindings
   verbs:
   - get
   - watch
