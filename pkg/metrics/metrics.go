@@ -169,6 +169,10 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"is_seed",
 				"seed_iaas",
 				"seed_region",
+				"shoot_uid",
+				"cost_object",
+				"cost_object_owner",
+				"failureTolerance",
 			},
 			nil,
 		),
@@ -239,12 +243,13 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 }
 
 type gardenMetricsCollector struct {
-	managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer
-	shootInformer       gardencoreinformers.ShootInformer
-	seedInformer        gardencoreinformers.SeedInformer
-	projectInformer     gardencoreinformers.ProjectInformer
-	descs               map[string]*prometheus.Desc
-	logger              *logrus.Logger
+	managedSeedInformer   gardenmanagedseedinformers.ManagedSeedInformer
+	shootInformer         gardencoreinformers.ShootInformer
+	seedInformer          gardencoreinformers.SeedInformer
+	projectInformer       gardencoreinformers.ProjectInformer
+	secretBindingInformer gardencoreinformers.SecretBindingInformer
+	descs                 map[string]*prometheus.Desc
+	logger                *logrus.Logger
 }
 
 // Describe implements the prometheus.Describe interface, which intends the gardenMetricsCollector to be a Prometheus collector.
@@ -265,14 +270,15 @@ func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer, secretBindingInformer gardencoreinformers.SecretBindingInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
-		managedSeedInformer: managedSeedInformer,
-		shootInformer:       shootInformer,
-		seedInformer:        seedInformer,
-		projectInformer:     projectInformer,
-		descs:               getGardenMetricsDefinitions(),
-		logger:              logger,
+		managedSeedInformer:   managedSeedInformer,
+		shootInformer:         shootInformer,
+		seedInformer:          seedInformer,
+		projectInformer:       projectInformer,
+		secretBindingInformer: secretBindingInformer,
+		descs:                 getGardenMetricsDefinitions(),
+		logger:                logger,
 	}
 	prometheus.MustRegister(&metricsCollector)
 	prometheus.MustRegister(ScrapeFailures)

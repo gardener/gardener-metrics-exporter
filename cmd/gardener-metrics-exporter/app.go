@@ -102,15 +102,16 @@ func run(ctx context.Context, o *options) error {
 
 	// Create informers.
 	var (
-		managedSeedInformer = gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds().Informer()
-		shootInformer       = gardenInformerFactory.Core().V1beta1().Shoots().Informer()
-		seedInformer        = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
-		projectInformer     = gardenInformerFactory.Core().V1beta1().Projects().Informer()
+		managedSeedInformer   = gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds().Informer()
+		shootInformer         = gardenInformerFactory.Core().V1beta1().Shoots().Informer()
+		seedInformer          = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
+		projectInformer       = gardenInformerFactory.Core().V1beta1().Projects().Informer()
+		secretBindingInformer = gardenInformerFactory.Core().V1beta1().SecretBindings().Informer()
 	)
 
 	// Start the factories and wait until the informers have synced.
 	gardenInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, secretBindingInformer.HasSynced) {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
@@ -125,6 +126,7 @@ func run(ctx context.Context, o *options) error {
 		gardenInformerFactory.Core().V1beta1().Seeds(),
 		gardenInformerFactory.Core().V1beta1().Projects(),
 		gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds(),
+		gardenInformerFactory.Core().V1beta1().SecretBindings(),
 		log,
 	)
 

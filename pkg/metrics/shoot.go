@@ -84,14 +84,44 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		return
 	}
 
+	secretBindings, err := c.secretBindingInformer.Lister().SecretBindings(metav1.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "secretBindings"}).Inc()
+		return
+	}
+
 	seeds := c.getSeeds()
 
 	collectShootCustomizationMetrics(shoots, ch)
+
+	secretBindingMap := make(map[string]*gardenv1beta1.SecretBinding)
+	for _, secretBinding := range secretBindings {
+		secretBindingMap[fmt.Sprintf("%s/%s", secretBinding.Namespace, secretBinding.Name)] = secretBinding
+	}
+
+	projectMap := make(map[string]*gardenv1beta1.Project)
+	for _, project := range projects {
+		projectMap[*project.Spec.Namespace] = project
+	}
 
 	for _, shoot := range shoots {
 		// Some Shoot sanity checks.
 		if shoot == nil || shoot.Spec.SeedName == nil {
 			continue
+		}
+
+		var costObject, costObjectOwner string
+
+		if secretBinding, ok := secretBindingMap[fmt.Sprintf("%s/%s", shoot.Namespace, shoot.Spec.SecretBindingName)]; ok {
+			if project, ok := projectMap[secretBinding.SecretRef.Namespace]; ok {
+				costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
+				costObjectOwner = project.Spec.Owner.Name
+			}
+		}
+
+		var failureTolerance string
+		if shoot.Spec.ControlPlane != nil && shoot.Spec.ControlPlane.HighAvailability != nil {
+			failureTolerance = string(shoot.Spec.ControlPlane.HighAvailability.FailureTolerance.Type)
 		}
 
 		var (
@@ -136,6 +166,10 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				strconv.FormatBool(isSeed),
 				seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
 				seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
+				string(shoot.UID),
+				costObject,
+				costObjectOwner,
+				failureTolerance,
 			}...,
 		)
 
