@@ -119,6 +119,11 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			}
 		}
 
+		var failureTolerance string
+		if shoot.Spec.ControlPlane != nil && shoot.Spec.ControlPlane.HighAvailability != nil {
+			failureTolerance = string(shoot.Spec.ControlPlane.HighAvailability.FailureTolerance.Type)
+		}
+
 		var (
 			isSeed       bool
 			purpose, uid string
@@ -164,6 +169,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				string(shoot.UID),
 				costObject,
 				costObjectOwner,
+				failureTolerance,
 			}...,
 		)
 
