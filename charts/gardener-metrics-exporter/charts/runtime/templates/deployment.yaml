@@ -42,7 +42,7 @@ spec:
       containers:
       - name: gardener-metrics-exporter
         image: "{{ include "image" .Values.global.image }}"
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
         command:
         - /gardener-metrics-exporter
         {{- if .Values.global.kubeconfig }}
@@ -66,10 +66,24 @@ spec:
         ports:
         - name: port
           containerPort: {{ .Values.global.server.port }}
+        {{- if .Values.global.resources }}
         resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
+          {{- toYaml .Values.global.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.global.securityContext }}
+        securityContext:
+          {{- toYaml .Values.global.securityContext | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 2718
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 2718
+          periodSeconds: 5
       {{- if or .Values.global.kubeconfig .Values.global.serviceAccountTokenVolumeProjection.enabled }}
       volumes:
       {{- end }}
