@@ -30,10 +30,12 @@ import (
 var (
 	shootHealthProbeResponseTimeRegExp *regexp.Regexp
 
-	shootOperations = [3]string{
+	shootOperations = [5]string{
 		string(gardenv1beta1.LastOperationTypeCreate),
 		string(gardenv1beta1.LastOperationTypeReconcile),
 		string(gardenv1beta1.LastOperationTypeDelete),
+		string(gardenv1beta1.LastOperationTypeMigrate),
+		string(gardenv1beta1.LastOperationTypeRestore),
 	}
 
 	userErrorCodes = map[gardenv1beta1.ErrorCode]bool{
