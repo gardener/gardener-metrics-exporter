@@ -17,10 +17,6 @@ global:
       cpu: 100m
       memory: 128Mi
 
-  securityContext:
-    runAsUser: 10001
-    runAsGroup: 10001
-
   serviceAccountTokenVolumeProjection:
     enabled: false
     expirationSeconds: 43200
