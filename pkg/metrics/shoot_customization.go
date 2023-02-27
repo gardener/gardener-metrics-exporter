@@ -76,25 +76,6 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 
 	// Kube API Server customization.
 	{
-		Name:   fmt.Sprintf("%s_apiserver_basicauth_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which have basic auth enabled on the kube apiserver.",
-		Labels: []string{},
-		Type:   template.Gauge,
-		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1beta1.Shoot)
-			if !ok {
-				return nil, nil, utils.NewTypeConversionError()
-			}
-			var counter = make([]float64, 1, 1)
-			for _, s := range shoots {
-				if s.Spec.Kubernetes.KubeAPIServer != nil && s.Spec.Kubernetes.KubeAPIServer.EnableBasicAuthentication != nil && *s.Spec.Kubernetes.KubeAPIServer.EnableBasicAuthentication {
-					counter[0]++
-				}
-			}
-			return &counter, &[][]string{}, nil
-		},
-	},
-	{
 		Name:   fmt.Sprintf("%s_apiserver_auditpolicy_total", metricShootsCustomPrefix),
 		Help:   "Count of Shoots which have an audit log policy configured for the kube apiserver.",
 		Labels: []string{},
