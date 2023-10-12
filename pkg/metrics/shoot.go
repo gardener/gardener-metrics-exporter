@@ -282,6 +282,14 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 					continue
 				}
 
+				condMsg := ""
+				if (mapConditionStatus(condition.Status) == 0) {
+					condMsg = string(condition.Message)
+					if len(condMsg) > 100 {
+						condMsg = condMsg[:100]
+					}
+				}
+
 				metric, err := prometheus.NewConstMetric(
 					c.descs[metricGardenShootCondition],
 					prometheus.GaugeValue,
@@ -290,6 +298,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						shoot.Name,
 						*projectName,
 						string(condition.Type),
+						condMsg,
 						lastOperation,
 						purpose,
 						strconv.FormatBool(isSeed),
