@@ -346,8 +346,8 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 
 	workers := shoot.Spec.Provider.Workers
 	for _, worker := range workers {
-		nodeCountMax += worker.Minimum
-		nodeCountMin += worker.Maximum
+		nodeCountMax += worker.Maximum
+		nodeCountMin += worker.Minimum
 
 		var criName string
 		var containerRuntimes []string
