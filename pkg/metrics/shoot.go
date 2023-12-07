@@ -25,6 +25,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/utils/pointer"
 )
 
 var (
@@ -107,11 +108,6 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	}
 
 	for _, shoot := range shoots {
-		// Some Shoot sanity checks.
-		if shoot == nil || shoot.Spec.SeedName == nil {
-			continue
-		}
-
 		var costObject, costObjectOwner string
 
 		if secretBinding, ok := secretBindingMap[fmt.Sprintf("%s/%s", shoot.Namespace, shoot.Spec.SecretBindingName)]; ok {
@@ -131,7 +127,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			purpose, uid string
 
 			iaas = shoot.Spec.Provider.Type
-			seed = *shoot.Spec.SeedName
+			seed = pointer.StringDeref(shoot.Spec.SeedName, "")
 		)
 		isSeed = usedAsSeed(shoot, managedSeeds)
 
@@ -153,6 +149,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			continue
 		}
 
+		var seedProviderType, seedRegion string
+		if seed != "" {
+			seedProviderType = seeds[seed].Spec.Provider.Type
+			seedRegion = seeds[seed].Spec.Provider.Region
+		}
+
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
 		metric, err := prometheus.NewConstMetric(
 			c.descs[metricGardenShootInfo],
@@ -166,8 +168,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				shoot.Spec.Region,
 				seed,
 				strconv.FormatBool(isSeed),
-				seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
-				seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
+				seedProviderType,
+				seedRegion,
 				string(shoot.UID),
 				costObject,
 				costObjectOwner,
@@ -295,8 +297,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						strconv.FormatBool(isSeed),
 						iaas,
 						seed,
-						seeds[*shoot.Spec.SeedName].Spec.Provider.Type,
-						seeds[*shoot.Spec.SeedName].Spec.Provider.Region,
+						seedProviderType,
+						seedRegion,
 						uid,
 						strconv.FormatBool(hasUserErrors(shoot.Status.LastErrors)),
 						shootIsCompliant(shoot.Status.Constraints),
