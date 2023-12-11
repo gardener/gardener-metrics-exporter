@@ -1,7 +1,5 @@
 metrics-exporter:
-  template: default
   base_definition:
-    repo: ~
     traits:
       version:
         preprocess: inject-commit-hash
@@ -9,7 +7,6 @@ metrics-exporter:
       publish:
         dockerimages:
           metrics-exporter:
-            registry: gcr-readwrite
             image: eu.gcr.io/gardener-project/gardener/metrics-exporter
             dockerfile: Dockerfile
             target: metrics-exporter
