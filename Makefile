@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMAGE_REPOSITORY := eu.gcr.io/gardener-project/gardener/metrics-exporter
+IMAGE_REPOSITORY := europe-docker.pkg.dev/gardener-project/public/gardener/metrics-exporter
 IMAGE_VERSION    := $(shell cat VERSION)
 WORKDIR          := $(shell pwd)
 HOMEDIR          := $(shell echo ${HOME})
