@@ -194,6 +194,30 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
+		metricGardenShootWorkerNodeMaxTotal: prometheus.NewDesc(
+			metricGardenShootWorkerNodeMaxTotal,
+			"Max node count of a worker Shoot.",
+			[]string{
+				"name",
+				"project",
+				"worker_group",
+				"worker_machine_type",
+			},
+			nil,
+		),
+
+		metricGardenShootWorkerNodeMinTotal: prometheus.NewDesc(
+			metricGardenShootWorkerNodeMinTotal,
+			"Min node count of a worker Shoot.",
+			[]string{
+				"name",
+				"project",
+				"worker_group",
+				"worker_machine_type",
+			},
+			nil,
+		),
+
 		metricGardenShootNodeInfo: prometheus.NewDesc(
 			metricGardenShootNodeInfo,
 			"Information about the nodes in a Shoot.",

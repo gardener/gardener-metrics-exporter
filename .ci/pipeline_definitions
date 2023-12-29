@@ -1,16 +1,15 @@
 metrics-exporter:
-  template: default
   base_definition:
-    repo: ~
     traits:
       version:
         preprocess: inject-commit-hash
         inject_effective_version: true
+      component_descriptor:
+        ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
       publish:
         dockerimages:
           metrics-exporter:
-            registry: gcr-readwrite
-            image: eu.gcr.io/gardener-project/gardener/metrics-exporter
+            image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/metrics-exporter
             dockerfile: Dockerfile
             target: metrics-exporter
             tag_as_latest: true
@@ -21,15 +20,21 @@ metrics-exporter:
     head-update:
       traits:
         draft_release: ~
-        component_descriptor: ~
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
     pull-request:
       traits:
         pull-request: ~
-        component_descriptor: ~
     release:
       traits:
         version:
           preprocess: finalize
+        component_descriptor:
+          ocm_repository: europe-docker.pkg.dev/gardener-project/releases
+        publish:
+          dockerimages:
+            metrics-exporter:
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/metrics-exporter
         release:
           nextversion: bump_minor
-        component_descriptor: ~
