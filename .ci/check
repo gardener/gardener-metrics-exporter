@@ -6,30 +6,31 @@ set -e
 # SOURCE_PATH - path to component repository root directory.
 
 if [[ -z "${SOURCE_PATH}" ]]; then
-  export SOURCE_PATH="$(readlink -f "$(dirname ${0})/..")"
+  SOURCE_PATH="$(readlink -f "$(dirname "${0}")/..")"
+  export SOURCE_PATH
 else
-  export SOURCE_PATH="$(readlink -f ${SOURCE_PATH})"
+  SOURCE_PATH="$(readlink -f "${SOURCE_PATH}")"
+  export SOURCE_PATH
 fi
 
 # Install Golint.
-if ! which golint 1>/dev/null; then
-  echo -n "Installing golint... "
-  go install golang.org/x/lint/golint@v0.0.0-20210508222113-6edffad5e616
-  echo "done."
+if ! which golangci-lint 1>/dev/null; then
+  echo -n "Installing golangci-lint... "
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.56.0
 fi
 
-cd $SOURCE_PATH
+golangci-lint --version
+
+cd "$SOURCE_PATH"
 # Execute static code checks.
-go vet ./cmd/...
-go vet ./pkg/...
+go vet ./...
+# Execute lint check
+golangci-lint run
 
-cd -
-
-if [ -n "$(gofmt -l $SOURCE_PATH)" ]; then
+if [ -n "$(gofmt -l .)" ]; then
   echo "Formatting errors:"
-  gofmt -l $SOURCE_PATH
+  gofmt -l .
   exit 1
 fi
 
-# Execute lint checks
-golint -set_exit_status $SOURCE_PATH
+cd - >/dev/null
