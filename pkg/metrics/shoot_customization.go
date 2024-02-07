@@ -579,7 +579,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
-				if s.Spec.Maintenance != nil && s.Spec.Maintenance.AutoUpdate != nil && s.Spec.Maintenance.AutoUpdate.MachineImageVersion {
+				if s.Spec.Maintenance != nil && s.Spec.Maintenance.AutoUpdate != nil && s.Spec.Maintenance.AutoUpdate.MachineImageVersion != nil && *s.Spec.Maintenance.AutoUpdate.MachineImageVersion {
 					counter[0]++
 				}
 			}
