@@ -20,6 +20,8 @@ const (
 	metricGardenShootNodeMinTotal             = "garden_shoot_node_min_total"
 	metricGardenShootOperationProgressPercent = "garden_shoot_operation_progress_percent"
 	metricGardenShootOperationState           = "garden_shoot_operation_states"
+	metricGardenShootWorkerNodeMaxTotal       = "garden_shoot_worker_node_max_total"
+	metricGardenShootWorkerNodeMinTotal       = "garden_shoot_worker_node_min_total"
 
 	// Aggregated Shoot metrics (exclude Shoots which act as Seed).
 	metricGardenOperationsTotal = "garden_shoot_operations_total"

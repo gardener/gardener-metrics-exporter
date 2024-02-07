@@ -348,6 +348,42 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 
 	workers := shoot.Spec.Provider.Workers
 	for _, worker := range workers {
+		// Expose metrics. Start with max worker node count.
+		metric, err := prometheus.NewConstMetric(
+			c.descs[metricGardenShootWorkerNodeMaxTotal],
+			prometheus.GaugeValue,
+			float64(worker.Maximum),
+			[]string{
+				shoot.Name,
+				*projectName,
+				worker.Name,
+				worker.Machine.Type,
+			}...,
+		)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+			return
+		}
+		ch <- metric
+
+		// Continue with min worker node count.
+		metric, err = prometheus.NewConstMetric(
+			c.descs[metricGardenShootWorkerNodeMinTotal],
+			prometheus.GaugeValue,
+			float64(worker.Minimum),
+			[]string{
+				shoot.Name,
+				*projectName,
+				worker.Name,
+				worker.Machine.Type,
+			}...,
+		)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+			return
+		}
+		ch <- metric
+
 		nodeCountMax += worker.Maximum
 		nodeCountMin += worker.Minimum
 
@@ -365,7 +401,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 		}
 
 		// Expose metrics about the Shoot's nodes.
-		metric, err := prometheus.NewConstMetric(
+		metric, err = prometheus.NewConstMetric(
 			c.descs[metricGardenShootNodeInfo],
 			prometheus.GaugeValue,
 			0,
