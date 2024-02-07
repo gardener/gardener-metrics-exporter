@@ -35,7 +35,7 @@ func main() {
 
 	go func() {
 		<-signalCh
-		logger.Info("Received interupt signal.")
+		logger.Info("Received interrupt signal.")
 		signal.Stop(signalCh)
 		cancel()
 	}()

@@ -24,7 +24,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -120,7 +120,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			purpose, uid string
 
 			iaas = shoot.Spec.Provider.Type
-			seed = pointer.StringDeref(shoot.Spec.SeedName, "")
+			seed = ptr.Deref(shoot.Spec.SeedName, "")
 		)
 		isSeed = usedAsSeed(shoot, managedSeeds)
 

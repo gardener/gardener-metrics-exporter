@@ -909,7 +909,7 @@
       ],
       "datasource": "cluster-prometheus",
       "decimals": null,
-      "description": "Count of Shoots which have an open id connect coniguration for the kube apiserver.",
+      "description": "Count of Shoots which have an OIDC configuration for the kube apiserver.",
       "format": "none",
       "gauge": {
         "maxValue": 100,

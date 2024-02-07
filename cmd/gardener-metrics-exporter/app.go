@@ -44,21 +44,21 @@ type options struct {
 }
 
 func (o *options) validate() bool {
-	// Validate only if the kubeconfig file exits, when a path is given.
+	// Validate whether a kubeconfig file exists under the given path.
 	if o.kubeconfigPath != "" {
 		if _, err := os.Stat(o.kubeconfigPath); os.IsNotExist(err) {
-			log.Errorf("kubeconfig does not exits on path %s", o.kubeconfigPath)
+			log.Errorf("kubeconfig does not exist on path %s", o.kubeconfigPath)
 			return false
 		}
 	}
 
-	// Validate if passed ip is a valid ip.
+	// Validate whether the passed IP address is valid.
 	if ip := net.ParseIP(o.bindAddress); ip == nil {
 		log.Errorf("bind-address is not a valid ip %s", o.bindAddress)
 		return false
 	}
 
-	// Validate if port is in range.
+	// Validate if the port is in range.
 	if o.port < 0 || o.port > 65535 {
 		log.Errorf("port is out of range: %d", o.port)
 		return false
