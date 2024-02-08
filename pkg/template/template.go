@@ -16,9 +16,10 @@ package template
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 // Type define a metric type for a Prometheus metric.
@@ -94,8 +95,6 @@ func (m *MetricTemplate) Collect(ch chan<- prometheus.Metric, obj interface{}, p
 	if strings.Contains(m.Name, metricShootsCustomPrefix) {
 		m.sendMergedMetric(vals, labels, ch)
 	}
-
-	return
 }
 
 func mapType(t Type) prometheus.ValueType {
@@ -139,5 +138,4 @@ func (m *MetricTemplate) sendMergedMetric(vals []float64, labels [][]string, ch 
 			ch <- m
 		}
 	}
-	return
 }

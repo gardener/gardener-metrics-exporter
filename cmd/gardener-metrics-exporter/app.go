@@ -17,7 +17,6 @@ package app
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"net"
 	"os"
 
@@ -148,7 +147,7 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	}
 
 	// Kubeconfig based configuration
-	kubeconfig, err := ioutil.ReadFile(kubeconfigPath)
+	kubeconfig, err := os.ReadFile(kubeconfigPath)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +184,10 @@ func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gard
 	if gardenClient == nil {
 		return nil, nil, errors.New("gardenClient is nil")
 	}
-	gardenManagedSeedClient, err := seedmanagementclientset.NewForConfig(restConfig)
+	var gardenManagedSeedClient *seedmanagementclientset.Clientset
+	if gardenManagedSeedClient, err = seedmanagementclientset.NewForConfig(restConfig); err != nil {
+		return nil, nil, err
+	}
 	if gardenManagedSeedClient == nil {
 		return nil, nil, errors.New("gardenManagedSeedClient is nil")
 	}

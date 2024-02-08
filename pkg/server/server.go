@@ -38,7 +38,9 @@ func Serve(ctx context.Context, bindAddress string, port int, logger *logrus.Log
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "Content-Type: text/html; charset=utf-8")
-		w.Write(landingPage)
+		if _, err := w.Write(landingPage); err != nil {
+			logger.Warnf("Error writing HTTP response: %v", err)
+		}
 	})
 
 	server := http.Server{

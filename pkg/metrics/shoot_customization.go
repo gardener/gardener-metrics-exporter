@@ -40,7 +40,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Kubernetes.AllowPrivilegedContainers != nil && *s.Spec.Kubernetes.AllowPrivilegedContainers {
 					counter[0]++
@@ -85,7 +85,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Kubernetes.KubeAPIServer != nil && s.Spec.Kubernetes.KubeAPIServer.AuditConfig != nil && s.Spec.Kubernetes.KubeAPIServer.AuditConfig.AuditPolicy != nil && s.Spec.Kubernetes.KubeAPIServer.AuditConfig.AuditPolicy.ConfigMapRef != nil {
 					counter[0]++
@@ -104,7 +104,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Kubernetes.KubeAPIServer != nil && s.Spec.Kubernetes.KubeAPIServer.OIDCConfig != nil {
 					counter[0]++
@@ -173,7 +173,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Kubernetes.KubeControllerManager != nil && s.Spec.Kubernetes.KubeControllerManager.NodeCIDRMaskSize != nil {
 					counter[0]++
@@ -192,7 +192,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Kubernetes.KubeControllerManager != nil && s.Spec.Kubernetes.KubeControllerManager.HorizontalPodAutoscalerConfig != nil {
 					counter[0]++
@@ -273,7 +273,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Kubernetes.Kubelet != nil && s.Spec.Kubernetes.Kubelet.PodPIDsLimit != nil {
 					counter[0]++
@@ -327,7 +327,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if len(s.Spec.Provider.Workers) > 1 {
 					counter[0]++
@@ -346,7 +346,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				for _, w := range s.Spec.Provider.Workers {
 					if len(w.Zones) > 1 {
@@ -368,7 +368,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				for _, w := range s.Spec.Provider.Workers {
 					if len(w.Taints) > 0 {
@@ -390,7 +390,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				for _, w := range s.Spec.Provider.Workers {
 					if len(w.Labels) > 0 {
@@ -412,7 +412,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				for _, w := range s.Spec.Provider.Workers {
 					if len(w.Annotations) > 0 {
@@ -436,7 +436,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.DNS != nil && len(s.Spec.DNS.Providers) > 0 {
 					counter[0]++
@@ -457,7 +457,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Addons != nil && s.Spec.Addons.NginxIngress != nil && s.Spec.Addons.NginxIngress.Enabled {
 					counter[0]++
@@ -476,7 +476,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Addons != nil && s.Spec.Addons.KubernetesDashboard != nil && s.Spec.Addons.KubernetesDashboard.Enabled {
 					counter[0]++
@@ -499,7 +499,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Hibernation != nil && s.Spec.Hibernation.Enabled != nil && *s.Spec.Hibernation.Enabled {
 					counter[0]++
@@ -518,7 +518,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Hibernation != nil && len(s.Spec.Hibernation.Schedules) > 0 {
 					counter[0]++
@@ -539,7 +539,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Maintenance != nil && s.Spec.Maintenance.TimeWindow != nil {
 					counter[0]++
@@ -558,7 +558,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Maintenance != nil && s.Spec.Maintenance.AutoUpdate != nil && s.Spec.Maintenance.AutoUpdate.KubernetesVersion {
 					counter[0]++
@@ -577,7 +577,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			if !ok {
 				return nil, nil, utils.NewTypeConversionError()
 			}
-			var counter = make([]float64, 1, 1)
+			var counter = make([]float64, 1)
 			for _, s := range shoots {
 				if s.Spec.Maintenance != nil && s.Spec.Maintenance.AutoUpdate != nil && s.Spec.Maintenance.AutoUpdate.MachineImageVersion {
 					counter[0]++
@@ -604,7 +604,6 @@ func collectShootCustomizationMetrics(shoots []*gardenv1beta1.Shoot, ch chan<- p
 	for _, c := range shootCustomizationMetrics {
 		run(c)
 	}
-	return
 }
 
 func mapLabelAndValues(list *map[string]float64) (*[]float64, *[][]string) {

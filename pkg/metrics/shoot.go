@@ -16,7 +16,6 @@ package metrics
 
 import (
 	"fmt"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -29,8 +28,6 @@ import (
 )
 
 var (
-	shootHealthProbeResponseTimeRegExp *regexp.Regexp
-
 	shootOperations = [5]string{
 		string(gardenv1beta1.LastOperationTypeCreate),
 		string(gardenv1beta1.LastOperationTypeReconcile),
@@ -53,14 +50,6 @@ var (
 		gardenv1beta1.ErrorProblematicWebhook:            true,
 	}
 )
-
-func init() {
-	exp := regexp.MustCompile("^.*\\[response_time:(.*)ms\\]$")
-	if exp == nil {
-		panic("Could not compile regular expression.")
-	}
-	shootHealthProbeResponseTimeRegExp = exp
-}
 
 // collectShootMetrics collect Shoot metrics.
 func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric) {
@@ -203,6 +192,10 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			float64(hibernatedVal),
 			labels...,
 		)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+			continue
+		}
 
 		ch <- metric
 
@@ -213,6 +206,10 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			float64(shootCreation.Unix()),
 			labels...,
 		)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+			continue
+		}
 
 		ch <- metric
 
