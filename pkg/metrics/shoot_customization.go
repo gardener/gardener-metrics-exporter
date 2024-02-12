@@ -96,7 +96,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 	},
 	{
 		Name:   fmt.Sprintf("%s_apiserver_oidcconfig_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which have an open id connect coniguration for the kube apiserver.",
+		Help:   "Count of Shoots which have an OIDC configuration for the kube apiserver.",
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
@@ -165,7 +165,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 	// Kube Controller Manager customization.
 	{
 		Name:   fmt.Sprintf("%s_kcm_nodecidrmasksize_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which have node cidr mask size configured on the kube controller manager.",
+		Help:   "Count of Shoots which have node CIDR mask size configured on the kube controller manager.",
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
@@ -265,7 +265,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 	// Kubelet customization.
 	{
 		Name:   fmt.Sprintf("%s_kubelet_podpidlimit_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which have a pod pid limit configured for the kubelet(s).",
+		Help:   "Count of Shoots which have a pod PID limit configured for the kubelet(s).",
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
@@ -428,7 +428,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 	// Network customization.
 	{
 		Name:   fmt.Sprintf("%s_network_customdomain_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which use a custom dns domain.",
+		Help:   "Count of Shoots which use a custom DNS domain.",
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
@@ -449,7 +449,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 	// Addons customization.
 	{
 		Name:   fmt.Sprintf("%s_addon_nginxingress_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which have nginx ingress conroller addon enabled.",
+		Help:   "Count of Shoots which have nginx ingress controller addon enabled.",
 		Labels: []string{},
 		Type:   template.Gauge,
 		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
@@ -579,7 +579,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
-				if s.Spec.Maintenance != nil && s.Spec.Maintenance.AutoUpdate != nil && s.Spec.Maintenance.AutoUpdate.MachineImageVersion {
+				if s.Spec.Maintenance != nil && s.Spec.Maintenance.AutoUpdate != nil && s.Spec.Maintenance.AutoUpdate.MachineImageVersion != nil && *s.Spec.Maintenance.AutoUpdate.MachineImageVersion {
 					counter[0]++
 				}
 			}

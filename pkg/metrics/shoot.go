@@ -24,7 +24,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -97,9 +97,13 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	}
 
 	for _, shoot := range shoots {
-		var costObject, costObjectOwner string
+		var costObject, costObjectOwner, secretBindingName string
 
-		if secretBinding, ok := secretBindingMap[fmt.Sprintf("%s/%s", shoot.Namespace, shoot.Spec.SecretBindingName)]; ok {
+		if shoot.Spec.SecretBindingName != nil {
+			secretBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.SecretBindingName)
+		}
+
+		if secretBinding, ok := secretBindingMap[secretBindingName]; ok {
 			if project, ok := projectMap[secretBinding.SecretRef.Namespace]; ok {
 				costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
 				costObjectOwner = project.Spec.Owner.Name
@@ -116,7 +120,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			purpose, uid string
 
 			iaas = shoot.Spec.Provider.Type
-			seed = pointer.StringDeref(shoot.Spec.SeedName, "")
+			seed = ptr.Deref(shoot.Spec.SeedName, "")
 		)
 		isSeed = usedAsSeed(shoot, managedSeeds)
 

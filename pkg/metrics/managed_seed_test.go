@@ -20,7 +20,6 @@ import (
 
 	constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 
-	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	seedmanagementv1alpha1 "github.com/gardener/gardener/pkg/apis/seedmanagement/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -38,8 +37,8 @@ func Test_generateManagedSeedInfoMetrics(t *testing.T) {
 			Namespace: constants.GardenNamespace,
 		},
 		Spec: seedmanagementv1alpha1.ManagedSeedSpec{
-			SeedTemplate: &gardencorev1beta1.SeedTemplate{},
-			Shoot:        &seedmanagementv1alpha1.Shoot{Name: shootName},
+			Gardenlet: &seedmanagementv1alpha1.Gardenlet{},
+			Shoot:     &seedmanagementv1alpha1.Shoot{Name: shootName},
 		},
 	}
 
