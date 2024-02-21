@@ -1,4 +1,5 @@
 # Gardener Metrics Exporter
+[![REUSE status](https://api.reuse.software/badge/github.com/gardener/gardener-metrics-exporter)](https://api.reuse.software/info/github.com/gardener/gardener-metrics-exporter)
 
 The `gardener-metrics-exporter` is a [Prometheus][] metrics exporter for
 [Gardener][] service-level related metrics.
