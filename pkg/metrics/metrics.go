@@ -163,7 +163,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"cost_object",
 				"cost_object_owner",
 				"failure_tolerance",
-				"garden_version",
+				"gardener_version",
 			},
 			nil,
 		),
