@@ -157,6 +157,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				costObject,
 				costObjectOwner,
 				failureTolerance,
+				shoot.Status.Gardener.Version,
 			}...,
 		)
 
