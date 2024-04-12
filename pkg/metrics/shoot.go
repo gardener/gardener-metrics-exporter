@@ -93,11 +93,16 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			secretBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.SecretBindingName)
 		}
 
+		var projectNamespace string
 		if secretBinding, ok := secretBindingMap[secretBindingName]; ok {
-			if project, ok := projectMap[secretBinding.SecretRef.Namespace]; ok {
-				costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
-				costObjectOwner = project.Spec.Owner.Name
-			}
+			projectNamespace = secretBinding.SecretRef.Namespace
+		} else {
+			projectNamespace = shoot.Namespace
+		}
+
+		if project, ok := projectMap[projectNamespace]; ok {
+			costObject = project.GetObjectMeta().GetAnnotations()["billing.gardener.cloud/costObject"]
+			costObjectOwner = project.Spec.Owner.Name
 		}
 
 		var failureTolerance string
