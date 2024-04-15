@@ -143,6 +143,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			seedRegion = seeds[seed].Spec.Provider.Region
 		}
 
+		isWorkerless := shoot.Spec.Provider.Workers == nil
+
 		// Expose a metric, which transport basic information to the Shoot cluster via the metric labels.
 		metric, err := prometheus.NewConstMetric(
 			c.descs[metricGardenShootInfo],
@@ -163,6 +165,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				costObjectOwner,
 				failureTolerance,
 				shoot.Status.Gardener.Version,
+				strconv.FormatBool(isWorkerless),
 			}...,
 		)
 
