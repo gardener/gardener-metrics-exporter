@@ -166,6 +166,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				failureTolerance,
 				shoot.Status.Gardener.Version,
 				strconv.FormatBool(isWorkerless),
+				strconv.FormatBool(shoot.Status.IsHibernated),
 			}...,
 		)
 

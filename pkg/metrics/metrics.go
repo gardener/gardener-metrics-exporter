@@ -165,6 +165,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"failure_tolerance",
 				"gardener_version",
 				"is_workerless",
+				"is_hibernated",
 			},
 			nil,
 		),
