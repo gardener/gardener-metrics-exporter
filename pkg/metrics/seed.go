@@ -127,6 +127,7 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 				[]string{
 					seed.Name,
 					string(condition.Type),
+					condition.Reason,
 				}...,
 			)
 			if err != nil {

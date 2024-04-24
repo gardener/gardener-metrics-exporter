@@ -54,6 +54,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			[]string{
 				"name",
 				"condition",
+				"reason",
 			},
 			nil,
 		),
