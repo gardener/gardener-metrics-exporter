@@ -24,6 +24,6 @@ const (
 	metricGardenShootWorkerNodeMinTotal       = "garden_shoot_worker_node_min_total"
 
 	// Aggregated Shoot metrics (exclude Shoots which act as Seed).
-	metricGardenOperationsTotal = "garden_shoot_operations_total"
-	metricGardenShootNodeInfo   = "garden_shoot_node_info"
+	metricGardenOperationsTotal     = "garden_shoot_operations_total"
+	metricGardenShootWorkerNodeInfo = "garden_shoot_worker_node_info"
 )

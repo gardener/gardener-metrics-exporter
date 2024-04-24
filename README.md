@@ -13,6 +13,7 @@ The `gardener-metrics-exporter` is a [Prometheus][] metrics exporter for
 | garden_shoot_operation_states           | Operation state of a Shoot                                                | Shoot    | Gauge   |
 | garden_shoot_info                       | Information to a Shoot                                                    | Shoot    | Gauge   |
 | garden_shoot_condition                  | Condition state of a Shoot                                                | Shoot    | Gauge   |
+| garden_shoot_worker_node_info           | Node information of a Shoot worker group                                  | Shoot    | Gauge   |
 | garden_shoot_node_min_total             | Min node count of a Shoot                                                 | Shoot    | Gauge   |
 | garden_shoot_node_max_total             | Max node count of a Shoot                                                 | Shoot    | Gauge   |
 | garden_shoot_worker_node_min_total      | Min node count of a Shoot worker group                                    | Shoot    | Gauge   |

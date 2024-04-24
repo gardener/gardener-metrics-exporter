@@ -210,9 +210,9 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
-		metricGardenShootNodeInfo: prometheus.NewDesc(
-			metricGardenShootNodeInfo,
-			"Information about the nodes in a Shoot.",
+		metricGardenShootWorkerNodeInfo: prometheus.NewDesc(
+			metricGardenShootWorkerNodeInfo,
+			"Information about the worker group nodes in a Shoot.",
 			[]string{
 				"name",
 				"project",
