@@ -164,6 +164,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				costObject,
 				costObjectOwner,
 				failureTolerance,
+				shoot.Status.TechnicalID,
 				shoot.Status.Gardener.Version,
 				strconv.FormatBool(isWorkerless),
 				strconv.FormatBool(shoot.Status.IsHibernated),
@@ -188,6 +189,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			shoot.Name,
 			*projectName,
 			uid,
+			shoot.Status.TechnicalID,
 		}
 
 		metric, err = prometheus.NewConstMetric(
@@ -255,6 +257,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						shoot.Name,
 						*projectName,
 						operation,
+						shoot.Status.TechnicalID,
 					}...,
 				)
 				if err != nil {
@@ -270,6 +273,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						shoot.Name,
 						*projectName,
 						operation,
+						shoot.Status.TechnicalID,
 					}...,
 				)
 				if err != nil {
@@ -301,6 +305,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						seedProviderType,
 						seedRegion,
 						uid,
+						shoot.Status.TechnicalID,
 						strconv.FormatBool(hasUserErrors(shoot.Status.LastErrors)),
 						shootIsCompliant(shoot.Status.Constraints),
 					}...,
@@ -359,6 +364,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 				*projectName,
 				worker.Name,
 				worker.Machine.Type,
+				shoot.Status.TechnicalID,
 			}...,
 		)
 		if err != nil {
@@ -377,6 +383,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 				*projectName,
 				worker.Name,
 				worker.Machine.Type,
+				shoot.Status.TechnicalID,
 			}...,
 		)
 		if err != nil {
@@ -415,6 +422,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 				criName,
 				strings.Join(containerRuntimes, ", "),
 				*worker.Machine.Architecture,
+				shoot.Status.TechnicalID,
 			}...,
 		)
 		if err != nil {
@@ -432,6 +440,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 		[]string{
 			shoot.Name,
 			*projectName,
+			shoot.Status.TechnicalID,
 		}...,
 	)
 	if err != nil {
@@ -448,6 +457,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 		[]string{
 			shoot.Name,
 			*projectName,
+			shoot.Status.TechnicalID,
 		}...,
 	)
 	if err != nil {
