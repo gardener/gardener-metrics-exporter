@@ -410,7 +410,7 @@ func (c gardenMetricsCollector) collectShootNodeMetrics(shoot *gardenv1beta1.Sho
 
 		// Expose metrics about the Shoot's nodes.
 		metric, err = prometheus.NewConstMetric(
-			c.descs[metricGardenShootNodeInfo],
+			c.descs[metricGardenShootWorkerNodeInfo],
 			prometheus.GaugeValue,
 			0,
 			[]string{
