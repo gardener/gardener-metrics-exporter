@@ -164,6 +164,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"seed_region",
 				"shoot_uid",
 				"cost_object",
+				"cost_object_type",
 				"cost_object_owner",
 				"failure_tolerance",
 				"technical_id",
