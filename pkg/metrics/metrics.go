@@ -216,6 +216,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"project",
 				"worker_group",
 				"worker_machine_type",
+				"technical_id",
 			},
 			nil,
 		),
