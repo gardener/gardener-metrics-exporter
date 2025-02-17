@@ -16,6 +16,8 @@ metrics-exporter:
     steps:
       check:
         image: 'golang:1.22'
+      sast:
+        image: 'golang:1.22'
   jobs:
     head-update:
       traits:
