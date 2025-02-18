@@ -5,6 +5,3 @@
 
 bin
 dev
-
-# gosec
-gosec-report.sarif

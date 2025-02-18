@@ -48,11 +48,3 @@ clean:
 .PHONY: check
 check:
 	@$(WORKDIR)/.ci/check
-
-.PHONY: sast
-sast: $(GOSEC)
-	@$(WORKDIR)/.ci/sast
-
-.PHONY: sast-report
-sast-report: $(GOSEC)
-	@$(WORKDIR)/.ci/sast --gosec-report true
