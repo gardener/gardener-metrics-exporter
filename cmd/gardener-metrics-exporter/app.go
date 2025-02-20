@@ -137,7 +137,7 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	}
 
 	// Kubeconfig based configuration
-	kubeconfig, err := os.ReadFile(kubeconfigPath)
+	kubeconfig, err := os.ReadFile(kubeconfigPath) // #nosec G304: file path is a controlled launch parameter.
 	if err != nil {
 		return nil, err
 	}

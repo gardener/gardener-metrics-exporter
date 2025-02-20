@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -e
+
+if [[ -z "${SOURCE_PATH}" ]]; then
+  SOURCE_PATH="$(readlink -f "$(dirname "${0}")/..")"
+  export SOURCE_PATH
+else
+  SOURCE_PATH="$(readlink -f "${SOURCE_PATH}")"
+  export SOURCE_PATH
+fi
+
+gosec_report="false"
+gosec_report_parse_flags=""
+
+parse_flags() {
+  while test $# -gt 1; do
+    case "$1" in
+    --gosec-report)
+      shift
+      gosec_report="$1"
+      ;;
+    *)
+      echo "Unknown argument: $1"
+      exit 1
+      ;;
+    esac
+    shift
+  done
+}
+
+# Install Gosec.
+if ! which gosec 1>/dev/null; then
+  echo -n "Installing gosec... "
+  GO111MODULE=on go install github.com/securego/gosec/v2/cmd/gosec@latest
+fi
+
+parse_flags "$@"
+
+cd "$SOURCE_PATH"
+
+echo "> Running gosec"
+gosec --version
+if [[ "$gosec_report" != "false" ]]; then
+  echo "Exporting report to $SOURCE_PATH/gosec-report.sarif"
+  gosec_report_parse_flags="-track-suppressions -fmt=sarif -out=gosec-report.sarif -stdout"
+fi
+
+gosec $gosec_report_parse_flags ./...
