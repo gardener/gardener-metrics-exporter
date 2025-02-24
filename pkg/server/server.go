@@ -34,7 +34,8 @@ func Serve(ctx context.Context, bindAddress string, port int, logger *logrus.Log
 	})
 
 	server := http.Server{
-		Addr: fmt.Sprintf("%s:%d", bindAddress, port),
+		Addr:              fmt.Sprintf("%s:%d", bindAddress, port),
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	go func() {
