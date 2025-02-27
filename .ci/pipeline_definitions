@@ -28,15 +28,3 @@ metrics-exporter:
     pull-request:
       traits:
         pull-request: ~
-    release:
-      traits:
-        version:
-          preprocess: finalize
-        component_descriptor:
-          ocm_repository: europe-docker.pkg.dev/gardener-project/releases
-        publish:
-          dockerimages:
-            metrics-exporter:
-              image: europe-docker.pkg.dev/gardener-project/releases/gardener/metrics-exporter
-        release:
-          nextversion: bump_minor
