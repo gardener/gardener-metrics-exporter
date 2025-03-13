@@ -1,7 +1,8 @@
 module github.com/gardener/gardener-metrics-exporter
 
-go 1.22
-toolchain go1.23.7
+go 1.24
+
+toolchain go1.24.1
 
 require (
 	github.com/gardener/gardener v1.88.0
