@@ -36,7 +36,7 @@ parse_flags() {
 # Install Gosec.
 if ! which gosec 1>/dev/null; then
   echo -n "Installing gosec... "
-  GO111MODULE=on go install github.com/securego/gosec/v2/cmd/gosec@v2.22.1
+  GO111MODULE=on go install github.com/securego/gosec/v2/cmd/gosec@v2.22.2
 fi
 
 parse_flags "$@"
