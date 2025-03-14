@@ -15,9 +15,9 @@ metrics-exporter:
             tag_as_latest: true
     steps:
       check:
-        image: 'golang:1.22'
+        image: 'golang:1.24'
       sast:
-        image: 'golang:1.22'
+        image: 'golang:1.24'
   jobs:
     head-update:
       traits:
