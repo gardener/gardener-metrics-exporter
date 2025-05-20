@@ -21,26 +21,6 @@ const (
 var shootCustomizationMetrics = []*template.MetricTemplate{
 	// General customization.
 	{
-		Name:   fmt.Sprintf("%s_privileged_containers_total", metricShootsCustomPrefix),
-		Help:   "Count of Shoots which allow privileged containers.",
-		Labels: []string{},
-		Type:   template.Gauge,
-		CollectFunc: func(obj interface{}, params ...interface{}) (*[]float64, *[][]string, error) {
-			shoots, ok := obj.([]*gardenv1beta1.Shoot)
-			if !ok {
-				return nil, nil, utils.NewTypeConversionError()
-			}
-			var counter = make([]float64, 1)
-			for _, s := range shoots {
-				if s.Spec.Kubernetes.AllowPrivilegedContainers != nil && *s.Spec.Kubernetes.AllowPrivilegedContainers {
-					counter[0]++
-				}
-			}
-			return &counter, &[][]string{}, nil
-		},
-	},
-
-	{
 		Name:   fmt.Sprintf("%s_extensions_total", metricShootsCustomPrefix),
 		Help:   "Count of Shoots which have an extension(s) configured.",
 		Labels: []string{"extension"},
