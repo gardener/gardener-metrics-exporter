@@ -27,7 +27,7 @@ func Test_generateManagedSeedInfoMetrics(t *testing.T) {
 			Namespace: constants.GardenNamespace,
 		},
 		Spec: seedmanagementv1alpha1.ManagedSeedSpec{
-			Gardenlet: &seedmanagementv1alpha1.Gardenlet{},
+			Gardenlet: seedmanagementv1alpha1.GardenletConfig{},
 			Shoot:     &seedmanagementv1alpha1.Shoot{Name: shootName},
 		},
 	}

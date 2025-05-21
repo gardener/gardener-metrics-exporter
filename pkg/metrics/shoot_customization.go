@@ -76,6 +76,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
+				//nolint:staticcheck // SA1019 Ignoring to still catch OIDCConfig for existing shoots
 				if s.Spec.Kubernetes.KubeAPIServer != nil && s.Spec.Kubernetes.KubeAPIServer.OIDCConfig != nil {
 					counter[0]++
 				}
@@ -408,6 +409,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
+				//nolint:staticcheck // SA1019 Ignore to still catch DNS Provider for existing shoots
 				if s.Spec.DNS != nil && len(s.Spec.DNS.Providers) > 0 {
 					counter[0]++
 				}
