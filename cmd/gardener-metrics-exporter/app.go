@@ -15,6 +15,8 @@ import (
 	"github.com/gardener/gardener-metrics-exporter/pkg/version"
 	clientset "github.com/gardener/gardener/pkg/client/core/clientset/versioned"
 	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions"
+	securityclientset "github.com/gardener/gardener/pkg/client/security/clientset/versioned"
+	securityinformers "github.com/gardener/gardener/pkg/client/security/informers/externalversions"
 	seedmanagementclientset "github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned"
 	gardenmanagedseedinformers "github.com/gardener/gardener/pkg/client/seedmanagement/informers/externalversions"
 
@@ -84,18 +86,19 @@ func run(ctx context.Context, o *options) error {
 	stopCh := make(chan struct{})
 
 	// Create informer factories to create informers.
-	gardenInformerFactory, gardenManagedSeedInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
+	gardenInformerFactory, gardenManagedSeedInformerFactory, gardenSecurityInformerFactory, err := setupInformerFactories(o.kubeconfigPath)
 	if err != nil {
 		return err
 	}
 
 	// Create informers.
 	var (
-		managedSeedInformer   = gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds().Informer()
-		shootInformer         = gardenInformerFactory.Core().V1beta1().Shoots().Informer()
-		seedInformer          = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
-		projectInformer       = gardenInformerFactory.Core().V1beta1().Projects().Informer()
-		secretBindingInformer = gardenInformerFactory.Core().V1beta1().SecretBindings().Informer()
+		managedSeedInformer        = gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds().Informer()
+		shootInformer              = gardenInformerFactory.Core().V1beta1().Shoots().Informer()
+		seedInformer               = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
+		projectInformer            = gardenInformerFactory.Core().V1beta1().Projects().Informer()
+		secretBindingInformer      = gardenInformerFactory.Core().V1beta1().SecretBindings().Informer()
+		credentialsBindingInformer = gardenSecurityInformerFactory.Security().V1alpha1().CredentialsBindings().Informer()
 	)
 
 	// Start the factories and wait until the informers have synced.
@@ -104,9 +107,14 @@ func run(ctx context.Context, o *options) error {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
-	gardenManagedSeedInformerFactory.Start((stopCh))
+	gardenManagedSeedInformerFactory.Start(stopCh)
 	if !cache.WaitForCacheSync(ctx.Done(), managedSeedInformer.HasSynced) {
 		return errors.New("Timed out waiting for Managed Seed caches to sync")
+	}
+
+	gardenSecurityInformerFactory.Start(stopCh)
+	if !cache.WaitForCacheSync(ctx.Done(), credentialsBindingInformer.HasSynced) {
+		return errors.New("Timed out waiting for Security caches to sync")
 	}
 
 	// Start the metrics collector
@@ -116,6 +124,7 @@ func run(ctx context.Context, o *options) error {
 		gardenInformerFactory.Core().V1beta1().Projects(),
 		gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds(),
 		gardenInformerFactory.Core().V1beta1().SecretBindings(),
+		gardenSecurityInformerFactory.Security().V1alpha1().CredentialsBindings(),
 		log,
 	)
 
@@ -159,30 +168,38 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	return client, nil
 }
 
-func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardencoreinformers.SharedInformerFactory, gardenmanagedseedinformers.SharedInformerFactory, error) {
+func setupInformerFactories(kubeconfigPath string) (gardencoreinformers.SharedInformerFactory, gardenmanagedseedinformers.SharedInformerFactory, securityinformers.SharedInformerFactory, error) {
 	restConfig, err := newClientConfig(kubeconfigPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	if restConfig == nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	gardenClient, err := clientset.NewForConfig(restConfig)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	if gardenClient == nil {
-		return nil, nil, errors.New("gardenClient is nil")
+		return nil, nil, nil, errors.New("gardenClient is nil")
 	}
 	var gardenManagedSeedClient *seedmanagementclientset.Clientset
 	if gardenManagedSeedClient, err = seedmanagementclientset.NewForConfig(restConfig); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	if gardenManagedSeedClient == nil {
-		return nil, nil, errors.New("gardenManagedSeedClient is nil")
+		return nil, nil, nil, errors.New("gardenManagedSeedClient is nil")
+	}
+	gardenSecurityClient, err := securityclientset.NewForConfig(restConfig)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if gardenSecurityClient == nil {
+		return nil, nil, nil, errors.New("gardenSecurityClient is nil")
 	}
 
 	gardenInformerFactory := gardencoreinformers.NewSharedInformerFactory(gardenClient, 0)
 	gardenManagedSeedInformerFactory := gardenmanagedseedinformers.NewSharedInformerFactory(gardenManagedSeedClient, 0)
-	return gardenInformerFactory, gardenManagedSeedInformerFactory, nil
+	securityInformerFactory := securityinformers.NewSharedInformerFactory(gardenSecurityClient, 0)
+	return gardenInformerFactory, gardenManagedSeedInformerFactory, securityInformerFactory, nil
 }
