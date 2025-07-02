@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	securityv1alpha1 "github.com/gardener/gardener/pkg/apis/security/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -66,6 +67,12 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		return
 	}
 
+	credentialsBindings, err := c.credentialsBindingInformer.Lister().CredentialsBindings(metav1.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		ScrapeFailures.With(prometheus.Labels{"kind": "credentialsBindings"}).Inc()
+		return
+	}
+
 	secretBindings, err := c.secretBindingInformer.Lister().SecretBindings(metav1.NamespaceAll).List(labels.Everything())
 	if err != nil {
 		ScrapeFailures.With(prometheus.Labels{"kind": "secretBindings"}).Inc()
@@ -75,6 +82,11 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	seeds := c.getSeeds()
 
 	collectShootCustomizationMetrics(shoots, ch)
+
+	credentialsBindingMap := make(map[string]*securityv1alpha1.CredentialsBinding)
+	for _, credentialsBinding := range credentialsBindings {
+		credentialsBindingMap[fmt.Sprintf("%s/%s", credentialsBinding.Namespace, credentialsBinding.Name)] = credentialsBinding
+	}
 
 	secretBindingMap := make(map[string]*gardenv1beta1.SecretBinding)
 	for _, secretBinding := range secretBindings {
@@ -87,15 +99,19 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	}
 
 	for _, shoot := range shoots {
-		var costObject, costObjectType, costObjectOwner, secretBindingName string
+		var costObject, costObjectType, costObjectOwner, secretBindingName, credentialsBindingName string
 
 		if shoot.Spec.SecretBindingName != nil {
 			secretBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.SecretBindingName)
+		} else if shoot.Spec.CredentialsBindingName != nil {
+			credentialsBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.CredentialsBindingName)
 		}
 
 		var projectNamespace string
 		if secretBinding, ok := secretBindingMap[secretBindingName]; ok {
 			projectNamespace = secretBinding.SecretRef.Namespace
+		} else if credentialsBinding, ok := credentialsBindingMap[credentialsBindingName]; ok {
+			projectNamespace = credentialsBinding.CredentialsRef.Namespace
 		} else {
 			projectNamespace = shoot.Namespace
 		}
