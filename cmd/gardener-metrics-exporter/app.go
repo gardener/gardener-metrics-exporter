@@ -86,7 +86,7 @@ func run(ctx context.Context, o *options) error {
 	stopCh := make(chan struct{})
 
 	// Create informer factories to create informers.
-	gardenInformerFactory, gardenManagedSeedInformerFactory, gardenSecurityInformerFactory, err := setupInformerFactories(o.kubeconfigPath, stopCh)
+	gardenInformerFactory, gardenManagedSeedInformerFactory, gardenSecurityInformerFactory, err := setupInformerFactories(o.kubeconfigPath)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func run(ctx context.Context, o *options) error {
 		return errors.New("Timed out waiting for Garden caches to sync")
 	}
 
-	gardenManagedSeedInformerFactory.Start((stopCh))
+	gardenManagedSeedInformerFactory.Start(stopCh)
 	if !cache.WaitForCacheSync(ctx.Done(), managedSeedInformer.HasSynced) {
 		return errors.New("Timed out waiting for Managed Seed caches to sync")
 	}
@@ -168,7 +168,7 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	return client, nil
 }
 
-func setupInformerFactories(kubeconfigPath string, stopCh <-chan struct{}) (gardencoreinformers.SharedInformerFactory, gardenmanagedseedinformers.SharedInformerFactory, securityinformers.SharedInformerFactory, error) {
+func setupInformerFactories(kubeconfigPath string) (gardencoreinformers.SharedInformerFactory, gardenmanagedseedinformers.SharedInformerFactory, securityinformers.SharedInformerFactory, error) {
 	restConfig, err := newClientConfig(kubeconfigPath)
 	if err != nil {
 		return nil, nil, nil, err
