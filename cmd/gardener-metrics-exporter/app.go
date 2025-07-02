@@ -124,6 +124,7 @@ func run(ctx context.Context, o *options) error {
 		gardenInformerFactory.Core().V1beta1().Projects(),
 		gardenManagedSeedInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds(),
 		gardenInformerFactory.Core().V1beta1().SecretBindings(),
+		gardenSecurityInformerFactory.Security().V1alpha1().CredentialsBindings(),
 		log,
 	)
 
