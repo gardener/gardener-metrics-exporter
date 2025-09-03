@@ -307,6 +307,44 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 					continue
 				}
 
+				var component string
+				switch condition.Reason {
+				case "StatefulSetUnhealthy", "DeploymentUnhealthy", "DaemonSetUnhealthy":
+					// Extract the component name from the message.
+					// Example message: 'DaemonSet "kube-system/falco" is unhealthy: misscheduled pods found (9)'
+					if parts := strings.SplitN(condition.Message, "\"", 3); len(parts) > 1 {
+						component = parts[1] // Extract the part between quotes.
+					}
+				case "EtcdUnhealthy", "EtcdMissing":
+					component = "Etcd"
+				case "MissingManagedResourceCondition", "ProgressingRolloutStuck":
+					if parts := strings.SplitN(condition.Message, "ManagedResource ", 2); len(parts) == 2 {
+						fields := strings.Fields(parts[1])
+						if len(fields) > 0 {
+							component = fields[0] // Extract the ManagedResource name.
+						}
+					}
+				case "OutdatedGeneration":
+					if parts := strings.SplitN(condition.Message, "'", 3); len(parts) > 1 {
+						if resourceParts := strings.Split(parts[1], "/"); len(resourceParts) > 1 {
+							component = resourceParts[len(resourceParts)-1]
+						}
+					}
+				case "ControlPlaneUnhealthyReport":
+					if strings.Contains(condition.Message, "deployment") {
+						msgParts := strings.Split(condition.Message, "\"")
+						if len(msgParts) > 1 {
+							component = msgParts[1] // Extract the part between quotes (deployment name).
+						}
+					} else {
+						component = "unknown" //
+					}
+				case "NoTunnelDeployed", "TunnelConnectionBroken":
+					component = "VPN"
+				default:
+					component = "unknown" // Default value if no specific extraction logic is defined.
+				}
+
 				metric, err := prometheus.NewConstMetric(
 					c.descs[metricGardenShootCondition],
 					prometheus.GaugeValue,
@@ -317,6 +355,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 						string(condition.Type),
 						lastOperation,
 						purpose,
+						string(condition.Reason),
+						component,
 						strconv.FormatBool(isSeed),
 						iaas,
 						seed,
