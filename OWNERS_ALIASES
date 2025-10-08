@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+aliases:
+  gardener-metrics-exporter-reviewers:
+  - chrkl
+  - istvanballok
+  - rickardsjp
+  - vicwicker
+  gardener-metrics-exporter-approvers:
+  - chrkl
+  - istvanballok
+  - rickardsjp
+  - vicwicker
