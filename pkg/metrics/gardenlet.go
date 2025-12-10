@@ -20,30 +20,27 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 
 	for _, gardenlet := range gardenlets {
 		// Export a metric for each condition of the Gardenlet.
-		if gardenlet.Status.Conditions != nil {
-			for _, condition := range gardenlet.Status.Conditions {
-				if condition.Type == "" {
-					continue
-				}
-				metric, err := prometheus.NewConstMetric(
-					c.descs[metricGardenGardenletCondition],
-					prometheus.GaugeValue,
-					mapConditionStatus(condition.Status),
-					[]string{
-						gardenlet.Name,
-						string(condition.Type),
-					}...,
-				)
-				if err != nil {
-					ScrapeFailures.With(prometheus.Labels{"kind": "gardenlets"}).Inc()
-					continue
-				}
-				ch <- metric
+		for _, condition := range gardenlet.Status.Conditions {
+			if condition.Type == "" {
+				continue
 			}
+			metric, err := prometheus.NewConstMetric(
+				c.descs[metricGardenGardenletCondition],
+				prometheus.GaugeValue,
+				mapConditionStatus(condition.Status),
+				[]string{
+					gardenlet.Name,
+					string(condition.Type),
+				}...,
+			)
+			if err != nil {
+				ScrapeFailures.With(prometheus.Labels{"kind": "gardenlets"}).Inc()
+				continue
+			}
+			ch <- metric
 		}
 
-		// Export metric for metadata generation
-		generationMetric, err := prometheus.NewConstMetric(
+		metric, err := prometheus.NewConstMetric(
 			c.descs[metricGardenGardenletGeneration],
 			prometheus.CounterValue,
 			float64(gardenlet.GetGeneration()),
@@ -51,12 +48,11 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 		)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "gardenlets"}).Inc()
+		} else {
+			ch <- metric
 		}
 
-		ch <- generationMetric
-
-		// Export metric for observedGeneration
-		observedGenerationMetric, err := prometheus.NewConstMetric(
+		metric, err = prometheus.NewConstMetric(
 			c.descs[metricGardenGardenletObservedGeneration],
 			prometheus.CounterValue,
 			float64(gardenlet.Status.ObservedGeneration),
@@ -64,8 +60,8 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 		)
 		if err != nil {
 			ScrapeFailures.With(prometheus.Labels{"kind": "gardenlets"}).Inc()
+		} else {
+			ch <- metric
 		}
-
-		ch <- observedGenerationMetric
 	}
 }
