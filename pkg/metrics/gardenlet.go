@@ -5,6 +5,7 @@
 package metrics
 
 import (
+	"github.com/gardener/gardener/pkg/apis/seedmanagement/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -18,6 +19,10 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 		return
 	}
 
+	generateGardenletMetrics(gardenlets, c.descs, ch)
+}
+
+func generateGardenletMetrics(gardenlets []*v1alpha1.Gardenlet, descs map[string]*prometheus.Desc, ch chan<- prometheus.Metric) {
 	for _, gardenlet := range gardenlets {
 		// Export a metric for each condition of the Gardenlet.
 		for _, condition := range gardenlet.Status.Conditions {
@@ -25,7 +30,7 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 				continue
 			}
 			metric, err := prometheus.NewConstMetric(
-				c.descs[metricGardenGardenletCondition],
+				descs[metricGardenGardenletCondition],
 				prometheus.GaugeValue,
 				mapConditionStatus(condition.Status),
 				[]string{
@@ -41,7 +46,7 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 		}
 
 		metric, err := prometheus.NewConstMetric(
-			c.descs[metricGardenGardenletGeneration],
+			descs[metricGardenGardenletGeneration],
 			prometheus.CounterValue,
 			float64(gardenlet.GetGeneration()),
 			gardenlet.Name,
@@ -53,7 +58,7 @@ func (c gardenMetricsCollector) collectGardenletMetrics(ch chan<- prometheus.Met
 		}
 
 		metric, err = prometheus.NewConstMetric(
-			c.descs[metricGardenGardenletObservedGeneration],
+			descs[metricGardenGardenletObservedGeneration],
 			prometheus.CounterValue,
 			float64(gardenlet.Status.ObservedGeneration),
 			gardenlet.Name,
