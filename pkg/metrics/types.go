@@ -13,8 +13,8 @@ const (
 
 	// Gardenlet metric
 	metricGardenGardenletCondition          = "garden_gardenlet_condition"
-	metricGardenGardenletGeneration         = "garden_gardenlet_generation"
-	metricGardenGardenletObservedGeneration = "garden_gardenlet_observed_generation"
+	metricGardenGardenletGeneration         = "garden_gardenlet_generation_total"
+	metricGardenGardenletObservedGeneration = "garden_gardenlet_observed_generation_total"
 
 	// Shoot metric (available also for Shoots which act as Seed).
 	metricGardenShootCondition                = "garden_shoot_condition"
