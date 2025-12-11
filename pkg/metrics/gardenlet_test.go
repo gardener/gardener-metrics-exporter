@@ -44,7 +44,7 @@ func setupGardenletResource(generation int64, observedGeneration int64, conditio
 	return gardenlet
 }
 
-func setupExpectations(gardenlet *seedv1alpha1.Gardenlet, descs map[string]*prometheus.Desc) ([]prometheus.Metric, error) {
+func setupGardenletExpectations(gardenlet *seedv1alpha1.Gardenlet, descs map[string]*prometheus.Desc) ([]prometheus.Metric, error) {
 	expectations := []prometheus.Metric{}
 	if gardenlet.Status.Conditions != nil {
 		expectedConditionMetric, err := prometheus.NewConstMetric(
@@ -105,7 +105,7 @@ func TestGenerateGardenletMetrics(t *testing.T) {
 	generateGardenletMetrics(gardenlets, descs, ch)
 	close(ch)
 
-	expectations, err := setupExpectations(gardenlet, descs)
+	expectations, err := setupGardenletExpectations(gardenlet, descs)
 	if err != nil {
 		t.Logf("could not setup expectations: %v", err)
 	}
@@ -135,7 +135,7 @@ func TestGenerateGardenletMetricsWithNoStatusConditions(t *testing.T) {
 	generateGardenletMetrics(gardenlets, descs, ch)
 	close(ch)
 
-	expectations, err := setupExpectations(gardenlet, descs)
+	expectations, err := setupGardenletExpectations(gardenlet, descs)
 	if err != nil {
 		t.Logf("could not setup expectations: %v", err)
 	}
@@ -210,7 +210,7 @@ func TestGardenletMetricsGenerationWithNoGenerations(t *testing.T) {
 		t.FailNow()
 	}
 
-	expectations, err := setupExpectations(gardenlet, descs)
+	expectations, err := setupGardenletExpectations(gardenlet, descs)
 	if err != nil {
 		t.Logf("could not setup expectations: %v", err)
 	}
