@@ -253,7 +253,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenShootOperationState: prometheus.NewDesc(
 			metricGardenShootOperationState,
-			"Operation state of a Shoot.",
+			"Operation state of a Shoot. Possible values: 1=Succeeded|2=Processing|3=Pending|4=Aborted|5=Error|6=Failed. Available operations: 'Create'|'Reconcile'|'Delete'|'Restore'|'Migrate'.",
 			[]string{"name",
 				"project",
 				"operation",
