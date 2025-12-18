@@ -8,24 +8,24 @@ The `gardener-metrics-exporter` is a [Prometheus][] metrics exporter for
 
 ## Metrics
 
-| Metric                                  | Description                                                               | Scope    | Type    |
-|:----------------------------------------|:--------------------------------------------------------------------------|:---------|:--------|
-| garden_shoot_operation_states           | Operation state of a Shoot                                                | Shoot    | Gauge   |
-| garden_shoot_info                       | Information to a Shoot                                                    | Shoot    | Gauge   |
-| garden_shoot_condition                  | Condition state of a Shoot                                                | Shoot    | Gauge   |
-| garden_shoot_node_min_total             | Min node count of a Shoot                                                 | Shoot    | Gauge   |
-| garden_shoot_node_max_total             | Max node count of a Shoot                                                 | Shoot    | Gauge   |
-| garden_shoot_worker_node_min_total      | Min node count of a Shoot worker group                                    | Shoot    | Gauge   |
-| garden_shoot_worker_node_max_total      | Max node count of a Shoot worker group                                    | Shoot    | Gauge   |
-| garden_shoot_operations_total           | Count of ongoing operations                                               | Shoot    | Gauge   |
-| garden_shoot_operation_progress_percent | Operation Percentage of a Shoot                                           | Shoot    | Gauge   |
-| garden_seed_info                        | Information to a Seed                                                     | Seed     | Gauge   |
-| garden_seed_capacity                    | Information regarding a seed's capacity with respect to certain resources | Seed     | Gauge   |
-| garden_seed_condition                   | Condition State of a Seed                                                 | Seed     | Gauge   |
-| garden_seed_usage                       | Actual usage of seed by resources                                         | Seed     | Gauge   |
-| garden_projects_status                  | Status of Garden Projects                                                 | Projects | Gauge   |
-| garden_users_total                      | Count of users                                                            | Users    | Gauge   |
-| garden_scrape_failure_total             | Total count of scraping failures, grouped by kind/group of metric(s)      | App      | Counter |
+| Metric                                  | Description                                                               | Scope    | Type    | Possible value                                                               |
+|:----------------------------------------|:--------------------------------------------------------------------------|:---------|:--------|:-----------------------------------------------------------------------------|
+| garden_shoot_operation_states           | Operation state of a Shoot                                                | Shoot    | Gauge   | 1=Succeeded<br>2=Processing<br>3=Pending<br>4=Aborted<br>5=Error<br>6=Failed |
+| garden_shoot_info                       | Information to a Shoot                                                    | Shoot    | Gauge   | 0                                                                            |
+| garden_shoot_condition                  | Condition state of a Shoot                                                | Shoot    | Gauge   | -1=Unknown<br>0=Unhealthy (false)<br>1=Healthy (true)<br>2=Progressing       |
+| garden_shoot_node_min_total             | Min node count of a Shoot                                                 | Shoot    | Gauge   | `[0-9]*`                                                                     |
+| garden_shoot_node_max_total             | Max node count of a Shoot                                                 | Shoot    | Gauge   | `[0-9]*`                                                                     |
+| garden_shoot_worker_node_min_total      | Min node count of a Shoot worker group                                    | Shoot    | Gauge   | `[0-9]*`                                                                     |
+| garden_shoot_worker_node_max_total      | Max node count of a Shoot worker group                                    | Shoot    | Gauge   | `[0-9]*`                                                                     |
+| garden_shoot_operations_total           | Count of ongoing operations                                               | Shoot    | Gauge   | `[0-9]*`                                                                     |
+| garden_shoot_operation_progress_percent | Operation Percentage of a Shoot                                           | Shoot    | Gauge   | `[1-100]`                                                                    |
+| garden_seed_info                        | Information to a Seed                                                     | Seed     | Gauge   | 0                                                                            |
+| garden_seed_capacity                    | Information regarding a seed's capacity with respect to certain resources | Seed     | Gauge   | `[0-9]*`                                                                     |
+| garden_seed_condition                   | Condition State of a Seed                                                 | Seed     | Gauge   | -1=Unknown<br>0=Unhealthy (false)<br>1=Healthy (true)<br>2=Progressing       |
+| garden_seed_usage                       | Actual usage of seed by resources                                         | Seed     | Gauge   | `[0-9]*`                                                                     |
+| garden_projects_status                  | Status of Garden Projects                                                 | Projects | Gauge   | -1=Failed<br>0=Ready<br>1=Pending<br>2=Terminating                           |
+| garden_users_total                      | Count of users                                                            | Users    | Gauge   | `[0-9]*`                                                                     |
+| garden_scrape_failure_total             | Total count of scraping failures, grouped by kind/group of metric(s)      | App      | Counter | `[0-9]*`                                                                     |
 
 ## Grafana Dashboards
 

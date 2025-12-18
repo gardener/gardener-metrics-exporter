@@ -41,7 +41,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenProjectsStatus: prometheus.NewDesc(
 			metricGardenProjectsStatus,
-			"Status of projects.",
+			"Status of projects. Possible Values: -1=Failed|0=Ready|1=Pending|2=Terminating",
 			[]string{
 				"name",
 				"phase",
@@ -51,7 +51,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenSeedCondition: prometheus.NewDesc(
 			metricGardenSeedCondition,
-			"Condition state of a Seed.",
+			"Condition state of a Seed. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
 			[]string{
 				"name",
 				"condition",
