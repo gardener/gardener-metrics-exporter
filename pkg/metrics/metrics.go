@@ -106,7 +106,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenGardenletCondition: prometheus.NewDesc(
 			metricGardenGardenletCondition,
-			"Condition state of a Gardenlet.",
+			"Condition state of a Gardenlet. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
 			[]string{
 				"name",
 				"condition",
