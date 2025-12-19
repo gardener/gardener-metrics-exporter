@@ -33,4 +33,7 @@ if [ -n "$(gofmt -l .)" ]; then
   exit 1
 fi
 
+# Execute unittests
+go test ./...
+
 cd - >/dev/null
