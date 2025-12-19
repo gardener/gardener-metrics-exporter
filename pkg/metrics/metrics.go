@@ -41,7 +41,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenProjectsStatus: prometheus.NewDesc(
 			metricGardenProjectsStatus,
-			"Status of projects.",
+			"Status of projects. Possible values: -1=Failed|0=Ready|1=Pending|2=Terminating",
 			[]string{
 				"name",
 				"phase",
@@ -51,7 +51,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenSeedCondition: prometheus.NewDesc(
 			metricGardenSeedCondition,
-			"Condition state of a Seed.",
+			"Condition state of a Seed. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
 			[]string{
 				"name",
 				"condition",
@@ -253,7 +253,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 
 		metricGardenShootOperationState: prometheus.NewDesc(
 			metricGardenShootOperationState,
-			"Operation state of a Shoot.",
+			"Operation state of a Shoot. Possible values: 1=Succeeded|2=Processing|3=Pending|4=Aborted|5=Error|6=Failed. Available operations: 'Create'|'Reconcile'|'Delete'|'Restore'|'Migrate'.",
 			[]string{"name",
 				"project",
 				"operation",
