@@ -7,7 +7,7 @@ package metrics
 import (
 	gardencoreinformers "github.com/gardener/gardener/pkg/client/core/informers/externalversions/core/v1beta1"
 	gardensecurityinformers "github.com/gardener/gardener/pkg/client/security/informers/externalversions/security/v1alpha1"
-	gardenmanagedseedinformers "github.com/gardener/gardener/pkg/client/seedmanagement/informers/externalversions/seedmanagement/v1alpha1"
+	gardenseedmanagementinformers "github.com/gardener/gardener/pkg/client/seedmanagement/informers/externalversions/seedmanagement/v1alpha1"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -104,6 +104,34 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
+		metricGardenGardenletCondition: prometheus.NewDesc(
+			metricGardenGardenletCondition,
+			"Condition state of a Gardenlet. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
+			[]string{
+				"name",
+				"condition",
+			},
+			nil,
+		),
+
+		metricGardenGardenletGeneration: prometheus.NewDesc(
+			metricGardenGardenletGeneration,
+			"Generation of a Gardenlet.",
+			[]string{
+				"name",
+			},
+			nil,
+		),
+
+		metricGardenGardenletObservedGeneration: prometheus.NewDesc(
+			metricGardenGardenletObservedGeneration,
+			"Observed generation of a Gardenlet.",
+			[]string{
+				"name",
+			},
+			nil,
+		),
+
 		metricGardenShootCondition: prometheus.NewDesc(
 			metricGardenShootCondition,
 			"Condition state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
@@ -179,7 +207,8 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 		metricGardenShootNodeMaxTotal: prometheus.NewDesc(
 			metricGardenShootNodeMaxTotal,
 			"Max node count of a Shoot.",
-			[]string{"name",
+			[]string{
+				"name",
 				"project",
 				"technical_id",
 			},
@@ -189,7 +218,8 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 		metricGardenShootNodeMinTotal: prometheus.NewDesc(
 			metricGardenShootNodeMinTotal,
 			"Min node count of a Shoot.",
-			[]string{"name",
+			[]string{
+				"name",
 				"project",
 				"technical_id",
 			},
@@ -274,7 +304,8 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 }
 
 type gardenMetricsCollector struct {
-	managedSeedInformer        gardenmanagedseedinformers.ManagedSeedInformer
+	managedSeedInformer        gardenseedmanagementinformers.ManagedSeedInformer
+	gardenletInformer          gardenseedmanagementinformers.GardenletInformer
 	shootInformer              gardencoreinformers.ShootInformer
 	seedInformer               gardencoreinformers.SeedInformer
 	projectInformer            gardencoreinformers.ProjectInformer
@@ -296,15 +327,17 @@ func (c *gardenMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 // TODO Can we run the collectors in parallel?
 func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	c.collectManagedSeedMetrics(ch)
+	c.collectGardenletMetrics(ch)
 	c.collectProjectMetrics(ch)
 	c.collectShootMetrics(ch)
 	c.collectSeedMetrics(ch)
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenmanagedseedinformers.ManagedSeedInformer, secretBindingInformer gardencoreinformers.SecretBindingInformer, credentialsBindingInformer gardensecurityinformers.CredentialsBindingInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenseedmanagementinformers.ManagedSeedInformer, gardenletInformer gardenseedmanagementinformers.GardenletInformer, secretBindingInformer gardencoreinformers.SecretBindingInformer, credentialsBindingInformer gardensecurityinformers.CredentialsBindingInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
 		managedSeedInformer:        managedSeedInformer,
+		gardenletInformer:          gardenletInformer,
 		shootInformer:              shootInformer,
 		seedInformer:               seedInformer,
 		projectInformer:            projectInformer,

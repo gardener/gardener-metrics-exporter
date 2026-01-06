@@ -17,13 +17,11 @@ import (
 
 const unknown = "unknown"
 
-var (
-	// ScrapeFailures is a metric, which counts the amount scrape issues grouped by kind.
-	ScrapeFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "garden_scrape_failure_total",
-		Help: "Total count of scraping failures, grouped by kind/group of metric(s)",
-	}, []string{"kind"})
-)
+// ScrapeFailures is a metric, which counts the amount scrape issues grouped by kind.
+var ScrapeFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "garden_scrape_failure_total",
+	Help: "Total count of scraping failures, grouped by kind/group of metric(s)",
+}, []string{"kind"})
 
 func mapConditionStatus(status gardenv1beta1.ConditionStatus) float64 {
 	switch status {
