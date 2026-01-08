@@ -105,17 +105,17 @@ func run(ctx context.Context, o *options) error {
 	// Start the factories and wait until the informers have synced.
 	gardenInformerFactory.Start(stopCh)
 	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, secretBindingInformer.HasSynced) {
-		return errors.New("Timed out waiting for Garden caches to sync")
+		return errors.New("timed out waiting for Garden caches to sync")
 	}
 
 	gardenSeedManagementInformerFactory.Start(stopCh)
 	if !cache.WaitForCacheSync(ctx.Done(), managedSeedInformer.HasSynced, gardenletInformer.HasSynced) {
-		return errors.New("Timed out waiting for Seed Management caches to sync")
+		return errors.New("timed out waiting for Seed Management caches to sync")
 	}
 
 	gardenSecurityInformerFactory.Start(stopCh)
 	if !cache.WaitForCacheSync(ctx.Done(), credentialsBindingInformer.HasSynced) {
-		return errors.New("Timed out waiting for Security caches to sync")
+		return errors.New("timed out waiting for Security caches to sync")
 	}
 
 	// Start the metrics collector

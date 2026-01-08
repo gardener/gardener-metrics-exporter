@@ -88,7 +88,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		credentialsBindingMap[fmt.Sprintf("%s/%s", credentialsBinding.Namespace, credentialsBinding.Name)] = credentialsBinding
 	}
 
-	secretBindingMap := make(map[string]*gardenv1beta1.SecretBinding)
+	secretBindingMap := make(map[string]*gardenv1beta1.SecretBinding) // nolint:staticcheck // SA1019: gardenv1beta1.SecretBinding is deprecated
 	for _, secretBinding := range secretBindings {
 		secretBindingMap[fmt.Sprintf("%s/%s", secretBinding.Namespace, secretBinding.Name)] = secretBinding
 	}
@@ -101,8 +101,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 	for _, shoot := range shoots {
 		var costObject, costObjectType, costObjectOwner, secretBindingName, credentialsBindingName string
 
-		if shoot.Spec.SecretBindingName != nil {
-			secretBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.SecretBindingName)
+		if shoot.Spec.SecretBindingName != nil { // nolint:staticcheck // SA1019: shoot.Spec.SecretBindingName is deprecated
+			secretBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.SecretBindingName) // nolint:staticcheck // SA1019: shoot.Spec.SecretBindingName is deprecated
 		} else if shoot.Spec.CredentialsBindingName != nil {
 			credentialsBindingName = fmt.Sprintf("%s/%s", shoot.Namespace, *shoot.Spec.CredentialsBindingName)
 		}
@@ -140,8 +140,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 			purpose = string(*shoot.Spec.Purpose)
 		}
 
-		if shoot.ObjectMeta.Labels != nil {
-			for k, v := range shoot.ObjectMeta.Labels {
+		if shoot.Labels != nil {
+			for k, v := range shoot.Labels {
 				if k == "business-critical" && v == "true" {
 					purpose = "business-critical"
 				}
