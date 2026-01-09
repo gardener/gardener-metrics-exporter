@@ -6,7 +6,7 @@ package utils
 
 import "errors"
 
-const typeConversionError = "Type conversion error"
+const typeConversionError = "type conversion error"
 
 // NewTypeConversionError returns an error for a failed type conversion situation.
 func NewTypeConversionError() error {

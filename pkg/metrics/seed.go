@@ -56,8 +56,8 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 			prometheus.GaugeValue,
 			0,
 			[]string{
-				seed.ObjectMeta.Name,
-				seed.ObjectMeta.Namespace,
+				seed.Name,
+				seed.Namespace,
 				seed.Spec.Provider.Type,
 				seed.Spec.Provider.Region,
 				strconv.FormatBool(visible),
@@ -71,14 +71,14 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 		}
 		ch <- metric
 
-		if val, ok := hostedShootCount[seed.ObjectMeta.Name]; ok {
+		if val, ok := hostedShootCount[seed.Name]; ok {
 			metric, err := prometheus.NewConstMetric(
 				c.descs[metricGardenSeedUsage],
 				prometheus.GaugeValue,
 				val,
 				[]string{
-					seed.ObjectMeta.Name,
-					seed.ObjectMeta.Namespace,
+					seed.Name,
+					seed.Namespace,
 					seed.Spec.Provider.Type,
 					seed.Spec.Provider.Region,
 					strconv.FormatBool(visible),
@@ -99,8 +99,8 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 				prometheus.GaugeValue,
 				float64(resource.Value()),
 				[]string{
-					seed.ObjectMeta.Name,
-					seed.ObjectMeta.Namespace,
+					seed.Name,
+					seed.Namespace,
 					seed.Spec.Provider.Type,
 					seed.Spec.Provider.Region,
 					strconv.FormatBool(visible),
