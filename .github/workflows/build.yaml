@@ -71,7 +71,7 @@ jobs:
               relation: local
               access:
                 type: localBlob
-                localReference: test-log.tar.gz
+                localReference: check-log.tar.gz
               labels:
                 - name: gardener.cloud/purposes
                   value:
