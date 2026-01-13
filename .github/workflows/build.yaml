@@ -58,8 +58,24 @@ jobs:
         shell: bash
         run: |
           set -eu
-          .ci/check
+          mkdir -p /tmp/blobs.d
+          .ci/check |& tee /tmp/blobs.d/check-log.txt
 
+          tar czf /tmp/blobs.d/check-log.tar.gz -C /tmp/blobs.d check-log.txt
+      - name: add-reports-to-component-descriptor
+        uses: gardener/cc-utils/.github/actions/export-ocm-fragments@master
+        with:
+          blobs-directory: /tmp/blobs.d
+          ocm-resources: |
+            - name: test-results
+              relation: local
+              access:
+                type: localBlob
+                localReference: check-log.tar.gz
+              labels:
+                - name: gardener.cloud/purposes
+                  value:
+                    - test
   sast-lint:
     uses: gardener/cc-utils/.github/workflows/sastlint-ocm.yaml@master
     permissions:
