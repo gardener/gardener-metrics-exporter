@@ -1,11 +1,13 @@
 #####################      builder       #####################
-FROM golang:1.25 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25 AS builder
 
 ENV GO111MODULE=on
 WORKDIR /go/src/github.com/gardener/gardener-metrics-exporter
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+ARG TARGETOS
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build \
   -o /go/bin/gardener-metrics-exporter \
   -ldflags="-s -w \
     -X github.com/gardener/gardener-metrics-exporter/pkg/version.gitVersion=$(cat VERSION) \
