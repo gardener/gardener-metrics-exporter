@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	constantsv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	securityv1alpha1 "github.com/gardener/gardener/pkg/apis/security/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -186,6 +187,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				shoot.Status.Gardener.Version,
 				strconv.FormatBool(isWorkerless),
 				strconv.FormatBool(shoot.Status.IsHibernated),
+				strconv.FormatBool(shootIsHealthy(shoot.Labels)),
 			}...,
 		)
 
@@ -527,4 +529,11 @@ func shootIsCompliant(constraints []gardenv1beta1.Condition) string {
 		}
 	}
 	return "Unknown"
+}
+
+func shootIsHealthy(labels map[string]string) bool {
+	if status, ok := labels[constantsv1beta1.ShootStatus]; ok {
+		return status == "healthy"
+	}
+	return false
 }
