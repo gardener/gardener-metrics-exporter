@@ -187,7 +187,7 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 				shoot.Status.Gardener.Version,
 				strconv.FormatBool(isWorkerless),
 				strconv.FormatBool(shoot.Status.IsHibernated),
-				strconv.FormatBool(shootIsHealthy(shoot.Labels)),
+				getShootStatus(shoot),
 			}...,
 		)
 
@@ -531,9 +531,9 @@ func shootIsCompliant(constraints []gardenv1beta1.Condition) string {
 	return "Unknown"
 }
 
-func shootIsHealthy(labels map[string]string) bool {
-	if status, ok := labels[constantsv1beta1.ShootStatus]; ok {
-		return status == "healthy"
+func getShootStatus(shoot *gardenv1beta1.Shoot) string {
+	if status, ok := shoot.Labels[constantsv1beta1.ShootStatus]; ok {
+		return status
 	}
-	return false
+	return "unknown"
 }
