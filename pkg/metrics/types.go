@@ -10,6 +10,7 @@ const (
 	metricGardenSeedCondition   = "garden_seed_condition"
 	metricGardenSeedCapacity    = "garden_seed_capacity"
 	metricGardenSeedUsage       = "garden_seed_usage"
+	metricGardenSeedOperationState = "garden_seed_operation_states"
 
 	// Gardenlet metric
 	metricGardenGardenletCondition          = "garden_gardenlet_condition"
