@@ -104,6 +104,16 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
+		metricGardenSeedOperationState: prometheus.NewDesc(
+			metricGardenSeedOperationState,
+			"Operation state of a Seed. Possible values: 1=Succeeded|2=Processing|3=Pending|4=Aborted|5=Error|6=Failed. Available operations: 'Create'|'Reconcile'|'Delete'|'Restore'|'Migrate'.",
+			[]string{
+				"name",
+				"operation",
+			},
+			nil,
+ 		),		
+
 		metricGardenGardenletCondition: prometheus.NewDesc(
 			metricGardenGardenletCondition,
 			"Condition state of a Gardenlet. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
