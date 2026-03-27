@@ -13,6 +13,14 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+var seedOperations = [5]string{
+	string(gardenv1beta1.LastOperationTypeCreate),
+	string(gardenv1beta1.LastOperationTypeReconcile),
+	string(gardenv1beta1.LastOperationTypeDelete),
+	string(gardenv1beta1.LastOperationTypeMigrate),
+	string(gardenv1beta1.LastOperationTypeRestore),
+}
+
 // collectProjectMetrics collect Seed metrics.
 func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) {
 	seeds, err := c.seedInformer.Lister().List(labels.Everything())
@@ -134,6 +142,42 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 				continue
 			}
 			ch <- metric
+		}
+
+		// Export operation state metrics for the Seed.
+		if seed.Status.LastOperation != nil {
+			lastOperation := string(seed.Status.LastOperation.Type)
+			for _, operation := range seedOperations {
+				var operationState float64
+				if operation == lastOperation {
+					switch seed.Status.LastOperation.State {
+					case gardenv1beta1.LastOperationStateSucceeded:
+						operationState = 1
+					case gardenv1beta1.LastOperationStateProcessing:
+						operationState = 2
+					case gardenv1beta1.LastOperationStatePending:
+						operationState = 3
+					case gardenv1beta1.LastOperationStateAborted:
+						operationState = 4
+					case gardenv1beta1.LastOperationStateError:
+						operationState = 5
+					case gardenv1beta1.LastOperationStateFailed:
+						operationState = 6
+					}
+				}
+				metric, err := prometheus.NewConstMetric(
+					c.descs[metricGardenSeedOperationState],
+					prometheus.GaugeValue,
+					operationState,
+					seed.Name,
+					operation,
+				)
+				if err != nil {
+					ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
+					continue
+				}
+				ch <- metric
+			}
 		}
 	}
 }
