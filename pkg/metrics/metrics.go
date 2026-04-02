@@ -112,7 +112,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"operation",
 			},
 			nil,
-		),		
+		),
 
 		metricGardenGardenletCondition: prometheus.NewDesc(
 			metricGardenGardenletCondition,

@@ -5,11 +5,11 @@ const (
 	metricGardenUsersSum       = "garden_users_total"
 
 	// Seed metric
-	metricGardenManagedSeedInfo = "garden_managed_seed_info"
-	metricGardenSeedInfo        = "garden_seed_info"
-	metricGardenSeedCondition   = "garden_seed_condition"
-	metricGardenSeedCapacity    = "garden_seed_capacity"
-	metricGardenSeedUsage       = "garden_seed_usage"
+	metricGardenManagedSeedInfo    = "garden_managed_seed_info"
+	metricGardenSeedInfo           = "garden_seed_info"
+	metricGardenSeedCondition      = "garden_seed_condition"
+	metricGardenSeedCapacity       = "garden_seed_capacity"
+	metricGardenSeedUsage          = "garden_seed_usage"
 	metricGardenSeedOperationState = "garden_seed_operation_states"
 
 	// Gardenlet metric
