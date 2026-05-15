@@ -123,25 +123,14 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 			ch <- metric
 		}
 
-		// Export a metric for each condition of the Seed.
-		for _, condition := range seed.Status.Conditions {
-			if condition.Type == "" {
-				continue
-			}
-			metric, err := prometheus.NewConstMetric(
-				c.descs[metricGardenSeedCondition],
-				prometheus.GaugeValue,
-				mapConditionStatus(condition.Status),
-				[]string{
-					seed.Name,
-					string(condition.Type),
-				}...,
-			)
-			if err != nil {
-				ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
-				continue
-			}
-			ch <- metric
+		generateSeedConditionMetrics(seed, c.descs[metricGardenSeedCondition], ch)
+	}
+}
+
+func generateSeedConditionMetrics(seed *gardenv1beta1.Seed, desc *prometheus.Desc, ch chan<- prometheus.Metric) {
+	for _, condition := range seed.Status.Conditions {
+		if condition.Type == "" {
+			continue
 		}
 
 		// Export operation state metrics for the Seed.
