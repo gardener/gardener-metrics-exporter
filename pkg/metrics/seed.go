@@ -124,42 +124,45 @@ func (c gardenMetricsCollector) collectSeedMetrics(ch chan<- prometheus.Metric) 
 		}
 
 		generateSeedConditionMetrics(seed, c.descs[metricGardenSeedCondition], ch)
+		generateSeedOperationStateMetrics(seed, c.descs[metricGardenSeedOperationState], ch)
+	}
+}
 
-		// Export operation state metrics for the Seed.
-		if seed.Status.LastOperation != nil {
-			lastOperation := string(seed.Status.LastOperation.Type)
-			for _, operation := range seedOperations {
-				var operationState float64
-				if operation == lastOperation {
-					switch seed.Status.LastOperation.State {
-					case gardenv1beta1.LastOperationStateSucceeded:
-						operationState = 1
-					case gardenv1beta1.LastOperationStateProcessing:
-						operationState = 2
-					case gardenv1beta1.LastOperationStatePending:
-						operationState = 3
-					case gardenv1beta1.LastOperationStateAborted:
-						operationState = 4
-					case gardenv1beta1.LastOperationStateError:
-						operationState = 5
-					case gardenv1beta1.LastOperationStateFailed:
-						operationState = 6
-					}
-				}
-				metric, err := prometheus.NewConstMetric(
-					c.descs[metricGardenSeedOperationState],
-					prometheus.GaugeValue,
-					operationState,
-					seed.Name,
-					operation,
-				)
-				if err != nil {
-					ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
-					continue
-				}
-				ch <- metric
+func generateSeedOperationStateMetrics(seed *gardenv1beta1.Seed, desc *prometheus.Desc, ch chan<- prometheus.Metric) {
+	if seed.Status.LastOperation == nil {
+		return
+	}
+	lastOperation := string(seed.Status.LastOperation.Type)
+	for _, operation := range seedOperations {
+		var operationState float64
+		if operation == lastOperation {
+			switch seed.Status.LastOperation.State {
+			case gardenv1beta1.LastOperationStateSucceeded:
+				operationState = 1
+			case gardenv1beta1.LastOperationStateProcessing:
+				operationState = 2
+			case gardenv1beta1.LastOperationStatePending:
+				operationState = 3
+			case gardenv1beta1.LastOperationStateAborted:
+				operationState = 4
+			case gardenv1beta1.LastOperationStateError:
+				operationState = 5
+			case gardenv1beta1.LastOperationStateFailed:
+				operationState = 6
 			}
 		}
+		metric, err := prometheus.NewConstMetric(
+			desc,
+			prometheus.GaugeValue,
+			operationState,
+			seed.Name,
+			operation,
+		)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "seeds"}).Inc()
+			continue
+		}
+		ch <- metric
 	}
 }
 
