@@ -76,8 +76,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
-				//nolint:staticcheck // SA1019 Ignoring to still catch OIDCConfig for existing shoots
-				if s.Spec.Kubernetes.KubeAPIServer != nil && s.Spec.Kubernetes.KubeAPIServer.OIDCConfig != nil {
+				if s.Spec.Kubernetes.KubeAPIServer != nil && s.Spec.Kubernetes.KubeAPIServer.StructuredAuthentication != nil && s.Spec.Kubernetes.KubeAPIServer.StructuredAuthentication.ConfigMapName != "" {
 					counter[0]++
 				}
 			}
