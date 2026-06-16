@@ -430,6 +430,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
+				//nolint:staticcheck // SA1019 Ignore to still catch nginx ingress addon for existing shoots
 				if s.Spec.Addons != nil && s.Spec.Addons.NginxIngress != nil && s.Spec.Addons.NginxIngress.Enabled {
 					counter[0]++
 				}
@@ -449,6 +450,7 @@ var shootCustomizationMetrics = []*template.MetricTemplate{
 			}
 			var counter = make([]float64, 1)
 			for _, s := range shoots {
+				//nolint:staticcheck // SA1019 Ignore to still catch kubernetes dashboard addon for existing shoots
 				if s.Spec.Addons != nil && s.Spec.Addons.KubernetesDashboard != nil && s.Spec.Addons.KubernetesDashboard.Enabled {
 					counter[0]++
 				}
