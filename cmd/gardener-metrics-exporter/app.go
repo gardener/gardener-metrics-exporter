@@ -148,18 +148,8 @@ func newClientConfig(kubeconfigPath string) (*rest.Config, error) {
 	}
 
 	// Kubeconfig based configuration
-	kubeconfig, err := os.ReadFile(kubeconfigPath) // #nosec G304: file path is a controlled launch parameter.
-	if err != nil {
-		return nil, err
-	}
-	configObj, err := clientcmd.Load(kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-	if configObj == nil {
-		return nil, err
-	}
-	clientConfig := clientcmd.NewDefaultClientConfig(*configObj, &clientcmd.ConfigOverrides{})
+	loadingRules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath}
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, &clientcmd.ConfigOverrides{})
 	client, err := clientConfig.ClientConfig()
 	if err != nil {
 		return nil, err
