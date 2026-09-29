@@ -61,6 +61,17 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			nil,
 		),
 
+		metricGardenSeedConstraint: prometheus.NewDesc(
+			metricGardenSeedConstraint,
+			"Constraint state of a Seed. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
+			[]string{
+				"name",
+				"constraint",
+				"iaas",
+				"region",
+			},
+			nil,
+		),
 		metricGardenSeedInfo: prometheus.NewDesc(
 			metricGardenSeedInfo,
 			"Information about a Seed.",
@@ -162,6 +173,19 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 				"technical_id",
 				"has_user_errors",
 				"is_compliant",
+			},
+			nil,
+		),
+
+		metricGardenShootConstraint: prometheus.NewDesc(
+			metricGardenShootConstraint,
+			"Constraint state of a Shoot. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
+			[]string{
+				"name",
+				"project",
+				"uid",
+				"technical_id",
+				"constraint",
 			},
 			nil,
 		),

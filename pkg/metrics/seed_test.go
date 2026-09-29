@@ -68,6 +68,79 @@ func Test_generateSeedConditionMetrics_skipsEmptyConditionType(t *testing.T) {
 	}
 }
 
+func Test_generateSeedConstraintMetrics(t *testing.T) {
+	seed := &gardenv1beta1.Seed{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-seed"},
+		Spec: gardenv1beta1.SeedSpec{
+			Provider: gardenv1beta1.SeedProvider{
+				Type:   "aws",
+				Region: "eu-west-1",
+			},
+		},
+		Status: gardenv1beta1.SeedStatus{
+			Constraints: []gardenv1beta1.Condition{
+				{
+					Type:   "ManagedResourcesHonored",
+					Status: gardenv1beta1.ConditionFalse,
+				},
+			},
+		},
+	}
+
+	desc := prometheus.NewDesc(
+		metricGardenSeedConstraint,
+		"Constraint state of a Seed. Possible values: -1=Unknown|0=Unhealthy|1=Healthy|2=Progressing",
+		[]string{"name", "constraint", "iaas", "region"},
+		nil,
+	)
+
+	ch := make(chan prometheus.Metric, 1)
+	generateSeedConstraintMetrics(seed, desc, ch)
+
+	expected, _ := prometheus.NewConstMetric(desc, prometheus.GaugeValue, 0,
+		"test-seed", "ManagedResourcesHonored", "aws", "eu-west-1",
+	)
+	assert(t, expected, <-ch)
+}
+
+func Test_generateSeedConstraintMetrics_skipsEmptyConstraintType(t *testing.T) {
+	seed := &gardenv1beta1.Seed{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-seed"},
+		Spec: gardenv1beta1.SeedSpec{
+			Provider: gardenv1beta1.SeedProvider{Type: "gcp", Region: "us-east1"},
+		},
+		Status: gardenv1beta1.SeedStatus{
+			Constraints: []gardenv1beta1.Condition{
+				{Type: "", Status: gardenv1beta1.ConditionTrue},
+			},
+		},
+	}
+
+	ch := make(chan prometheus.Metric, 1)
+	generateSeedConstraintMetrics(seed, nil, ch)
+
+	if len(ch) != 0 {
+		t.Errorf("expected no metrics for empty constraint type, got %d", len(ch))
+	}
+}
+
+func Test_generateSeedConstraintMetrics_skipsEmptyConstraints(t *testing.T) {
+	seed := &gardenv1beta1.Seed{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-seed"},
+		Spec: gardenv1beta1.SeedSpec{
+			Provider: gardenv1beta1.SeedProvider{Type: "gcp", Region: "us-east1"},
+		},
+		Status: gardenv1beta1.SeedStatus{},
+	}
+
+	ch := make(chan prometheus.Metric, 1)
+	generateSeedConstraintMetrics(seed, nil, ch)
+
+	if len(ch) != 0 {
+		t.Errorf("expected no metrics for empty constraints field, got %d", len(ch))
+	}
+}
+
 func Test_generateSeedOperationStateMetrics_nilLastOperation(t *testing.T) {
 	seed := &gardenv1beta1.Seed{
 		ObjectMeta: metav1.ObjectMeta{Name: "test-seed"},
