@@ -72,6 +72,7 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			},
 			nil,
 		),
+
 		metricGardenSeedInfo: prometheus.NewDesc(
 			metricGardenSeedInfo,
 			"Information about a Seed.",
