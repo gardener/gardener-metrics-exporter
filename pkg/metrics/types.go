@@ -11,6 +11,7 @@ const (
 	metricGardenSeedCapacity       = "garden_seed_capacity"
 	metricGardenSeedUsage          = "garden_seed_usage"
 	metricGardenSeedOperationState = "garden_seed_operation_states"
+	metricGardenSeedConstraint     = "garden_seed_constraint"
 
 	// Gardenlet metric
 	metricGardenGardenletCondition          = "garden_gardenlet_condition"
@@ -19,6 +20,7 @@ const (
 
 	// Shoot metric (available also for Shoots which act as Seed).
 	metricGardenShootCondition                = "garden_shoot_condition"
+	metricGardenShootConstraint               = "garden_shoot_constraint"
 	metricGardenShootCreation                 = "garden_shoot_creation_timestamp"
 	metricGardenShootHibernated               = "garden_shoot_hibernated"
 	metricGardenShootInfo                     = "garden_shoot_info"

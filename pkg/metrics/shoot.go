@@ -242,6 +242,8 @@ func (c gardenMetricsCollector) collectShootMetrics(ch chan<- prometheus.Metric)
 		// Collect metrics to the node count of the Shoot.
 		c.collectShootNodeMetrics(shoot, projectName, ch)
 
+		c.generateShootConstraintMetrics(shoot, projectName, ch)
+
 		if shoot.Status.LastOperation != nil {
 			lastOperation := string(shoot.Status.LastOperation.Type)
 			lastOperationState := string(shoot.Status.LastOperation.State)
@@ -529,4 +531,34 @@ func shootIsCompliant(constraints []gardenv1beta1.Condition) string {
 		}
 	}
 	return "Unknown"
+}
+
+func (c gardenMetricsCollector) generateShootConstraintMetrics(
+	shoot *gardenv1beta1.Shoot,
+	projectName *string,
+	ch chan<- prometheus.Metric,
+) {
+	for _, constraint := range shoot.Status.Constraints {
+		if constraint.Type == "" {
+			continue
+		}
+
+		metric, err := prometheus.NewConstMetric(
+			c.descs[metricGardenShootConstraint],
+			prometheus.GaugeValue,
+			mapConditionStatus(constraint.Status),
+			[]string{
+				shoot.Name,
+				*projectName,
+				string(shoot.UID),
+				shoot.Status.TechnicalID,
+				string(constraint.Type),
+			}...,
+		)
+		if err != nil {
+			ScrapeFailures.With(prometheus.Labels{"kind": "shoots"}).Inc()
+			continue
+		}
+		ch <- metric
+	}
 }
