@@ -99,12 +99,13 @@ func run(ctx context.Context, o *options) error {
 		seedInformer               = gardenInformerFactory.Core().V1beta1().Seeds().Informer()
 		projectInformer            = gardenInformerFactory.Core().V1beta1().Projects().Informer()
 		secretBindingInformer      = gardenInformerFactory.Core().V1beta1().SecretBindings().Informer()
+		cloudProfileInformer       = gardenInformerFactory.Core().V1beta1().CloudProfiles().Informer()
 		credentialsBindingInformer = gardenSecurityInformerFactory.Security().V1alpha1().CredentialsBindings().Informer()
 	)
 
 	// Start the factories and wait until the informers have synced.
 	gardenInformerFactory.Start(stopCh)
-	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, secretBindingInformer.HasSynced) {
+	if !cache.WaitForCacheSync(ctx.Done(), shootInformer.HasSynced, seedInformer.HasSynced, projectInformer.HasSynced, secretBindingInformer.HasSynced, cloudProfileInformer.HasSynced) {
 		return errors.New("timed out waiting for Garden caches to sync")
 	}
 
@@ -126,6 +127,7 @@ func run(ctx context.Context, o *options) error {
 		gardenSeedManagementInformerFactory.Seedmanagement().V1alpha1().ManagedSeeds(),
 		gardenSeedManagementInformerFactory.Seedmanagement().V1alpha1().Gardenlets(),
 		gardenInformerFactory.Core().V1beta1().SecretBindings(),
+		gardenInformerFactory.Core().V1beta1().CloudProfiles(),
 		gardenSecurityInformerFactory.Security().V1alpha1().CredentialsBindings(),
 		log,
 	)
