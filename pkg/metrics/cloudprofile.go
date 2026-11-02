@@ -23,22 +23,24 @@ func (c gardenMetricsCollector) collectCloudProfileMetrics(ch chan<- prometheus.
 
 func generateCloudProfileKubernetesVersionInfoMetrics(cloudProfiles []*gardenv1beta1.CloudProfile, desc *prometheus.Desc, ch chan<- prometheus.Metric) {
 	for _, cloudProfile := range cloudProfiles {
-		for _, kubernetes := range cloudProfile.Status.Kubernetes.Versions {
-			metric, err := prometheus.NewConstMetric(
-				desc,
-				prometheus.GaugeValue,
-				0,
-				[]string{
-					cloudProfile.Name,
-					string(kubernetes.Classification),
-					kubernetes.Version,
-				}...,
-			)
-			if err != nil {
-				ScrapeFailures.With(prometheus.Labels{"kind": "cloudProfiles"}).Inc()
-				continue
+		if cloudProfile.Status.Kubernetes != nil {
+			for _, kubernetes := range cloudProfile.Status.Kubernetes.Versions {
+				metric, err := prometheus.NewConstMetric(
+					desc,
+					prometheus.GaugeValue,
+					0,
+					[]string{
+						cloudProfile.Name,
+						string(kubernetes.Classification),
+						kubernetes.Version,
+					}...,
+				)
+				if err != nil {
+					ScrapeFailures.With(prometheus.Labels{"kind": "cloudProfiles"}).Inc()
+					continue
+				}
+				ch <- metric
 			}
-			ch <- metric
 		}
 	}
 }
