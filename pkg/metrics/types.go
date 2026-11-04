@@ -34,4 +34,8 @@ const (
 	// Aggregated Shoot metrics (exclude Shoots which act as Seed).
 	metricGardenOperationsTotal = "garden_shoot_operations_total"
 	metricGardenShootNodeInfo   = "garden_shoot_node_info"
+
+	// CloudProfile metrics
+	metricGardenCloudProfileKubernetesVersionInfo   = "garden_cloud_profile_kubernetes_version_info"
+	metricGardenCloudProfileMachineImageVersionInfo = "garden_cloud_profile_machine_image_version_info"
 )

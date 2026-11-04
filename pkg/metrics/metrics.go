@@ -338,6 +338,29 @@ func getGardenMetricsDefinitions() map[string]*prometheus.Desc {
 			},
 			nil,
 		),
+
+		metricGardenCloudProfileKubernetesVersionInfo: prometheus.NewDesc(
+			metricGardenCloudProfileKubernetesVersionInfo,
+			"Information about Kubernetes versions in a CloudProfile",
+			[]string{
+				"name",
+				"classification",
+				"version",
+			},
+			nil,
+		),
+
+		metricGardenCloudProfileMachineImageVersionInfo: prometheus.NewDesc(
+			metricGardenCloudProfileMachineImageVersionInfo,
+			"Information about machine image versions in a CloudProfile",
+			[]string{
+				"name",
+				"machine_image_name",
+				"classification",
+				"version",
+			},
+			nil,
+		),
 	}
 }
 
@@ -348,6 +371,7 @@ type gardenMetricsCollector struct {
 	seedInformer               gardencoreinformers.SeedInformer
 	projectInformer            gardencoreinformers.ProjectInformer
 	secretBindingInformer      gardencoreinformers.SecretBindingInformer
+	cloudProfileInformer       gardencoreinformers.CloudProfileInformer
 	credentialsBindingInformer gardensecurityinformers.CredentialsBindingInformer
 	descs                      map[string]*prometheus.Desc
 	logger                     *logrus.Logger
@@ -369,10 +393,11 @@ func (c *gardenMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	c.collectProjectMetrics(ch)
 	c.collectShootMetrics(ch)
 	c.collectSeedMetrics(ch)
+	c.collectCloudProfileMetrics(ch)
 }
 
 // SetupMetricsCollector takes informers to configure the metrics collectors.
-func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenseedmanagementinformers.ManagedSeedInformer, gardenletInformer gardenseedmanagementinformers.GardenletInformer, secretBindingInformer gardencoreinformers.SecretBindingInformer, credentialsBindingInformer gardensecurityinformers.CredentialsBindingInformer, logger *logrus.Logger) {
+func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seedInformer gardencoreinformers.SeedInformer, projectInformer gardencoreinformers.ProjectInformer, managedSeedInformer gardenseedmanagementinformers.ManagedSeedInformer, gardenletInformer gardenseedmanagementinformers.GardenletInformer, secretBindingInformer gardencoreinformers.SecretBindingInformer, cloudProfileInformer gardencoreinformers.CloudProfileInformer, credentialsBindingInformer gardensecurityinformers.CredentialsBindingInformer, logger *logrus.Logger) {
 	metricsCollector := gardenMetricsCollector{
 		managedSeedInformer:        managedSeedInformer,
 		gardenletInformer:          gardenletInformer,
@@ -380,6 +405,7 @@ func SetupMetricsCollector(shootInformer gardencoreinformers.ShootInformer, seed
 		seedInformer:               seedInformer,
 		projectInformer:            projectInformer,
 		secretBindingInformer:      secretBindingInformer,
+		cloudProfileInformer:       cloudProfileInformer,
 		credentialsBindingInformer: credentialsBindingInformer,
 		descs:                      getGardenMetricsDefinitions(),
 		logger:                     logger,
